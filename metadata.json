@@ -1,0 +1,5 @@
+{
+  "name": "The Platform - WordPress Management SaaS",
+  "description": "A comprehensive SaaS solution for managing remote WordPress sites, plugins, and themes, integrated with Appwrite for backend services and Stripe for subscription management.",
+  "requestFramePermissions": []
+}

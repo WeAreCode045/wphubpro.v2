@@ -1,0 +1,15 @@
+
+{
+  "name": "platform-appwrite-setup",
+  "version": "1.0.0",
+  "description": "Script to initialize the Appwrite database for The Platform.",
+  "main": "setup.js",
+  "scripts": {
+    "setup": "node setup.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-appwrite": "^12.0.1"
+  }
+}
