@@ -27,6 +27,7 @@ const DeleteButton: React.FC<{ siteId: string }> = ({ siteId }) => {
   );
 };
 
+
 const SitesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: sites, isLoading, isError, error } = useSites();

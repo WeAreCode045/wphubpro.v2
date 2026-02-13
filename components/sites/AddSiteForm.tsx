@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAddSite } from '../../hooks/useSites';
 import Button from '../ui/Button';
@@ -13,8 +12,6 @@ interface AddSiteFormProps {
 const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
   const [siteName, setSiteName] = useState('');
   const [siteUrl, setSiteUrl] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   
   const addSiteMutation = useAddSite();
 
@@ -22,9 +19,9 @@ const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
     e.preventDefault();
     addSiteMutation.mutate({
       siteName,
-      siteUrl, // Pass siteUrl
-      username,
-      password,
+      siteUrl,
+      username: '', // Wordt later ingevuld via de flow
+      password: '', // Wordt later ingevuld via de flow
     }, {
       onSuccess: () => {
         onSuccess();
@@ -41,21 +38,25 @@ const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
         </div>
       )}
       <div className="space-y-2">
-        <Label htmlFor="siteName">Site Name</Label>
-        <Input id="siteName" placeholder="My Awesome Blog" value={siteName} onChange={(e) => setSiteName(e.target.value)} required />
+        <Label htmlFor="siteName">Site Naam</Label>
+        <Input 
+          id="siteName" 
+          placeholder="Mijn WordPress Site" 
+          value={siteName} 
+          onChange={(e) => setSiteName(e.target.value)} 
+          required 
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="siteUrl">Site URL</Label>
-        <Input id="siteUrl" type="url" placeholder="https://example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} required />
-      </div>
-       <div className="space-y-2">
-        <Label htmlFor="username">WordPress Username</Label>
-        <Input id="username" placeholder="admin" value={username} onChange={(e) => setUsername(e.target.value)} required />
-      </div>
-       <div className="space-y-2">
-        <Label htmlFor="password">Application Password</Label>
-        <Input id="password" type="password" placeholder="xxxx xxxx xxxx xxxx" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <p className="text-xs text-muted-foreground">Create an Application Password in your WordPress admin under Users &gt; Profile.</p>
+        <Input 
+          id="siteUrl" 
+          type="url" 
+          placeholder="https://example.com" 
+          value={siteUrl} 
+          onChange={(e) => setSiteUrl(e.target.value)} 
+          required 
+        />
       </div>
 
       <div className="flex justify-end pt-2">
@@ -63,10 +64,10 @@ const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
           {addSiteMutation.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connecting...
+              Toevoegen...
             </>
           ) : (
-            'Add Site'
+            'Site Toevoegen'
           )}
         </Button>
       </div>
