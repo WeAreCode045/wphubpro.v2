@@ -1,48 +1,61 @@
 
-// This file will contain TanStack Query hooks for subscription data.
-// e.g., useSubscription, useUsage
 import { useQuery } from '@tanstack/react-query';
 import { useLibraryItems } from './useLibrary';
+import { useSites } from './useSites';
+import { useUser } from './useAuth';
+import { databases } from '../services/appwrite';
+import { Query } from 'appwrite';
+import { Subscription } from '../types';
 
-// MOCK DATA - In a real app, this would come from your 'subscriptions' collection
-const MOCK_USER_ID = 'admin-user';
-
-const mockSubscription = {
-  userId: MOCK_USER_ID,
-  planId: 'Pro Plan',
-  status: 'active',
-  sitesLimit: 10,
-  storageLimit: 5000, // in MB
-  libraryLimit: 50,
-};
+const DATABASE_ID = 'platform_db';
+const SUBSCRIPTIONS_COLLECTION_ID = 'subscriptions';
 
 export const useSubscription = () => {
-    return useQuery({
-        queryKey: ['subscription', MOCK_USER_ID],
+    const { data: user } = useUser();
+    return useQuery<Subscription | null, Error>({
+        queryKey: ['subscription', user?.$id],
         queryFn: async () => {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 200));
-            return mockSubscription;
+            if (!user?.$id) return null;
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                SUBSCRIPTIONS_COLLECTION_ID,
+                [Query.equal('user_id', user.$id), Query.limit(1)]
+            );
+            
+            if (response.documents.length > 0) {
+                return response.documents[0] as unknown as Subscription;
+            }
+            
+            // Return a default or mock subscription if none is found,
+            // so the app doesn't break for new users.
+            return {
+                userId: user.$id,
+                planId: 'Free Tier',
+                status: 'active',
+                sitesLimit: 1,
+                storageLimit: 100, // in MB
+                libraryLimit: 5,
+            };
         },
+        enabled: !!user,
     });
 };
 
 
 export const useUsage = () => {
-    // This hook depends on other data sources (sites, library items)
+    const { data: user } = useUser();
     const { data: libraryItems } = useLibraryItems();
-    // const { data: sites } = useSites(); // Assumes a useSites hook exists
+    const { data: sites } = useSites();
 
     return useQuery({
-        queryKey: ['usage', MOCK_USER_ID, libraryItems],
+        queryKey: ['usage', user?.$id, libraryItems, sites],
         queryFn: async () => {
-            // In a real app, you might also fetch storage usage from another source
             return {
-                sitesUsed: 3, // Mocked site usage
+                sitesUsed: sites?.length || 0,
                 libraryUsed: libraryItems?.length || 0,
-                storageUsed: 1200, // Mocked storage usage in MB
+                storageUsed: 0, // In a real app, this would be calculated, e.g., from S3.
             };
         },
-        enabled: !!libraryItems, // Only run when library items are loaded
+        enabled: !!user && libraryItems !== undefined && sites !== undefined,
     });
 };

@@ -10,6 +10,7 @@ module.exports = async (req, res) => {
     APPWRITE_FUNCTION_ENDPOINT,
     APPWRITE_FUNCTION_PROJECT_ID,
     APPWRITE_FUNCTION_API_KEY,
+    APPWRITE_FUNCTION_USER_ID, // The ID of the user who triggered the function
   } = req.variables;
 
   if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY) {
@@ -35,12 +36,23 @@ module.exports = async (req, res) => {
     return res.json({ success: false, message: 'Missing required fields: siteId and endpoint.' }, 400);
   }
 
+  if (!APPWRITE_FUNCTION_USER_ID) {
+    return res.json({ success: false, message: 'Unauthorized. Only authenticated users can perform this action.' }, 401);
+  }
+
   try {
     const siteDocument = await databases.getDocument('platform_db', 'sites', siteId);
+    
+    // --- SECURITY CHECK ---
+    // Verify that the user triggering the function owns the site document.
+    if (siteDocument.user_id !== APPWRITE_FUNCTION_USER_ID) {
+      return res.json({ success: false, message: 'Forbidden. You do not have permission to access this site.' }, 403);
+    }
+    
     const { site_url, wp_username, wp_app_password } = siteDocument;
 
-    // In een echte app moet wp_app_password hier worden ontsleuteld.
-    // Voor dit voorbeeld gaan we ervan uit dat het in een ophaalbaar formaat is opgeslagen.
+    // In a real app, wp_app_password should be decrypted here.
+    // For this example, we assume it's in a retrievable format.
     const decryptedPassword = wp_app_password;
 
     const auth = 'Basic ' + Buffer.from(wp_username + ':' + decryptedPassword).toString('base64');
@@ -62,7 +74,7 @@ module.exports = async (req, res) => {
     const wpResponseBody = await wpResponse.json();
 
     if (!wpResponse.ok) {
-        // Stuur de WordPress-foutmelding door indien beschikbaar
+        // Pass through the WordPress error message if available
         const errorMessage = wpResponseBody.message || `Request failed with status ${wpResponse.status}`;
         return res.json({ success: false, message: errorMessage, wpStatus: wpResponse.status }, wpResponse.status > 499 ? 502 : wpResponse.status);
     }
@@ -74,7 +86,7 @@ module.exports = async (req, res) => {
       return res.json({ success: false, message: `Site with ID '${siteId}' not found.` }, 404);
     }
     console.error(error);
-    // Behandel netwerkfouten (bv. site niet bereikbaar)
+    // Handle network errors (e.g., site is down)
     if (error.name === 'FetchError' || error.type === 'system') {
         return res.json({ success: false, message: 'Could not connect to the WordPress site. It might be offline or the URL is incorrect.' }, 502); // Bad Gateway
     }

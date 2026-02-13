@@ -15,7 +15,11 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
   const togglePluginMutation = useTogglePlugin(siteId);
 
   const handleToggle = (plugin: WordPressPlugin) => {
-    togglePluginMutation.mutate({ pluginSlug: plugin.plugin, status: plugin.status });
+    togglePluginMutation.mutate({ 
+      pluginSlug: plugin.plugin, 
+      status: plugin.status,
+      pluginName: plugin.name 
+    });
   };
 
   if (isLoading) {

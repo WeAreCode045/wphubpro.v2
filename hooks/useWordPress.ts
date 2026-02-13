@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
 import { WordPressPlugin, WordPressTheme } from '../types';
+import { useToast } from '../contexts/ToastContext';
 
 const FUNCTION_ID = 'wp-proxy';
 
@@ -21,12 +22,12 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
 
     return data as T;
   } catch (error) {
+    // Attempt to parse a more specific error from the function response
     try {
-      // Probeer de foutstructuur van Appwrite te parsen voor een duidelijkere foutmelding
       const errorResponse = JSON.parse((error as any).response);
       throw new Error(errorResponse.message || 'An unknown error occurred while executing the function.');
     } catch (e) {
-      throw error; // Gooi de oorspronkelijke fout als het parsen mislukt
+      throw error; // Throw original error if parsing fails
     }
   }
 };
@@ -51,11 +52,12 @@ export const useThemes = (siteId: string | undefined) => {
 
 export const useTogglePlugin = (siteId: string | undefined) => {
     const queryClient = useQueryClient();
+    const { toast } = useToast();
 
-    return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive' }>({
+    return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
         mutationFn: ({ pluginSlug, status }) => {
             const newStatus = status === 'active' ? 'inactive' : 'active';
-            // De WP REST API gebruikt de bestandsnaam van de plugin (slug) in de URL
+            // The WP REST API uses the plugin's file path (slug) in the URL, which needs encoding
             const endpointSlug = pluginSlug.replace('/', '%2F');
             return executeWpProxy<WordPressPlugin>({
                 siteId: siteId!,
@@ -64,9 +66,22 @@ export const useTogglePlugin = (siteId: string | undefined) => {
                 body: { status: newStatus },
             });
         },
-        onSuccess: () => {
-            // Invalideer de pluginlijst om de bijgewerkte status op te halen
+        onSuccess: (data, variables) => {
+            // Invalidate the plugins list to refetch the updated status
             queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+            const action = data.status === 'active' ? 'activated' : 'deactivated';
+            toast({
+              title: "Success",
+              description: `Plugin "${variables.pluginName}" has been ${action}.`,
+              variant: 'success'
+            });
         },
+        onError: (error, variables) => {
+            toast({
+                title: "Action Failed",
+                description: `Could not toggle plugin "${variables.pluginName}": ${error.message}`,
+                variant: 'destructive',
+            });
+        }
     });
 };

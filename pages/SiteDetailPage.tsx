@@ -4,16 +4,20 @@ import { useParams, Link } from 'react-router-dom';
 import Tabs from '../components/ui/Tabs';
 import PluginsTab from './site-detail/PluginsTab';
 import ThemesTab from './site-detail/ThemesTab';
-import { ArrowLeft } from 'lucide-react';
+import { useSite } from '../hooks/useSites';
+import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 
 const SiteDetailPage: React.FC = () => {
   const { siteId } = useParams<{ siteId: string }>();
-  
-  // In een echte app zou je hier site-details ophalen met useQuery
-  const mockSiteName = 'My Mock WordPress Site';
+  const { data: site, isLoading, isError, error } = useSite(siteId);
 
   if (!siteId) {
-    return <div>Site ID not found.</div>;
+    return (
+        <div className="text-center p-8">
+            <h2 className="text-xl font-semibold">Site ID not found.</h2>
+            <p className="text-muted-foreground">Please return to the sites list and select a site.</p>
+        </div>
+    );
   }
 
   const tabs = [
@@ -24,16 +28,36 @@ const SiteDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link to="/sites" className="flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+       <Link to="/sites" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Sites
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{mockSiteName}</h1>
-        <p className="text-muted-foreground mt-1">Manage plugins and themes for your site.</p>
-      </div>
+        
+        {isLoading && (
+            <div className="flex items-center space-x-3">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <h1 className="text-3xl font-bold tracking-tight text-muted-foreground">Loading Site...</h1>
+            </div>
+        )}
+
+        {isError && (
+             <div className="flex items-center p-4 text-sm text-destructive bg-destructive/10 rounded-md">
+                <AlertCircle className="w-5 h-5 mr-3" />
+                <div>
+                    <p className="font-semibold">Error loading site</p>
+                    <p>{error?.message}</p>
+                </div>
+            </div>
+        )}
       
-      <Tabs tabs={tabs} defaultIndex={0} />
+      {site && (
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{site.siteName}</h1>
+            <p className="text-muted-foreground mt-1">Manage plugins and themes for {site.siteUrl}</p>
+          </div>
+      )}
+      
+      {site && <Tabs tabs={tabs} defaultIndex={0} />}
     </div>
   );
 };

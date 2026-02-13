@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useLibraryItems } from '../../hooks/useLibrary';
 import { LibraryItem, LibraryItemType } from '../../types';
-import { Loader2, Package, Brush } from 'lucide-react';
+import { Loader2, Package, Brush, PlusCircle } from 'lucide-react';
 import Button from '../ui/Button';
 
 const LibraryGrid: React.FC = () => {
@@ -34,12 +34,16 @@ const LibraryGrid: React.FC = () => {
                     <div className="mx-auto h-12 w-12 text-muted-foreground">
                         {filter === 'plugin' ? <Package /> : filter === 'theme' ? <Brush /> : <Package />}
                     </div>
-                    <h3 className="mt-2 text-sm font-medium text-foreground">
+                    <h3 className="mt-2 text-lg font-medium text-foreground">
                         No {filter !== 'all' ? filter + 's' : 'items'} in your library
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Add items from WordPress.org or upload your own.
+                        Add items from WordPress.org or upload your own to get started.
                     </p>
+                    <Button className="mt-6">
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Add Item
+                    </Button>
                 </div>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

@@ -1,5 +1,5 @@
 
-const { Client, Databases, ID, InputFile } = require('node-appwrite');
+const { Client, Databases, ID } = require('node-appwrite');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const unzipper = require('unzipper');
 const { Readable } = require('stream');
@@ -38,6 +38,7 @@ module.exports = async (req, res) => {
         APPWRITE_FUNCTION_ENDPOINT,
         APPWRITE_FUNCTION_PROJECT_ID,
         APPWRITE_FUNCTION_API_KEY,
+        APPWRITE_FUNCTION_USER_ID, // Securely get the user ID from the execution context
         S3_BUCKET,
         S3_REGION,
         S3_ACCESS_KEY_ID,
@@ -61,11 +62,15 @@ module.exports = async (req, res) => {
 
     try {
         // 2. Validate Input
-        const { userId, type } = req.payload ? JSON.parse(req.payload) : {};
+        const { type } = req.payload ? JSON.parse(req.payload) : {};
         const file = req.files?.file;
+        const userId = APPWRITE_FUNCTION_USER_ID; // Use the secure user ID
 
-        if (!userId || !type || !file) {
-            return res.json({ success: false, message: 'Missing userId, type, or file.' }, 400);
+        if (!userId) {
+            return res.json({ success: false, message: 'Unauthorized. User must be authenticated.' }, 401);
+        }
+        if (!type || !file) {
+            return res.json({ success: false, message: 'Missing type or file.' }, 400);
         }
         if (type !== 'plugin' && type !== 'theme') {
             return res.json({ success: false, message: 'Invalid type. Must be "plugin" or "theme".' }, 400);
