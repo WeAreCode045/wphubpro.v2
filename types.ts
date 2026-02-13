@@ -1,7 +1,9 @@
 
 import { Models } from 'appwrite';
 
-export type User = Models.User<Models.Preferences>;
+export type User = Models.User<Models.Preferences> & {
+  isAdmin?: boolean;
+};
 
 export interface Subscription {
   userId: string;
@@ -17,9 +19,9 @@ export interface Site {
   userId: string;
   siteUrl: string;
   siteName: string;
-  wpUsername: string;
-  // FIX: Added wp_app_password to the Site interface to match the database schema and fix type errors on site creation.
-  wp_app_password?: string;
+  // New: credentials JSON string containing an array of { username, password }
+  credentials?: string;
+  // No legacy WP fields; use `credentials` for username/password storage
   healthStatus: 'good' | 'warning' | 'error';
   lastChecked: string;
   wpVersion: string;

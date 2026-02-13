@@ -43,49 +43,159 @@
             "$id": "wp-proxy",
             "name": "wp-proxy",
             "runtime": "node-18.0",
-            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/wp-proxy",
+            "entrypoint": "index.js",
             "execute": [
-                "any"
+                "users"
             ],
+            "enabled": true,
+            "logging": true,
             "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
             "scopes": [
                 "users.read"
             ],
-            "schedule": "",
-            "timeout": 15,
-            "enabled": true,
-            "logging": true,
-            "entrypoint": "src/main.js",
-            "commands": "npm install",
-            "ignore": [
-                "node_modules",
-                ".npm"
-            ],
-            "path": "functions/wp-proxy"
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
+            },
+            "specification": "s-0.5vcpu-512mb"
         },
         {
             "$id": "zip-parser",
             "name": "zip-parser",
             "runtime": "node-18.0",
-            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/zip-parser",
+            "entrypoint": "index.js",
             "execute": [
-                "any"
+                "users"
             ],
+            "enabled": true,
+            "logging": true,
             "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
             "scopes": [
                 "users.read"
             ],
-            "schedule": "",
-            "timeout": 15,
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
+                "S3_BUCKET": "code045-wphub",
+                "S3_REGION": "eu-central-1",
+                "S3_ACCESS_KEY_ID": "AKIAWCRJLC2GGWOC4RX2",
+                "S3_SECRET_ACCESS_KEY": "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"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "set-admin",
+            "name": "set-admin",
+            "runtime": "node-18.0",
+            "path": "functions/set-admin",
+            "entrypoint": "index.js",
+            "execute": [
+                "any"
+            ],
             "enabled": true,
             "logging": true,
-            "entrypoint": "src/main.js",
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
             "commands": "npm install",
-            "ignore": [
-                "node_modules",
-                ".npm"
+            "scopes": [
+                "users.read"
             ],
-            "path": "functions/zip-parser"
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "manage-settings",
+            "name": "manage-settings",
+            "runtime": "node-18.0",
+            "path": "functions/manage-settings",
+            "entrypoint": "index.js",
+            "execute": [
+                "label:Admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "users.read"
+            ],
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "validate-wp",
+            "name": "validate-wp",
+            "runtime": "node-18.0",
+            "path": "functions/validate-wp",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],            
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "create-site",
+            "name": "create-site",
+            "runtime": "node-18.0",
+            "path": "functions/create-site",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],            
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "update-site",
+            "name": "update-site",
+            "runtime": "node-18.0",
+            "path": "functions/update-site",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],            
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-1vcpu-512mb"
         }
     ],
     "sites": [
@@ -239,21 +349,13 @@
                     "default": null,
                     "encrypt": false
                 },
+                
                 {
-                    "key": "wp_username",
+                    "key": "credentials",
                     "type": "string",
-                    "required": true,
+                    "required": false,
                     "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "wp_app_password",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 512,
+                    "size": 2000,
                     "default": null,
                     "encrypt": false
                 }
@@ -395,9 +497,10 @@
             "$id": "platform_settings",
             "$permissions": [
                 "read(\"any\")",
-                "create(\"team:admin\")",
-                "update(\"team:admin\")",
-                "delete(\"team:admin\")"
+                "create(\"label:Admin\")",
+                "read(\"label:Admin\")",
+                "update(\"label:Admin\")",
+                "delete(\"label:Admin\")"
             ],
             "databaseId": "platform_db",
             "name": "Platform Settings",
@@ -451,9 +554,9 @@
         {
             "$id": "code045",
             "$createdAt": "2026-02-09T23:45:16.882+00:00",
-            "$updatedAt": "2026-02-12T23:59:51.050+00:00",
+            "$updatedAt": "2026-02-13T01:55:25.399+00:00",
             "name": "Code045",
-            "total": 1,
+            "total": 0,
             "prefs": {}
         },
         {

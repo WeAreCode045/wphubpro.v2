@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import SitesPage from './pages/SitesPage';
@@ -15,6 +15,12 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import AdminRoute from './components/layout/AdminRoute';
+import AdminSettingsPage from './pages/AdminSettingsPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import UserManagerPage from './pages/admin/UserManagerPage';
+import OrdersPage from './pages/admin/OrdersPage';
+import PlanManagementPage from './pages/admin/PlanManagementPage';
 import { Loader2 } from 'lucide-react';
 
 const AppRoutes: React.FC = () => {
@@ -30,26 +36,31 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
       <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
-      <Route 
-        path="/*"
-        element={
-          <ProtectedRoute>
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="sites" element={<SitesPage />} />
-                <Route path="sites/:siteId" element={<SiteDetailPage />} />
-                <Route path="library" element={<LibraryPage />} />
-                <Route path="subscription" element={<SubscriptionPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </ProtectedRoute>
-        }
-      />
+
+      {/* Protected Layout Routes */}
+      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="sites" element={<SitesPage />} />
+        <Route path="sites/:siteId" element={<SiteDetailPage />} />
+        <Route path="library" element={<LibraryPage />} />
+        <Route path="subscription" element={<SubscriptionPage />} />
+        
+        {/* Admin Specific Routes */}
+        <Route path="admin" element={<AdminRoute><Outlet /></AdminRoute>}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<UserManagerPage />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="plans" element={<PlanManagementPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 };

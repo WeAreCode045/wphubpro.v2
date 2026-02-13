@@ -1,0 +1,10 @@
+{
+  "name": "validate-wp",
+  "version": "1.0.0",
+  "description": "Validate WP credentials function dependencies",
+  "main": "index.js",
+  "dependencies": {
+    "node-appwrite": "^22.0.0",
+    "node-fetch": "^2.6.7"
+  }
+}

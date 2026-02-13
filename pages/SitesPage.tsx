@@ -3,10 +3,29 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { ExternalLink, Trash2 } from 'lucide-react';
+import { useDeleteSite } from '../hooks/useSites';
 import { useSites } from '../hooks/useSites';
 import { Globe, PlusCircle, Loader2, AlertCircle } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddSiteForm from '../components/sites/AddSiteForm';
+
+const DeleteButton: React.FC<{ siteId: string }> = ({ siteId }) => {
+  const deleteSite = useDeleteSite();
+  return (
+    <button
+      onClick={() => {
+        if (confirm('Are you sure you want to remove this site?')) {
+          deleteSite.mutate(siteId);
+        }
+      }}
+      className="text-destructive hover:text-destructive/80"
+      aria-label="Delete site"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+  );
+};
 
 const SitesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,19 +86,30 @@ const SitesPage: React.FC = () => {
         {!isLoading && !isError && sites && (
           sites.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {sites.map(site => (
+                {sites.map(site => {
+                const name = (site as any).siteName || (site as any).site_name || 'Untitled';
+                const url = (site as any).siteUrl || (site as any).site_url || '#';
+                return (
                 <Card key={site.$id}>
                   <CardContent className="p-6">
-                      <h3 className="font-semibold">{site.siteName}</h3>
-                      <p className="text-sm text-muted-foreground">{site.siteUrl}</p>
-                      <Button asChild variant="link" className="p-0 h-auto mt-2">
-                          <Link to={`/sites/${site.$id}`}>
-                              Manage Site
-                          </Link>
-                      </Button>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">{name}</h3>
+                          <p className="text-sm text-muted-foreground">{url}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <a href={url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground">
+                            <ExternalLink className="w-5 h-5" />
+                          </a>
+                          <Button asChild variant="link" className="p-0 h-auto">
+                            <Link to={`/sites/${site.$id}`}>Manage</Link>
+                          </Button>
+                            <DeleteButton siteId={site.$id} />
+                        </div>
+                      </div>
                   </CardContent>
                 </Card>
-              ))}
+              );})}
             </div>
           ) : (
             <EmptyState />

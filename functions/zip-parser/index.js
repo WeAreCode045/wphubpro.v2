@@ -1,8 +1,8 @@
-
-const { Client, Databases, ID } = require('node-appwrite');
+const sdk = require('node-appwrite');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const unzipper = require('unzipper');
-const { Readable } = require('stream');
+const stream = require('stream');
 
 // --- Helper Functions ---
 const parseMetadata = (content, type) => {
@@ -33,116 +33,105 @@ const parseMetadata = (content, type) => {
 
 
 // --- Main Handler ---
-module.exports = async (req, res) => {
-    const {
-        APPWRITE_FUNCTION_ENDPOINT,
-        APPWRITE_FUNCTION_PROJECT_ID,
-        APPWRITE_FUNCTION_API_KEY,
-        APPWRITE_FUNCTION_USER_ID, // Securely get the user ID from the execution context
-        S3_BUCKET,
-        S3_REGION,
-        S3_ACCESS_KEY_ID,
-        S3_SECRET_ACCESS_KEY,
-    } = req.variables;
+module.exports = async ({ req, res, log, error }) => {
+  const client = new sdk.Client();
+  const storage = new sdk.Storage(client);
 
-    // 1. Initialize Clients
-    const client = new Client()
-        .setEndpoint(APPWRITE_FUNCTION_ENDPOINT)
-        .setProject(APPWRITE_FUNCTION_PROJECT_ID)
-        .setKey(APPWRITE_FUNCTION_API_KEY);
-    const databases = new Databases(client);
+  const {
+    APPWRITE_FUNCTION_ENDPOINT,
+    APPWRITE_FUNCTION_PROJECT_ID,
+    APPWRITE_FUNCTION_API_KEY,
+    APPWRITE_FUNCTION_USER_ID,
+    S3_BUCKET,
+    S3_REGION,
+    S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY
+  } = process.env;
 
-    const s3 = new S3Client({
-        region: S3_REGION,
-        credentials: {
-            accessKeyId: S3_ACCESS_KEY_ID,
-            secretAccessKey: S3_SECRET_ACCESS_KEY,
-        },
+  if (!S3_BUCKET || !S3_REGION || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) {
+    error('S3 environment variables are not set.');
+    return res.json({ success: false, message: 'S3 environment is not configured.' }, 500);
+  }
+
+  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY) {
+    error('Appwrite environment variables are not set.');
+    return res.json({ success: false, message: 'Appwrite environment is not configured.' }, 500);
+  }
+
+  client
+    .setEndpoint(APPWRITE_FUNCTION_ENDPOINT)
+    .setProject(APPWRITE_FUNCTION_PROJECT_ID)
+    .setKey(APPWRITE_FUNCTION_API_KEY);
+  
+  const s3 = new S3Client({
+    region: S3_REGION,
+    credentials: {
+      accessKeyId: S3_ACCESS_KEY_ID,
+      secretAccessKey: S3_SECRET_ACCESS_KEY,
+    },
+  });
+
+  if (!APPWRITE_FUNCTION_USER_ID) {
+    return res.json({ success: false, message: 'Unauthorized. User must be authenticated.' }, 401);
+  }
+
+  let payload;
+  try {
+    payload = typeof req.payload === 'string' ? JSON.parse(req.payload) : req.payload;
+  } catch (e) {
+    error('Failed to parse payload.');
+    return res.json({ success: false, message: 'Invalid request body. JSON expected.' }, 400);
+  }
+
+  const { fileId } = payload;
+  if (!fileId) {
+    return res.json({ success: false, message: 'Missing required field: fileId.' }, 400);
+  }
+
+  try {
+    log(`Starting zip parse for Appwrite fileId: ${fileId}`);
+    
+    // 1. Download the file from Appwrite Storage
+    const fileStream = await storage.getFileDownload('library', fileId);
+    
+    // 2. Unzip and Upload to S3
+    const uploadedFiles = [];
+    const parseStream = fileStream.pipe(unzipper.Parse({ forceStream: true }));
+
+    for await (const entry of parseStream) {
+      const { path, type } = entry;
+      // We only care about files, not directories
+      if (type === 'File') {
+        const s3Key = `user/${APPWRITE_FUNCTION_USER_ID}/library/${fileId}/${path}`;
+        
+        // Use a pass-through stream to handle the data chunks
+        const passThrough = new stream.PassThrough();
+        entry.pipe(passThrough);
+
+        const command = new PutObjectCommand({
+          Bucket: S3_BUCKET,
+          Key: s3Key,
+          Body: passThrough,
+        });
+
+        await s3.send(command);
+        log(`Uploaded ${path} to S3 at ${s3Key}`);
+        uploadedFiles.push(s3Key);
+      } else {
+        entry.autodrain();
+      }
+    }
+    
+    log(`Successfully processed ${uploadedFiles.length} files from zip.`);
+
+    return res.json({ 
+      success: true, 
+      message: 'Zip file parsed and contents uploaded to S3.',
+      uploadedFiles 
     });
 
-    try {
-        // 2. Validate Input
-        const { type } = req.payload ? JSON.parse(req.payload) : {};
-        const file = req.files?.file;
-        const userId = APPWRITE_FUNCTION_USER_ID; // Use the secure user ID
-
-        if (!userId) {
-            return res.json({ success: false, message: 'Unauthorized. User must be authenticated.' }, 401);
-        }
-        if (!type || !file) {
-            return res.json({ success: false, message: 'Missing type or file.' }, 400);
-        }
-        if (type !== 'plugin' && type !== 'theme') {
-            return res.json({ success: false, message: 'Invalid type. Must be "plugin" or "theme".' }, 400);
-        }
-
-        // 3. Extract Metadata from Zip
-        let extractedMeta = null;
-        const fileStream = Readable.from(file.buffer);
-
-        await new Promise((resolve, reject) => {
-            fileStream.pipe(unzipper.Parse())
-                .on('entry', async (entry) => {
-                    const fileName = entry.path;
-                    const isRootDirFile = !fileName.includes('/');
-
-                    const isPluginFile = type === 'plugin' && isRootDirFile && fileName.endsWith('.php');
-                    const isThemeFile = type === 'theme' && fileName === 'style.css';
-
-                    if (isPluginFile || isThemeFile) {
-                        const content = await entry.buffer().then(b => b.toString());
-                        const meta = parseMetadata(content, type);
-                        if (meta.name && meta.version) {
-                            extractedMeta = meta;
-                            entry.autodrain(); // We found what we need
-                        } else {
-                            entry.autodrain();
-                        }
-                    } else {
-                        entry.autodrain();
-                    }
-                })
-                .on('finish', resolve)
-                .on('error', reject);
-        });
-
-        if (!extractedMeta) {
-            return res.json({ success: false, message: 'Could not find valid metadata headers in the zip file.' }, 400);
-        }
-        
-        // 4. Upload to S3
-        const s3Path = `user/${userId}/${type}/${file.name}`;
-        const putCommand = new PutObjectCommand({
-            Bucket: S3_BUCKET,
-            Key: s3Path,
-            Body: file.buffer,
-            ContentType: file.mimetype,
-        });
-        await s3.send(putCommand);
-
-        // 5. Create Database Document
-        const libraryDocument = {
-            userId,
-            name: extractedMeta.name,
-            type,
-            source: 'local',
-            version: extractedMeta.version || '0.0.0',
-            author: extractedMeta.author || 'Unknown',
-            description: extractedMeta.description || '',
-            s3Path,
-        };
-
-        const createdDoc = await databases.createDocument(
-            'platform_db',
-            'library',
-            ID.unique(),
-            libraryDocument
-        );
-
-        res.json({ success: true, message: 'File processed successfully!', item: createdDoc });
-
-    } catch (error) {
-        console.error(error);
-        res.json({ success: false, message: 'An internal server error occurred.', error: error.message }, 500);
-    }
+  } catch (e) {
+    error(e.message);
+    return res.json({ success: false, message: e.message }, 500);
+  }
 };

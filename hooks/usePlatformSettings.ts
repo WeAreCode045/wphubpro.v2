@@ -1,50 +1,71 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { databases, functions, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
+import { ID, Query } from 'appwrite';
+import { useAuth } from '../contexts/AuthContext';
 
-import { useQuery } from '@tanstack/react-query';
-
-// This is the shape of the data we expect from the 'platform_settings' collection
-// for a document with key = 'branding'
-const mockBrandingSettings = {
-    colors: {
-        primary: '240 5.9% 10%',
-        primaryForeground: '0 0% 98%',
-        secondary: '240 4.8% 95.9%',
-        secondaryForeground: '240 5.9% 10%',
-        card: '0 0% 100%',
-        cardForeground: '240 5.9% 10%',
-        popover: '0 0% 100%',
-        popoverForeground: '240 5.9% 10%',
-        border: '240 5.9% 90%',
-        input: '240 5.9% 90%',
-        ring: '240 5.9% 10%',
-        background: '0 0% 100%',
-        foreground: '240 5.9% 10%',
-        muted: '240 4.8% 95.9%',
-        mutedForeground: '240 3.8% 46.1%',
-        accent: '240 4.8% 95.9%',
-        accentForeground: '240 5.9% 10%',
-        destructive: '0 84.2% 60.2%',
-        destructiveForeground: '0 0% 98%',
-    },
-    font: {
-        family: "'Inter', sans-serif",
-        url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
-    },
-    logoUrl: '/vite.svg',
-};
-
-// This hook fetches platform-wide settings.
-// In a real app, this would use the Appwrite SDK to get a document from the 'platform_settings' collection.
-export const usePlatformSettings = () => {
+/**
+ * Hook to fetch platform settings by category.
+ */
+export const usePlatformSettings = (category: string) => {
     return useQuery({
-        queryKey: ['platformSettings', 'branding'],
+        queryKey: ['platformSettings', category],
         queryFn: async () => {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 150));
-            // In a real app:
-            // const doc = await databases.getDocument('platform_db', 'platform_settings', 'branding');
-            // return JSON.parse(doc.value);
-            return mockBrandingSettings;
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.SETTINGS,
+                    [Query.equal('key', category)]
+                );
+                
+                if (response.total > 0) {
+                    return JSON.parse(response.documents[0].value);
+                }
+                return null;
+            } catch (error) {
+                console.error(`Error fetching ${category} settings:`, error);
+                return null;
+            }
         },
-        staleTime: Infinity, // These settings rarely change, so we can cache them indefinitely.
+        staleTime: 1000 * 60 * 10, // 10 minutes
     });
 };
+
+/**
+ * Hook to update platform settings via Appwrite Function.
+ * This is a secure workaround for the server's failure to inject APPWRITE_FUNCTION_USER_ID.
+ */
+export const useUpdatePlatformSettings = () => {
+    const queryClient = useQueryClient();
+    const { user } = useAuth();
+
+    return useMutation({
+        mutationFn: async ({ category, settings }: { category: string, settings: any }) => {
+            if (!user) {
+                throw new Error("User is not authenticated.");
+            }
+            
+            // Encode data into query parameters
+            const settingsStr = encodeURIComponent(JSON.stringify(settings));
+            const path = `/?category=${category}&userId=${user.$id}&settings=${settingsStr}`;
+            
+            const response = await functions.createExecution(
+                'manage-settings',
+                undefined, // Pass undefined body to ensure GET method is used
+                false,
+                path,
+                'GET'
+            );
+
+            if (response.responseStatusCode >= 400) {
+                const errorData = JSON.parse(response.responseBody || '{}');
+                throw new Error(errorData.message || 'Failed to update settings via function.');
+            }
+
+            return JSON.parse(response.responseBody);
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['platformSettings', variables.category] });
+        }
+    });
+};
+

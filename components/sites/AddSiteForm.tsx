@@ -13,8 +13,8 @@ interface AddSiteFormProps {
 const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
   const [siteName, setSiteName] = useState('');
   const [siteUrl, setSiteUrl] = useState('');
-  const [wpUsername, setWpUsername] = useState('');
-  const [wpAppPassword, setWpAppPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   
   const addSiteMutation = useAddSite();
 
@@ -22,10 +22,9 @@ const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
     e.preventDefault();
     addSiteMutation.mutate({
       siteName,
-      siteUrl,
-      wpUsername,
-      // FIX: Changed property to snake_case to match the database schema and Site type.
-      wp_app_password: wpAppPassword,
+      siteUrl, // Pass siteUrl
+      username,
+      password,
     }, {
       onSuccess: () => {
         onSuccess();
@@ -50,12 +49,12 @@ const AddSiteForm: React.FC<AddSiteFormProps> = ({ onSuccess }) => {
         <Input id="siteUrl" type="url" placeholder="https://example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} required />
       </div>
        <div className="space-y-2">
-        <Label htmlFor="wpUsername">WordPress Username</Label>
-        <Input id="wpUsername" placeholder="admin" value={wpUsername} onChange={(e) => setWpUsername(e.target.value)} required />
+        <Label htmlFor="username">WordPress Username</Label>
+        <Input id="username" placeholder="admin" value={username} onChange={(e) => setUsername(e.target.value)} required />
       </div>
        <div className="space-y-2">
-        <Label htmlFor="wpAppPassword">Application Password</Label>
-        <Input id="wpAppPassword" type="password" placeholder="xxxx xxxx xxxx xxxx" value={wpAppPassword} onChange={(e) => setWpAppPassword(e.target.value)} required />
+        <Label htmlFor="password">Application Password</Label>
+        <Input id="password" type="password" placeholder="xxxx xxxx xxxx xxxx" value={password} onChange={(e) => setPassword(e.target.value)} required />
         <p className="text-xs text-muted-foreground">Create an Application Password in your WordPress admin under Users &gt; Profile.</p>
       </div>
 

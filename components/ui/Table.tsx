@@ -47,3 +47,5 @@ export {
   TableHead,
   TableCell,
 };
+
+export default Table;
