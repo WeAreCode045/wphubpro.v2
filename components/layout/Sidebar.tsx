@@ -1,9 +1,13 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Globe, Library, Gem, Settings, LifeBuoy } from 'lucide-react';
+import { LayoutDashboard, Globe, Library, Gem, Settings, LifeBuoy, LogOut, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import Button from '../ui/Button';
 
 const Sidebar: React.FC = () => {
+  const { user, logout } = useAuth();
+
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/sites', icon: Globe, label: 'Sites' },
@@ -42,9 +46,24 @@ const Sidebar: React.FC = () => {
           <NavItem key={item.to} {...item} />
         ))}
       </nav>
-      <div className="px-4 py-6 border-t border-border mt-auto">
-        <NavItem to="/settings" icon={Settings} label="Settings" />
-        <NavItem to="/support" icon={LifeBuoy} label="Support" />
+      <div className="px-4 py-6 border-t border-border mt-auto space-y-4">
+        <div className="flex items-center space-x-3 px-4">
+            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                <User className="w-5 h-5 text-muted-foreground" />
+            </div>
+          <div>
+            <p className="text-sm font-medium text-foreground truncate">{user?.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <NavItem to="/settings" icon={Settings} label="Settings" />
+          <NavItem to="/support" icon={LifeBuoy} label="Support" />
+        </div>
+         <Button variant="ghost" className="w-full justify-start px-4 text-muted-foreground hover:bg-accent" onClick={logout}>
+          <LogOut className="w-5 h-5 mr-3" />
+          Logout
+        </Button>
       </div>
     </aside>
   );

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, Bell, User, Menu } from 'lucide-react';
+import { Search, Bell, Menu } from 'lucide-react';
 import Button from '../ui/Button';
 
 const Header: React.FC = () => {
@@ -21,15 +21,6 @@ const Header: React.FC = () => {
         <Button variant="ghost" size="icon">
           <Bell className="w-5 h-5 text-muted-foreground" />
         </Button>
-        <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <User className="w-5 h-5 text-muted-foreground" />
-            </div>
-          <div className="hidden sm:block">
-            <p className="text-sm font-medium text-foreground">Admin User</p>
-            <p className="text-xs text-muted-foreground">admin@theplatform.com</p>
-          </div>
-        </div>
       </div>
     </header>
   );

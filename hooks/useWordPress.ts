@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
 import { WordPressPlugin, WordPressTheme } from '../types';
@@ -11,8 +10,10 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
   try {
     const result = await functions.createExecution(FUNCTION_ID, JSON.stringify(payload));
     
-    const responseBody = result.response;
-    const statusCode = result.statusCode;
+    // FIX: The Appwrite Execution model uses `responseBody`.
+    const responseBody = result.responseBody;
+    // FIX: The Appwrite Execution model uses `responseStatusCode`.
+    const statusCode = result.responseStatusCode;
 
     const data = JSON.parse(responseBody);
     

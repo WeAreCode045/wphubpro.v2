@@ -48,7 +48,8 @@ const LibraryGrid: React.FC = () => {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredItems.map(item => (
-                        <div key={item.id} className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between">
+                        // FIX: Changed item.id to item.$id to match the LibraryItem type from Appwrite.
+                        <div key={item.$id} className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between">
                             <div>
                                 <div className="flex justify-between items-start">
                                     <h3 className="font-semibold text-foreground pr-2">{item.name}</h3>

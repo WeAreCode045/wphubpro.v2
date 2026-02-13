@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLibraryItems } from './useLibrary';
 import { useSites } from './useSites';
-import { useUser } from './useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { databases } from '../services/appwrite';
 import { Query } from 'appwrite';
 import { Subscription } from '../types';
@@ -11,7 +11,7 @@ const DATABASE_ID = 'platform_db';
 const SUBSCRIPTIONS_COLLECTION_ID = 'subscriptions';
 
 export const useSubscription = () => {
-    const { data: user } = useUser();
+    const { user } = useAuth();
     return useQuery<Subscription | null, Error>({
         queryKey: ['subscription', user?.$id],
         queryFn: async () => {
@@ -43,7 +43,7 @@ export const useSubscription = () => {
 
 
 export const useUsage = () => {
-    const { data: user } = useUser();
+    const { user } = useAuth();
     const { data: libraryItems } = useLibraryItems();
     const { data: sites } = useSites();
 

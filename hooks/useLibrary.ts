@@ -1,18 +1,20 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { databases, functions, ID } from '../services/appwrite';
+// FIX: Import `storage` to handle file uploads correctly.
+import { databases, functions, ID, storage } from '../services/appwrite';
 import { Query } from 'appwrite';
 import { searchWpPlugins } from '../services/wordpress';
 import { LibraryItem, LibraryItemSource, LibraryItemType } from '../types';
 import { useToast } from '../contexts/ToastContext';
-import { useUser } from './useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 const DATABASE_ID = 'platform_db';
 const LIBRARY_COLLECTION_ID = 'library';
 const ZIP_PARSER_FUNCTION_ID = 'zip-parser';
+// FIX: Define a bucket ID for library uploads. This assumes an Appwrite Storage bucket with this ID exists.
+const LIBRARY_UPLOADS_BUCKET_ID = 'library';
 
 export const useLibraryItems = () => {
-  const { data: user } = useUser();
+  const { user } = useAuth();
   return useQuery<LibraryItem[], Error>({
     queryKey: ['libraryItems', user?.$id],
     queryFn: async () => {
@@ -40,12 +42,12 @@ export const useSearchWpPlugins = (searchTerm: string) => {
 export const useAddOfficialPlugin = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: user } = useUser();
+  const { user } = useAuth();
 
   return useMutation<LibraryItem, Error, any>({
     mutationFn: async (plugin) => {
       if (!user) throw new Error("User not authenticated.");
-      const newLibraryItem: Omit<LibraryItem, 'id' | 'userId'> = {
+      const newLibraryItem = {
         name: plugin.name,
         type: LibraryItemType.Plugin,
         source: LibraryItemSource.Official,
@@ -60,12 +62,13 @@ export const useAddOfficialPlugin = () => {
         user_id: user.$id
       }
       
-      return await databases.createDocument(
+      const response = await databases.createDocument(
         DATABASE_ID, 
         LIBRARY_COLLECTION_ID, 
         ID.unique(), 
         doc
-      ) as unknown as LibraryItem;
+      );
+      return response as unknown as LibraryItem;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['libraryItems', user?.$id] });
@@ -90,32 +93,62 @@ export const useAddOfficialPlugin = () => {
 export const useUploadLocalItem = () => {
     const queryClient = useQueryClient();
     const { toast } = useToast();
-    const { data: user } = useUser();
+    const { user } = useAuth();
 
     return useMutation<{ success: boolean; message: string; item?: LibraryItem }, Error, { file: File, type: LibraryItemType }>({
         mutationFn: async ({ file, type }) => {
-            const execution = await functions.createExecution(
-                ZIP_PARSER_FUNCTION_ID,
-                JSON.stringify({ type }), // Body
-                false, // isAsync
-                'POST', // Method
-                {}, // Headers
-                file // File
+            if (!user) {
+                throw new Error("User not authenticated.");
+            }
+
+            // FIX: Re-implemented file upload using Appwrite Storage, which is the standard
+            // way to handle files from the web SDK. This resolves the original type error on line 105
+            // by replacing the incorrect `createExecution` call.
+            // NOTE: This requires the 'zip-parser' function to be updated to accept a `fileId`
+            // and retrieve the file from Appwrite Storage instead of from `req.files`.
+
+            // Step 1: Upload file to Appwrite Storage
+            const fileResponse = await storage.createFile(
+                LIBRARY_UPLOADS_BUCKET_ID,
+                ID.unique(),
+                file
             );
 
-            if (execution.statusCode >= 400) {
-                throw new Error(JSON.parse(execution.response).message || 'Failed to process file.');
+            // Step 2: Call the function with the file ID and necessary metadata
+            const execution = await functions.createExecution(
+                ZIP_PARSER_FUNCTION_ID,
+                JSON.stringify({ 
+                    type, 
+                    fileId: fileResponse.$id, 
+                    bucketId: LIBRARY_UPLOADS_BUCKET_ID,
+                    fileName: file.name
+                }),
+                false // isAsync
+            );
+
+            if (execution.responseStatusCode >= 400) {
+                const errorBody = JSON.parse(execution.responseBody);
+                throw new Error(errorBody.message || 'Failed to process file.');
             }
-            return JSON.parse(execution.response);
+            
+            return JSON.parse(execution.responseBody);
         },
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['libraryItems', user?.$id] });
-            queryClient.invalidateQueries({ queryKey: ['usage', user?.$id]});
-            toast({
-                title: 'Upload Successful',
-                description: `${data.item?.name} has been added to your library.`,
-                variant: 'success'
-            });
+            if (data.success) {
+                queryClient.invalidateQueries({ queryKey: ['libraryItems', user?.$id] });
+                queryClient.invalidateQueries({ queryKey: ['usage', user?.$id]});
+                toast({
+                    title: 'Upload Successful',
+                    description: `${data.item?.name} has been added to your library.`,
+                    variant: 'success'
+                });
+            } else {
+                 toast({
+                    title: 'Upload Processing Failed',
+                    description: data.message,
+                    variant: 'destructive'
+                });
+            }
         },
         onError: (error) => {
             toast({

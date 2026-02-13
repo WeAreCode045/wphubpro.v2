@@ -1,4 +1,3 @@
-
 import { functions } from './appwrite';
 
 const STRIPE_PORTAL_FUNCTION_ID = 'stripe-portal-link'; // Assumed function ID
@@ -15,11 +14,14 @@ export const redirectToBillingPortal = async () => {
       false
     );
     
-    if (result.statusCode >= 400) {
-        throw new Error(JSON.parse(result.response).message || 'Failed to create billing portal session.');
+    // FIX: The Appwrite Execution model uses `responseStatusCode`.
+    if (result.responseStatusCode >= 400) {
+        // FIX: The Appwrite Execution model uses `responseBody`.
+        throw new Error(JSON.parse(result.responseBody).message || 'Failed to create billing portal session.');
     }
     
-    const { url } = JSON.parse(result.response);
+    // FIX: The Appwrite Execution model uses `responseBody`.
+    const { url } = JSON.parse(result.responseBody);
     if (url) {
       window.location.href = url;
     } else {
