@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { account, ID, functions, databases, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
-import { AppwriteException, Models, Query } from 'appwrite';
+import { account, ID, functions } from '../services/appwrite';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -30,7 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         ) || false;
         setUser({ ...currentUser, isAdmin: adminStatus });
         setIsAdmin(adminStatus);
-      } catch (error) {
+      } catch {
         setUser(null);
         setIsAdmin(false);
       } finally {

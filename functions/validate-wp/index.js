@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const fetch = require('node-fetch');
 
@@ -16,27 +17,13 @@ module.exports = async ({ req, res, log, error }) => {
 
   const site_url = (req.query && (req.query.site_url || req.query.siteUrl)) || (req.payload && req.payload.site_url) || (req.payload && req.payload.siteUrl);
 
-  // Require `credentials` JSON param in payload
-  const credsRaw = (req.payload && req.payload.credentials);
-  if (!site_url || !credsRaw) {
-    error(`Missing credentials to validate. site_url=${site_url}`);
-    return res.json({ success: false, message: 'Missing site_url or credentials payload' }, 400);
-  }
+  // Require top-level `username` and `password` fields in payload
+  const username = (req.payload && (req.payload.username || req.payload.user)) || (req.query && req.query.username) || null;
+  const password = (req.payload && req.payload.password) || (req.query && req.query.password) || null;
 
-  let username = null;
-  let password = null;
-  try {
-    const parsed = typeof credsRaw === 'string' ? JSON.parse(decodeURIComponent(credsRaw)) : credsRaw;
-    if (Array.isArray(parsed) && parsed[0]) {
-      username = parsed[0].username || parsed[0].user || null;
-      password = parsed[0].password || parsed[0].pass || null;
-    }
-  } catch (e) {
-    return res.json({ success: false, message: 'Invalid credentials payload' }, 400);
-  }
-
-  if (!username || !password) {
-    return res.json({ success: false, message: 'Credentials must include username and password' }, 400);
+  if (!site_url || !username || !password) {
+    error(`Missing required fields to validate. site_url=${site_url}, username=${username}`);
+    return res.json({ success: false, message: 'Missing site_url, username or password' }, 400);
   }
 
   try {

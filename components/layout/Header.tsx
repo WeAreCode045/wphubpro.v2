@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, Bell, Menu, LogOut, User } from 'lucide-react';
+import { Search, Bell, Menu, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';

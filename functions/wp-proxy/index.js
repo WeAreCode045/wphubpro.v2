@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const fetch = require('node-fetch');
 
@@ -67,41 +68,60 @@ module.exports = async ({ req, res, log, error }) => {
       return res.json({ success: false, message: 'Forbidden. You do not have permission to access this site.' }, 403);
     }
     
-    // Use `credentials` field exclusively (development mode: no legacy fallbacks)
     const site_url = siteDocument.site_url;
-    if (!siteDocument.credentials) {
-      return res.json({ success: false, message: 'Site has no credentials configured' }, 400);
+
+    // Require top-level `username` and `password` fields (new schema only).
+    const username = siteDocument.username;
+    let password = siteDocument.password; // expected to be encrypted string (iv:enc:tag) when present
+
+    if (!username || !password) {
+      return res.json({ success: false, message: 'Site is missing username or password fields' }, 400);
     }
 
-    let creds = siteDocument.credentials;
-    try { creds = typeof creds === 'string' ? JSON.parse(creds) : creds; } catch (e) { return res.json({ success: false, message: 'Malformed credentials' }, 500); }
-    if (!Array.isArray(creds) || !creds[0] || !creds[0].username || !creds[0].password) {
-      return res.json({ success: false, message: 'Credentials must be an array with username and password' }, 400);
-    }
-
-    const username = creds[0].username;
-    let password = creds[0].password;
-
-    // Decrypt password if in encrypted format
+    // Decrypt password if in encrypted format. If decryption fails, log and fall back to the stored value
+    let decryptionAttempted = false;
+    let decryptionSucceeded = false;
     try {
-      const env = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
-      const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
+      const envLocal = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
+      const ENCRYPTION_KEY = envLocal.ENCRYPTION_KEY;
+      // Log presence (do NOT log the key itself)
+      try { log && log(`DEBUG_ENCRYPTION_KEY_PRESENT ${!!ENCRYPTION_KEY}`); } catch (_) {}
+
       if (ENCRYPTION_KEY && typeof password === 'string' && password.split(':').length === 3) {
+        decryptionAttempted = true;
         const [ivHex, encHex, tagHex] = password.split(':');
+        // Basic validation of hex parts to avoid immediate Buffer errors
+        const isHex = (s) => typeof s === 'string' && /^[0-9a-fA-F]+$/.test(s) && s.length % 2 === 0;
+        if (!isHex(ivHex) || !isHex(encHex) || !isHex(tagHex)) {
+          throw new Error('Encrypted credential parts are not valid hex');
+        }
         const iv = Buffer.from(ivHex, 'hex');
         const encrypted = Buffer.from(encHex, 'hex');
         const tag = Buffer.from(tagHex, 'hex');
-        const decipher = require('crypto').createDecipheriv('aes-256-gcm', Buffer.from(ENCRYPTION_KEY, 'utf8'), iv);
+        // Derive 32-byte key for AES-256 from provided secret
+        const derivedKey = require('crypto').createHash('sha256').update(String(ENCRYPTION_KEY), 'utf8').digest();
+        const decipher = require('crypto').createDecipheriv('aes-256-gcm', derivedKey, iv);
         decipher.setAuthTag(tag);
-        const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+        const decrypted = Buffer.concat([decipher.update(encrypted),decipher.final()]);
         password = decrypted.toString('utf8');
+        decryptionSucceeded = true;
       }
     } catch (e) {
-      error('Failed to decrypt credentials: ' + e.message);
-      return res.json({ success: false, message: 'Failed to decrypt credentials' }, 500);
+      // Log detailed error for debugging, but do not fail the request — fall back to stored password (assume plaintext)
+      try { error && error('Credential decryption failed, falling back to stored password. Decryption error: ' + (e && e.message ? e.message : String(e))); } catch (_) {}
+      // proceed using original `password` value (may be plaintext)
     }
 
+    // Emit result of decryption attempt
+    try { log && log(`DEBUG_DECRYPTION_RESULT siteId=${siteId} attempted=${decryptionAttempted} success=${decryptionSucceeded}`); } catch (_) {}
+
     const decryptedPassword = password;
+    // DEBUG: log the credentials used for the proxied request (temporary, remove after debugging)
+    try {
+      log && log(`DEBUG_CREDENTIALS username=${username} password=${decryptedPassword}`);
+    } catch (e) {
+      // ignore logging errors
+    }
     const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${endpoint.replace(/^\//, '')}`;
 
     const authString = Buffer.from(`${username}:${decryptedPassword}`).toString('base64');

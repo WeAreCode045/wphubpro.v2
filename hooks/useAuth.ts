@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { account } from '../services/appwrite';
-import { User } from '../types';
 
 /**
  * Hook om de huidige ingelogde gebruiker op te halen inclusief rollen/labels.
@@ -17,7 +16,7 @@ export const useUser = () => {
           ...user,
           isAdmin: user.labels?.includes('Admin') || false,
         } as any; 
-      } catch (error) {
+      } catch {
         // Als er geen actieve sessie is, geven we null terug
         return null;
       }

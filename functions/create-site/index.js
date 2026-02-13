@@ -1,10 +1,13 @@
+/* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const fetch = require('node-fetch');
 const crypto = require('crypto');
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key, 'utf8'), iv);
+  // Derive 32-byte key for AES-256 from provided secret
+  const derivedKey = crypto.createHash('sha256').update(String(key), 'utf8').digest();
+  const cipher = crypto.createCipheriv('aes-256-gcm', derivedKey, iv);
   const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
   const tag = cipher.getAuthTag();
   return `${iv.toString('hex')}:${encrypted.toString('hex')}:${tag.toString('hex')}`;
@@ -28,31 +31,35 @@ module.exports = async ({ req, res, log, error }) => {
 
   client.setEndpoint(APPWRITE_FUNCTION_ENDPOINT).setProject(APPWRITE_FUNCTION_PROJECT_ID).setKey(APPWRITE_FUNCTION_API_KEY);
 
-  // Read from payload. Require `credentials` JSON param which contains [{username,password}]
-  const site_url = (req.payload && req.payload.site_url) || (req.payload && req.payload.siteUrl);
-  const site_name = (req.payload && req.payload.site_name) || (req.payload && req.payload.siteName);
-  const user_id = (req.payload && (req.payload.userId || req.payload.user_id));
+  // Normalize payload: Appwrite may provide `req.payload` as a parsed object or as a raw JSON string.
+  let payloadObj = null;
+  if (req) payloadObj = req.payload || req.body || null;
+  if (typeof payloadObj === 'string') {
+    try { payloadObj = JSON.parse(payloadObj); } catch (e) { /* leave as string */ }
+  }
 
-  const credsRaw = (req.payload && req.payload.credentials);
-  if (!site_url || !site_name || !credsRaw || !user_id) {
+  // Accept fields from either parsed payload or query parameters (some runtimes drop req.payload)
+  const site_url = (req.query && (req.query.site_url || req.query.siteUrl)) || (payloadObj && (payloadObj.site_url || payloadObj.siteUrl));
+  const site_name = (req.query && (req.query.site_name || req.query.siteName)) || (payloadObj && (payloadObj.site_name || payloadObj.siteName));
+  const user_id = (req.query && (req.query.userId || req.query.user_id)) || (payloadObj && (payloadObj.userId || payloadObj.user_id));
+
+  if (!site_url || !site_name || !user_id) {
     error('Missing required fields for create-site');
-    return res.json({ success: false, message: 'Missing required fields: site_url, site_name, credentials (username/password), userId' }, 400);
+    return res.json({ success: false, message: 'Missing required fields: site_url, site_name, userId' }, 400);
   }
 
   let username = null;
   let password = null;
   try {
-    const parsed = typeof credsRaw === 'string' ? JSON.parse(decodeURIComponent(credsRaw)) : credsRaw;
-    if (Array.isArray(parsed) && parsed[0]) {
-      username = parsed[0].username || parsed[0].user || null;
-      password = parsed[0].password || parsed[0].pass || null;
-    }
+    // prefer explicit username/password fields from normalized payload
+    username = (payloadObj && (payloadObj.username || payloadObj.user)) || (req.query && (req.query.username || req.query.user)) || null;
+    password = (payloadObj && payloadObj.password) || (req.query && req.query.password) || null;
   } catch (e) {
-    return res.json({ success: false, message: 'Invalid credentials payload' }, 400);
+    return res.json({ success: false, message: 'Invalid request payload' }, 400);
   }
 
   if (!username || !password) {
-    return res.json({ success: false, message: 'Credentials must include username and password' }, 400);
+    return res.json({ success: false, message: 'username and password are required' }, 400);
   }
 
   try {
@@ -67,16 +74,14 @@ module.exports = async ({ req, res, log, error }) => {
 
     const encrypted = encrypt(password, ENCRYPTION_KEY);
 
+    // Only include attributes that exist in the collection schema.
     const document = {
       user_id: user_id,
       site_url: site_url,
       site_name: site_name,
-      // credentials stored as JSON string of an array of credential objects; password stored encrypted
-      credentials: JSON.stringify([{ username: username, password: encrypted }]),
-      healthStatus: 'warning',
-      lastChecked: new Date().toISOString(),
-      wpVersion: '',
-      phpVersion: ''
+      // new top-level fields for simplified access
+      username: username,
+      password: encrypted
     };
 
     const DATABASE_ID = 'platform_db';

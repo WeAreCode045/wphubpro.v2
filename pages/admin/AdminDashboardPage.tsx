@@ -2,12 +2,8 @@ import React from 'react';
 import { 
   Users, 
   CreditCard, 
-  Package, 
-  TrendingUp, 
   Activity, 
   DollarSign,
-  ArrowUpRight,
-  ArrowDownRight
 } from 'lucide-react';
 import StatCard from '../../components/dashboard/StatCard';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';

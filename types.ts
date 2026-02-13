@@ -19,9 +19,11 @@ export interface Site {
   userId: string;
   siteUrl: string;
   siteName: string;
-  // New: credentials JSON string containing an array of { username, password }
-  credentials?: string;
-  // No legacy WP fields; use `credentials` for username/password storage
+  // New top-level fields (optional): `username` is the WP application username.
+  // `password` when present is stored encrypted (server-side) and should not be exposed to clients in plaintext.
+  username?: string;
+  password?: string;
+  // No legacy WP credential field; use top-level `username` and `password` fields
   healthStatus: 'good' | 'warning' | 'error';
   lastChecked: string;
   wpVersion: string;

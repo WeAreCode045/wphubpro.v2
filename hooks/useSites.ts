@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { databases, ID, functions } from '../services/appwrite';
+import { databases, functions } from '../services/appwrite';
 import { Query } from 'appwrite';
 import { Site } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -74,12 +74,13 @@ export const useAddSite = () => {
                         const payload = {
                             site_url: newSiteData.siteUrl,
                             site_name: newSiteData.siteName,
-                            credentials: [{ username: newSiteData.username, password: newSiteData.password || '' }],
+                            username: newSiteData.username,
+                            password: newSiteData.password || '',
                             userId: user.$id,
                         };
 
                         const path = `/?userId=${user.$id}`;
-                        const exec = await functions.createExecution('create-site', JSON.stringify(payload), false, path, 'POST');
+                        const exec = await functions.createExecution('create-site', JSON.stringify(payload), false, path);
                         const status = exec.responseStatusCode || 0;
                         const body = exec.responseBody || '';
                         let parsed: any = null;
@@ -140,28 +141,26 @@ export const useUpdateSite = () => {
                 mutationFn: async ({ siteId, updates }) => {
                         if (!user) throw new Error('User not authenticated.');
 
-                        // If updates do not include credentials, perform a direct DB update using the Appwrite SDK.
+                        // If updates do not include username/password, perform a direct DB update using the Appwrite SDK.
                         // This avoids calling the server function for plain metadata changes.
-                        if (!updates || !updates.credentials) {
-                            const updated = await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, updates);
-                            return updated;
-                        }
+                const needsServerProcessing = !!(updates && (updates.password || updates.username));
+                if (!needsServerProcessing) {
+                    return await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, updates);
+                }
 
-                        // Updates include credentials: call server function to handle encryption.
-                        const qs = new URLSearchParams();
-                        qs.set('siteId', siteId);
-                        qs.set('userId', user.$id);
-                        qs.set('updates', encodeURIComponent(JSON.stringify(updates)));
-                        const path = `/?${qs.toString()}`;
-                        const exec = await functions.createExecution('update-site', undefined, false, path, 'GET');
-                        const body = exec.responseBody || '';
-                        let parsed = null;
-                        try { parsed = body ? JSON.parse(body) : null; } catch { parsed = body; }
-                        if (exec.responseStatusCode >= 400) {
-                            const msg = (parsed && parsed.message) ? parsed.message : 'Failed to update site';
-                            throw new Error(msg);
-                        }
-                        return parsed;
+                // For password/username updates, call the server function synchronously so it can encrypt/manage passwords.
+                const payload = { siteId, updates, userId: user.$id };
+                const path = `/?userId=${user.$id}`;
+                const exec = await functions.createExecution('update-site', JSON.stringify(payload), false, path);
+                const status = exec.responseStatusCode || 0;
+                const body = exec.responseBody || '';
+                let parsed: any = null;
+                try { parsed = body ? JSON.parse(body) : null; } catch { parsed = body; }
+                if (status >= 400) {
+                    const msg = (parsed && parsed.message) ? parsed.message : (typeof parsed === 'string' ? parsed : 'Failed to update site');
+                    throw new Error(msg);
+                }
+                return (parsed && parsed.document) ? parsed.document : parsed;
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });

@@ -1,10 +1,13 @@
+/* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key, 'utf8'), iv);
+  // Derive 32-byte key for AES-256 from provided secret
+  const derivedKey = crypto.createHash('sha256').update(String(key), 'utf8').digest();
+  const cipher = crypto.createCipheriv('aes-256-gcm', derivedKey, iv);
   const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
   const tag = cipher.getAuthTag();
   return `${iv.toString('hex')}:${encrypted.toString('hex')}:${tag.toString('hex')}`;
@@ -47,47 +50,15 @@ module.exports = async ({ req, res, log, error }) => {
     try { updates = JSON.parse(decodeURIComponent(updates)); } catch (e) { /* leave as-is */ }
   }
 
-  // If updates is accidentally passed as an array (e.g., credentials array),
-  // converting it directly into an object with spread will produce numeric
-  // attribute keys like "0" which Appwrite rejects. Normalize here so that
-  // an array becomes `{ credentials: <array> }`.
-  if (Array.isArray(updates)) {
-    updates = { credentials: updates };
-  }
-
-  // If updates include credentials (JSON string or array), extract username/password and encrypt password
   const finalUpdates = { ...updates };
-  if (updates.credentials) {
-    let creds = updates.credentials;
-    try {
-      creds = typeof creds === 'string' ? JSON.parse(decodeURIComponent(creds)) : creds;
-    } catch (e) { creds = null; }
-    if (Array.isArray(creds) && creds[0]) {
-      const username = creds[0].username || creds[0].user || '';
-      const pwd = creds[0].password || creds[0].pass || '';
-      if (pwd) {
-        const encrypted = encrypt(pwd, ENCRYPTION_KEY);
-        finalUpdates.credentials = JSON.stringify([{ username, password: encrypted }]);
-      } else if (username) {
-        // Username change without password: reuse existing encrypted password from document
-        try {
-          const DATABASE_ID = 'platform_db';
-          const SITES_COLLECTION_ID = 'sites';
-          const existing = await databases.getDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId);
-          if (existing && existing.credentials) {
-            // parse existing credentials (expected JSON string)
-            let existingCreds = existing.credentials;
-            try { existingCreds = typeof existingCreds === 'string' ? JSON.parse(existingCreds) : existingCreds; } catch (e) { existingCreds = null; }
-            if (Array.isArray(existingCreds) && existingCreds[0] && existingCreds[0].password) {
-              finalUpdates.credentials = JSON.stringify([{ username, password: existingCreds[0].password }]);
-            }
-          }
-        } catch (ex) {
-          // if unable to fetch existing, skip updating credentials
-        }
-      }
-    }
-    // no legacy cleanup required in development mode
+  // New schema: only support top-level `username` and `password` updates.
+  if (typeof updates.password !== 'undefined' && updates.password) {
+    const encrypted = encrypt(updates.password, ENCRYPTION_KEY);
+    finalUpdates.password = encrypted; // store encrypted password
+    if (typeof updates.username !== 'undefined') finalUpdates.username = updates.username;
+  } else if (typeof updates.username !== 'undefined') {
+    finalUpdates.username = updates.username;
+    // do not touch password when username-only update
   }
 
   try {

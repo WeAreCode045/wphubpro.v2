@@ -27,20 +27,17 @@ const SiteDetailPage: React.FC = () => {
 
   const OverviewContent = () => {
     // Site fields may come in camelCase or snake_case depending on how documents were created.
-    const get = (k: string) => (site as any)[k] ?? '';
+    const get = (...ks: string[]) => {
+      for (const k of ks) {
+        const v = (site as any)[k];
+        if (v !== undefined && v !== null) return v;
+      }
+      return '';
+    };
     const name = get('siteName') || get('site_name');
     const url = get('siteUrl') || get('site_url');
-    // Prefer `credentials` (JSON string)
-    let wpUser = '';
-    try {
-      const credStr = (site as any).credentials;
-      if (credStr) {
-        const parsed = typeof credStr === 'string' ? JSON.parse(credStr) : credStr;
-        if (Array.isArray(parsed) && parsed[0] && parsed[0].username) wpUser = parsed[0].username;
-      }
-    } catch (_) {
-      // ignore parse errors
-    }
+    // Use top-level username field only
+    const wpUser = (site as any).username || '';
     const health = get('healthStatus', 'health_status') || 'unknown';
     const lastChecked = get('lastChecked', 'last_checked');
     const wpVersion = get('wpVersion', 'wp_version');
@@ -82,17 +79,9 @@ const SiteDetailPage: React.FC = () => {
       setForm({
         site_name: (site as any).siteName || (site as any).site_name || '',
         site_url: (site as any).siteUrl || (site as any).site_url || '',
-        // Do NOT populate the password field from stored credentials (server-only encrypted). Show username but leave password empty for edits.
-        username: (() => {
-          try {
-            const credStr = (site as any).credentials;
-            if (credStr) {
-              const parsed = typeof credStr === 'string' ? JSON.parse(credStr) : credStr;
-              if (Array.isArray(parsed) && parsed[0] && parsed[0].username) return parsed[0].username;
-            }
-          } catch (_) {}
-          return '';
-        })(),
+        // Do NOT populate the password field from stored credentials (server-only encrypted).
+        // Use top-level `username` field on document (no legacy fallback).
+        username: (site as any).username || '',
         password: '',
       });
     }
@@ -108,13 +97,9 @@ const SiteDetailPage: React.FC = () => {
         site_name: form.site_name,
         site_url: form.site_url,
       };
-      // If password provided, send credentials with username+password; if only username changed, send credentials with username only.
-      if (form.password) {
-        updates.credentials = JSON.stringify([{ username: form.username, password: form.password }]);
-      } else {
-        // include username in credentials so server can update username while preserving password
-        updates.credentials = JSON.stringify([{ username: form.username }]);
-      }
+      // Use separate username/password fields. If password provided include it; otherwise include username only.
+      if (form.username) updates.username = form.username;
+      if (form.password) updates.password = form.password;
       await updateSite.mutateAsync({ siteId: site.$id, updates });
       closeEditor();
     } catch (e: any) {

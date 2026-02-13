@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useLibraryItems } from '../../hooks/useLibrary';
-import { LibraryItem, LibraryItemType } from '../../types';
 import { Loader2, Package, Brush, PlusCircle } from 'lucide-react';
 import Button from '../ui/Button';
 

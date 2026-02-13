@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { databases, functions, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
-import { ID, Query } from 'appwrite';
+import { Query } from 'appwrite';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -44,16 +44,9 @@ export const useUpdatePlatformSettings = () => {
                 throw new Error("User is not authenticated.");
             }
             
-            // Encode data into query parameters
-            const settingsStr = encodeURIComponent(JSON.stringify(settings));
-            const path = `/?category=${category}&userId=${user.$id}&settings=${settingsStr}`;
-            
             const response = await functions.createExecution(
                 'manage-settings',
-                undefined, // Pass undefined body to ensure GET method is used
-                false,
-                path,
-                'GET'
+                JSON.stringify({ category, settings, userId: user.$id })
             );
 
             if (response.responseStatusCode >= 400) {

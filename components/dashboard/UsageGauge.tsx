@@ -5,10 +5,10 @@ interface UsageGaugeProps {
   label: string;
   used: number;
   limit: number;
-  unit: string;
+  unit?: string;
 }
 
-const UsageGauge: React.FC<UsageGaugeProps> = ({ label, used, limit, unit }) => {
+const UsageGauge: React.FC<UsageGaugeProps> = ({ label, used, limit, unit: _unit }) => {
   const percentage = limit > 0 ? (used / limit) * 100 : 0;
   const radius = 52;
   const circumference = 2 * Math.PI * radius;

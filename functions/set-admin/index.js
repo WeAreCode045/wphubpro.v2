@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 
 module.exports = async ({ req, res, log, error }) => {

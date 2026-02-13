@@ -8,7 +8,7 @@ import {
   CreditCard,
   Filter
 } from 'lucide-react';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
+import Card, { CardHeader, CardContent } from '../../components/ui/Card';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';

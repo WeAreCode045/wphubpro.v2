@@ -2,24 +2,15 @@ import React, { useState } from 'react';
 import { 
   Plus, 
   Settings2, 
-  Tag, 
-  Database, 
-  MoreVertical,
   RefreshCw,
   ExternalLink,
-  ChevronDown,
   Info
 } from 'lucide-react';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
+import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Label from '../../components/ui/Label';
 import Modal from '../../components/ui/Modal';
-
-interface PlanMetadata {
-  key: string;
-  value: string;
-}
 
 const PlanManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

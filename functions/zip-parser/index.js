@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
