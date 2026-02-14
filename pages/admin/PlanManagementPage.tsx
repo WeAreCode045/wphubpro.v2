@@ -18,15 +18,39 @@ import Modal from '../../components/ui/Modal';
 
 const PlanManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const waitForExecutionResponse = async (executionId: string, functionId: string) => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const execution = await functions.getExecution(functionId, executionId);
+      const body = execution.responseBody;
+      if (body && typeof body === 'string' && body.trim() !== '') {
+        return execution;
+      }
+      if (execution.status === 'completed' || execution.status === 'failed') {
+        return execution;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+    return null;
+  };
   
   const { data: plans = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ['plans'],
     queryFn: async () => {
       try {
-        const result = await functions.createExecution('stripe-list-products');
-        const body = result.responseBody;
+        const functionId = 'stripe-list-products';
+        const result = await functions.createExecution(functionId, '', false);
+        let finalResult = result;
+        let body = result.responseBody;
         if (!body || typeof body !== 'string' || body.trim() === '') {
-          throw new Error('No response from server.');
+          const execution = await waitForExecutionResponse(result.$id, functionId);
+          if (execution) {
+            finalResult = execution;
+            body = execution.responseBody;
+          }
+        }
+        if (!body || typeof body !== 'string' || body.trim() === '') {
+          throw new Error(`No response from server. Status: ${finalResult.responseStatusCode || 'n/a'}.`);
         }
         let parsed;
         try {
@@ -34,7 +58,7 @@ const PlanManagementPage: React.FC = () => {
         } catch {
           throw new Error('Invalid JSON response from server.');
         }
-        if (result.responseStatusCode >= 400) {
+        if (finalResult.responseStatusCode >= 400) {
           throw new Error(parsed?.message || 'Failed to fetch plans.');
         }
         return parsed.plans || [];
