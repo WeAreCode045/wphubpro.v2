@@ -193,9 +193,23 @@ class WPHub_Pro_Bridge {
 
         do_action('wphub_plugin_action_pre', $action, $plugin, $slug, $req_data);
 
-        if (in_array($action, ['activate', 'deactivate', 'delete', 'update']) && (empty($plugin) || strpos($plugin, '/') === false)) {
-            $this->log_action($site_url, $action, $endpoint, $req_data, 'Invalid or missing plugin param');
-            return new WP_Error('invalid_plugin', 'Invalid or missing plugin param: expected plugin file path (e.g. akismet/akismet.php)');
+        // Accept either plugin file or slug for activate/deactivate
+        if (in_array($action, ['activate', 'deactivate'])) {
+            if (empty($plugin) && !empty($slug)) {
+                // Try to find plugin file by slug
+                if (!function_exists('get_plugins')) require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                $all_plugins = get_plugins();
+                foreach ($all_plugins as $file => $data) {
+                    if (strpos($file, $slug) !== false) {
+                        $plugin = $file;
+                        break;
+                    }
+                }
+            }
+            if (empty($plugin) || strpos($plugin, '/') === false) {
+                $this->log_action($site_url, $action, $endpoint, $req_data, 'Invalid or missing plugin param');
+                return new WP_Error('invalid_plugin', 'Invalid or missing plugin param: expected plugin file path (e.g. akismet/akismet.php)');
+            }
         }
 
         switch ($action) {
@@ -208,10 +222,38 @@ class WPHub_Pro_Bridge {
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return true;
             case 'delete':
+                if (empty($plugin) && !empty($slug)) {
+                    if (!function_exists('get_plugins')) require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                    $all_plugins = get_plugins();
+                    foreach ($all_plugins as $file => $data) {
+                        if (strpos($file, $slug) !== false) {
+                            $plugin = $file;
+                            break;
+                        }
+                    }
+                }
+                if (empty($plugin) || strpos($plugin, '/') === false) {
+                    $this->log_action($site_url, $action, $endpoint, $req_data, 'Invalid or missing plugin param');
+                    return new WP_Error('invalid_plugin', 'Invalid or missing plugin param: expected plugin file path (e.g. akismet/akismet.php)');
+                }
                 $resp = apply_filters('wphub_plugin_delete', $this->delete_plugin_file($plugin), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             case 'update':
+                if (empty($plugin) && !empty($slug)) {
+                    if (!function_exists('get_plugins')) require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                    $all_plugins = get_plugins();
+                    foreach ($all_plugins as $file => $data) {
+                        if (strpos($file, $slug) !== false) {
+                            $plugin = $file;
+                            break;
+                        }
+                    }
+                }
+                if (empty($plugin) || strpos($plugin, '/') === false) {
+                    $this->log_action($site_url, $action, $endpoint, $req_data, 'Invalid or missing plugin param');
+                    return new WP_Error('invalid_plugin', 'Invalid or missing plugin param: expected plugin file path (e.g. akismet/akismet.php)');
+                }
                 $resp = apply_filters('wphub_plugin_update', $this->update_plugin_file($plugin), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
