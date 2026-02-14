@@ -11,26 +11,38 @@ const ConnectSuccess: React.FC = () => {
   const processedRef = useRef(false);
 
   useEffect(() => {
-    // Instead of processing and redirecting here, forward to the dedicated callback route
-    if (processedRef.current) return;
-    processedRef.current = true;
+    if (processedRef.current || isLoading || !sites) return;
 
-    const qs = searchParams.toString();
-    // Preserve the query string when navigating to the callback page
-    navigate(`/connect/callback${qs ? `?${qs}` : ''}`);
+    const siteUrlParam = searchParams.get('site_url');
+    const userLogin = searchParams.get('user_login');
+    const apiKey = searchParams.get('api_key');
+
+    if (siteUrlParam && apiKey) {
+      const normalize = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+      const targetUrl = normalize(siteUrlParam);
+      const matchingSite = sites.find(s => normalize(s.siteUrl) === targetUrl);
+
+      if (matchingSite) {
+        processedRef.current = true;
+        
+        // Sla de API Key op in het password-veld (de Cloud functie versleutelt dit automatisch)
+        updateSite({
+          siteId: matchingSite.$id,
+          username: userLogin || 'admin',
+          password: apiKey,
+        });
+
+        setTimeout(() => navigate('/dashboard'), 3000);
+      }
+    }
   }, [searchParams, sites, isLoading, updateSite, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-secondary">
       <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-      <h1 className="text-2xl font-bold text-foreground mb-2">Connectie Geslaagd</h1>
-      <p className="text-muted-foreground mb-8">
-        De site is succesvol gekoppeld. Gegevens worden veilig opgeslagen...
-      </p>
-      <div className="flex items-center gap-2 text-primary">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="text-sm">Bezig met verwerken...</span>
-      </div>
+      <h1 className="text-2xl font-bold">Bridge Verbinding Voltooid</h1>
+      <p className="text-muted-foreground">Uw site is nu beveiligd gekoppeld via de Bridge plugin.</p>
+      <Loader2 className="w-6 h-6 animate-spin mt-4 text-primary" />
     </div>
   );
 };
