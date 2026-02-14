@@ -142,6 +142,7 @@ class WPHub_Pro_Bridge {
     }
 
     public function manage_theme($request) {
+            error_log('[WPHub Bridge] manage_theme called: action=' . print_r($request->get_param('action'), true) . ' slug=' . print_r($request->get_param('slug'), true));
         require_once ABSPATH . 'wp-admin/includes/theme.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
