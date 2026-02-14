@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { usePlugins, useTogglePlugin } from '../../hooks/useWordPress';
+import { useSite } from '../../hooks/useSites';
 import { WordPressPlugin } from '../../types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
@@ -12,6 +13,7 @@ interface PluginsTabProps {
 
 const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
   const { data: plugins, isLoading, isError, error, refetch } = usePlugins(siteId);
+  const { data: site } = useSite(siteId);
   const togglePluginMutation = useTogglePlugin(siteId);
 
   const handleToggle = (plugin: WordPressPlugin) => {
@@ -35,6 +37,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
     const message = error?.message || String(error);
     return (
       <div className="p-4 rounded-md border border-border bg-card">
+        <div className="mb-2 text-sm text-muted-foreground">API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wp/v2/plugins` : 'unknown'}</div>
         <div className="flex items-start gap-3">
           <AlertCircle className="w-6 h-6 text-destructive mt-1" />
           <div className="flex-1">
@@ -54,7 +57,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
               <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
               <Button variant="ghost" size="sm" onClick={() => {
                 // Copy a diagnostic curl command to clipboard for manual testing
-                const curl = `curl -u <username>:<password> "https://<site_url>/wp-json/wp/v2/plugins"`;
+                const curl = `curl -H "X-WPHub-Key: <api_key>" "${site ? String(site.siteUrl).replace(/\/$/, '') : 'https://<site_url>'}/wp-json/wp/v2/plugins"`;
                 try { navigator.clipboard.writeText(curl); } catch { void 0; }
               }}>Copy test command</Button>
             </div>
@@ -71,6 +74,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
 
   return (
     <div className="rounded-lg border border-border bg-card">
+      <div className="p-4 border-b border-border text-sm text-muted-foreground">API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wp/v2/plugins` : 'unknown'}</div>
       <Table>
         <TableHeader>
           <TableRow>

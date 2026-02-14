@@ -28,6 +28,8 @@ const ConnectSuccess: React.FC = () => {
         username: userLogin || 'admin',
         api_key: apiKey,
         site_url: siteUrlParam,
+        // For testing convenience store API key plaintext (server accepts this flag)
+        _disable_encryption: true,
       };
 
       if (matchingSite) payload.siteId = matchingSite.$id;
