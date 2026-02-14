@@ -1,1 +1,3 @@
-/connect-callback  /#/dashboard/connect-success  302!
+
+/connect-callback  /connect-success  302!
+/connect-success  /connect-success  200
