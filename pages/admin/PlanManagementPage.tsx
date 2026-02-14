@@ -31,7 +31,7 @@ const PlanManagementPage: React.FC = () => {
         let parsed;
         try {
           parsed = JSON.parse(body);
-        } catch (e) {
+        } catch {
           throw new Error('Invalid JSON response from server.');
         }
         if (result.responseStatusCode >= 400) {
