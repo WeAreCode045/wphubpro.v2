@@ -8,6 +8,7 @@ import Card, { CardContent } from '../components/ui/Card';
 import Tabs from '../components/ui/Tabs';
 import PluginsTab from './site-detail/PluginsTab';
 import ThemesTab from './site-detail/ThemesTab';
+import ActionLogTab from './site-detail/ActionLogTab';
 
 const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -91,6 +92,7 @@ const SiteDetailPage: React.FC = () => {
               <Tabs.Trigger value="plugins">Plugins</Tabs.Trigger>
               <Tabs.Trigger value="themes">Themes</Tabs.Trigger>
             </Tabs.List>
+            <Tabs.Trigger value="actionlog">Action Log</Tabs.Trigger>
 
             <Tabs.Content value="overview">
               <div className="space-y-4">
@@ -123,6 +125,9 @@ const SiteDetailPage: React.FC = () => {
 
             <Tabs.Content value="themes">
               <ThemesTab siteId={site.$id} />
+            </Tabs.Content>
+            <Tabs.Content value="actionlog">
+              <ActionLogTab siteId={site.$id} />
             </Tabs.Content>
           </Tabs>
         </CardContent>
