@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useThemes, useManageTheme } from '../../hooks/useWordPress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -11,7 +10,6 @@ interface ThemesTabProps {
 
 const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
   const { data: themes, isLoading, isError, error } = useThemes(siteId);
-
   const manageTheme = useManageTheme(siteId);
 
   const handleActivate = (theme: any) => {
@@ -22,6 +20,10 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
         themeName: theme.name,
       });
     }
+  };
+
+  const handleAction = (_theme: any, _action: string) => {
+    // Implement theme action logic here (update/delete)
   };
 
   if (isLoading) {
@@ -42,7 +44,6 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
           <div className="flex-1">
             <p className="font-semibold">Error loading themes</p>
             <p className="text-sm text-muted-foreground mt-1">{error?.message}</p>
-
             <div className="mt-3 text-sm space-y-2">
               <p><strong>Wat te controleren</strong></p>
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
@@ -51,15 +52,13 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
                 <li>Zorg dat de gebruiker met de opgeslagen credentials voldoende rechten heeft om themes te zien (Administrator).</li>
               </ul>
             </div>
-
             <div className="mt-4 flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => window.location.reload()}>Retry</Button>
               <Button variant="ghost" size="sm" onClick={() => {
-                const curl = `curl -H \"X-WPHub-Key: <api_key>\" \"<site_url>/wp-json/wphub/v1/themes\"`;
+                const curl = `curl -H 'X-WPHub-Key: <api_key>' '<site_url>/wp-json/wphub/v1/themes'`;
                 try { navigator.clipboard.writeText(curl); } catch { void 0; }
               }}>Copy test command</Button>
             </div>
-
             <details className="mt-3 text-xs text-muted-foreground">
               <summary className="cursor-pointer">Fout details</summary>
               <pre className="whitespace-pre-wrap mt-2 text-xs">{error?.message}</pre>
@@ -87,37 +86,37 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
             <TableRow key={theme.name}>
               <TableCell className="font-medium">{theme.name}</TableCell>
               <TableCell>
-                 <div className="flex items-center">
+                <div className="flex items-center">
                   <span className={`w-2.5 h-2.5 rounded-full mr-2 ${theme.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                   <span className="capitalize">{theme.status}</span>
                 </div>
               </TableCell>
               <TableCell>{theme.version}</TableCell>
               <TableCell className="text-right space-x-2">
-                 <Button
-                   size="sm"
-                   variant="default"
-                   disabled={manageTheme.isPending || theme.status === 'active'}
-                   onClick={() => handleActivate(theme)}
-                 >
-                   {theme.status === 'active' ? 'Active' : 'Activate'}
-                 </Button>
-                 <Button
-                   size="sm"
-                   variant="secondary"
-                   disabled={manageTheme.isPending}
-                   onClick={() => handleAction(theme, 'update')}
-                 >
-                   Update
-                 </Button>
-                 <Button
-                   size="sm"
-                   variant="destructive"
-                   disabled={manageTheme.isPending}
-                   onClick={() => handleAction(theme, 'delete')}
-                 >
-                   Delete
-                 </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  disabled={manageTheme.isPending || theme.status === 'active'}
+                  onClick={() => handleActivate(theme)}
+                >
+                  {theme.status === 'active' ? 'Active' : 'Activate'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={manageTheme.isPending}
+                  onClick={() => handleAction(theme, 'update')}
+                >
+                  Update
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={manageTheme.isPending}
+                  onClick={() => handleAction(theme, 'delete')}
+                >
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}

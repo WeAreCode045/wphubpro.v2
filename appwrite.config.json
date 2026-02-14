@@ -115,6 +115,102 @@
             "specification": "s-0.5vcpu-512mb"
         },
         {
+            "$id": "stripe-list-payment-intents",
+            "name": "stripe-list-payment-intents",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-payment-intents",
+            "entrypoint": "index.js",
+            "execute": [
+                "label:Admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "variables": {
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-list-products",
+            "name": "stripe-list-products",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-products",
+            "entrypoint": "index.js",
+            "execute": [
+                "label:Admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "variables": {
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-list-invoices",
+            "name": "stripe-list-invoices",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-invoices",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "documents.read"
+            ],
+            "variables": {
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-portal-link",
+            "name": "stripe-portal-link",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-portal-link",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "documents.read"
+            ],
+            "variables": {
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
+            },
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
             "$id": "zip-parser",
             "name": "zip-parser",
             "runtime": "node-18.0",
@@ -401,6 +497,28 @@
                 "log.write"
             ],
             "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-webhook",
+            "name": "stripe-webhook",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-webhook",
+            "entrypoint": "index.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "variables": {
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "STRIPE_WEBHOOK_SECRET": "YOUR_STRIPE_WEBHOOK_SECRET"
+            },
+            "specification": "s-0.5vcpu-512mb"
         }
     ],
     "sites": [

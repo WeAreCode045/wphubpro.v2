@@ -1,7 +1,12 @@
 /**
  * All of the JS for your frontend-specific functionality should be
  * included in this file.
+/**
+ * All of the JS for your frontend-specific functionality should be
+ * included in this file.
  */
-jQuery(function ($) {
-    // Write you code here.
+/* global jQuery */
+jQuery(function () {
+    // Write your code here.
 });
+}

@@ -57,7 +57,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
               <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
               <Button variant="ghost" size="sm" onClick={() => {
                 // Copy a diagnostic curl command to clipboard for manual testing
-                const curl = `curl -H \"X-WPHub-Key: <api_key>\" \"${site ? String(site.siteUrl).replace(/\/$/, '') : 'https://<site_url>'}/wp-json/wphub/v1/plugins\"`;
+                const curl = `curl -H 'X-WPHub-Key: <api_key>' '${site ? String(site.siteUrl).replace(/\/$/, '') : 'https://<site_url>'}/wp-json/wphub/v1/plugins'`;
                 try { navigator.clipboard.writeText(curl); } catch { void 0; }
               }}>Copy test command</Button>
             </div>
