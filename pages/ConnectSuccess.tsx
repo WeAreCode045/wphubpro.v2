@@ -22,18 +22,18 @@ const ConnectSuccess: React.FC = () => {
       const targetUrl = normalize(siteUrlParam);
       const matchingSite = sites.find(s => normalize(s.siteUrl) === targetUrl);
 
-      if (matchingSite) {
-        processedRef.current = true;
-        
-        // Sla de API Key op in het password-veld (de Cloud functie versleutelt dit automatisch)
-        updateSite({
-          siteId: matchingSite.$id,
-          username: userLogin || 'admin',
-          password: apiKey,
-        });
+      processedRef.current = true;
 
-        setTimeout(() => navigate('/dashboard'), 3000);
-      }
+      const payload: any = {
+        username: userLogin || 'admin',
+        api_key: apiKey,
+        site_url: siteUrlParam,
+      };
+
+      if (matchingSite) payload.siteId = matchingSite.$id;
+
+      // Save credentials; do not redirect the user further.
+      updateSite(payload);
     }
   }, [searchParams, sites, isLoading, updateSite, navigate]);
 

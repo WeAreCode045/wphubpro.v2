@@ -124,13 +124,13 @@ export const useUpdateSite = () => {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    return useMutation<any, Error, { siteId: string; username?: string; password?: string; siteName?: string; siteUrl?: string }>({
+    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string }>({
         mutationFn: async ({ siteId, ...updates }) => {
             if (!user) throw new Error('User not authenticated.');
 
             // Decide if server processing is needed. Use property presence (not truthiness)
             const hasOwn = (obj: any, key: string) => Object.prototype.hasOwnProperty.call(obj || {}, key);
-            const needsServerProcessing = hasOwn(updates, 'password') || hasOwn(updates, 'username');
+            const needsServerProcessing = hasOwn(updates, 'password') || hasOwn(updates, 'username') || hasOwn(updates, 'api_key') || hasOwn(updates, 'apiKey');
 
             if (!needsServerProcessing) {
                 // Direct DB update for simple metadata

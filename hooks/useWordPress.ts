@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 const FUNCTION_ID = 'wp-proxy';
 
 // --- API Helper ---
-const executeWpProxy = async <T>(payload: { siteId: string; method?: string; endpoint: string; body?: any; userId?: string }): Promise<T> => {
+const executeWpProxy = async <T>(payload: { siteId: string; method?: string; endpoint: string; body?: any; userId?: string; useApiKey?: boolean }): Promise<T> => {
   try {
     // Some Appwrite runtimes drop `req.payload`; encode parameters in the execution path as a fallback.
     const qs = new URLSearchParams();
@@ -18,6 +18,8 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
     if (payload.body) qs.set('body', encodeURIComponent(JSON.stringify(payload.body)));
     // include caller identity to satisfy function authorization when runtime doesn't inject it
     if (payload.userId) qs.set('userId', payload.userId);
+    // instruct the proxy to prefer api_key field when available
+    if (payload.useApiKey) qs.set('useApiKey', '1');
 
     const path = `/?${qs.toString()}`;
 
@@ -69,7 +71,7 @@ export const usePlugins = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressPlugin[], Error>({
     queryKey: ['plugins', siteId],
-    queryFn: () => executeWpProxy<WordPressPlugin[]>({ siteId: siteId!, endpoint: '/wp/v2/plugins', userId: user?.$id }),
+    queryFn: () => executeWpProxy<WordPressPlugin[]>({ siteId: siteId!, endpoint: '/wp/v2/plugins', userId: user?.$id, useApiKey: true }),
     enabled: !!siteId,
   });
 };
@@ -78,7 +80,7 @@ export const useThemes = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressTheme[], Error>({
     queryKey: ['themes', siteId],
-    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: '/wp/v2/themes', userId: user?.$id }),
+    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: '/wp/v2/themes', userId: user?.$id, useApiKey: true }),
     enabled: !!siteId,
   });
 };
@@ -99,6 +101,7 @@ export const useTogglePlugin = (siteId: string | undefined) => {
               endpoint: `/wp/v2/plugins/${endpointSlug}`,
               body: { status: newStatus },
               userId: user?.$id,
+              useApiKey: true,
             });
         },
         onSuccess: (data, variables) => {
