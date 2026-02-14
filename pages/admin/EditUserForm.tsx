@@ -91,15 +91,20 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
 
       <div className="pt-4">
         <h3 className="text-sm font-semibold mb-2">Billing</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Billing Start Date</Label>
-            <input type="date" className="input" value={billingStart || ''} onChange={(e) => setBillingStart(e.target.value || null)} disabled={billingNever} />
+            <Input
+              type="date"
+              value={billingStart || ''}
+              onChange={(e) => setBillingStart(e.target.value || null)}
+              disabled={billingNever}
+            />
           </div>
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={billingNever} onChange={(e) => setBillingNever(e.target.checked)} />
-              <span>Never (manual billing)</span>
+          <div className="flex items-end justify-end">
+            <label className="flex items-center gap-3 text-sm">
+              <input className="h-4 w-4 rounded border" type="checkbox" checked={billingNever} onChange={(e) => setBillingNever(e.target.checked)} />
+              <span className="text-sm">Never (manual billing)</span>
             </label>
           </div>
         </div>
@@ -118,19 +123,23 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
           </div>
 
           {priceMode === 'custom' && (
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              <Input placeholder="amount" value={String(customPriceAmount)} onChange={(e) => setCustomPriceAmount(e.target.value)} />
-              <Input placeholder="currency" value={customPriceCurrency} onChange={(e) => setCustomPriceCurrency(e.target.value)} />
-              <select className="input" value={customPriceInterval} onChange={(e) => setCustomPriceInterval(e.target.value)}>
-                <option value="month">Monthly</option>
-                <option value="year">Yearly</option>
-              </select>
-            </div>
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                <Input placeholder="amount" value={String(customPriceAmount)} onChange={(e) => setCustomPriceAmount(e.target.value)} />
+                <Input placeholder="currency" value={customPriceCurrency} onChange={(e) => setCustomPriceCurrency(e.target.value)} />
+                <select className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none`} value={customPriceInterval} onChange={(e) => setCustomPriceInterval(e.target.value)}>
+                  <option value="month">Monthly</option>
+                  <option value="year">Yearly</option>
+                </select>
+              </div>
           )}
 
           <div className="pt-4">
             <Label>Custom Limits (JSON)</Label>
-            <textarea className="input min-h-[120px] font-mono text-sm" value={customLimits} onChange={(e) => setCustomLimits(e.target.value)} />
+            <textarea
+              className="flex w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm font-mono focus-visible:outline-none"
+              value={customLimits}
+              onChange={(e) => setCustomLimits(e.target.value)}
+            />
           </div>
         </div>
       </div>
