@@ -106,7 +106,14 @@ export const usePlugins = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressPlugin[], Error>({
     queryKey: ['plugins', siteId],
-    queryFn: () => executeWpProxy<WordPressPlugin[]>({ siteId: siteId!, endpoint: 'wphub/v1/plugins', userId: user?.$id, useApiKey: true }),
+    queryFn: async () => {
+      const raw = await executeWpProxy<any[]>({ siteId: siteId!, endpoint: 'wphub/v1/plugins', userId: user?.$id, useApiKey: true });
+      // Map file to plugin for compatibility
+      return raw.map((p) => ({
+        ...p,
+        plugin: p.plugin || p.file,
+      })) as WordPressPlugin[];
+    },
     enabled: !!siteId,
   });
 };
