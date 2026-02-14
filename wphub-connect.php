@@ -150,24 +150,49 @@ class WPHub_Pro_Bridge {
         return rest_ensure_response($response);
     }
 
+    // --- PLUGIN MANAGEMENT HELPERS ---
+    private function activate_plugin_file($plugin) {
+        return activate_plugin($plugin);
+    }
+
+    private function deactivate_plugin_file($plugin) {
+        return deactivate_plugins($plugin);
+    }
+
+    private function delete_plugin_file($plugin) {
+        return delete_plugins([$plugin]);
+    }
+
+    private function update_plugin_file($plugin) {
+        $upgrader = new Plugin_Upgrader(new Quiet_Skin());
+        return $upgrader->update($plugin);
+    }
+
+    private function install_plugin_by_slug($slug) {
+        $upgrader = new Plugin_Upgrader(new Quiet_Skin());
+        $api = plugins_api('plugin_information', ['slug' => $slug, 'fields' => ['sections' => false]]);
+        if (is_wp_error($api) || empty($api->download_link)) return $api;
+        return $upgrader->install($api->download_link);
+    }
+
     public function manage_plugin($request) {
-                $site_url = get_site_url();
-                $endpoint = 'plugins/manage';
-                $req_data = [
-                    'action' => $request->get_param('action'),
-                    'plugin' => $request->get_param('plugin'),
-                    'slug' => $request->get_param('slug'),
-                ];
+        $site_url = get_site_url();
+        $endpoint = 'plugins/manage';
+        $req_data = [
+            'action' => $request->get_param('action'),
+            'plugin' => $request->get_param('plugin'),
+            'slug' => $request->get_param('slug'),
+        ];
         require_once ABSPATH . 'wp-admin/includes/plugin.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-        
 
-        $action = $request->get_param('action');
-        $plugin = $request->get_param('plugin'); // bijv: "akismet/akismet.php"
-        $slug   = $request->get_param('slug');   // bijv: "akismet"
+        $action = $req_data['action'];
+        $plugin = $req_data['plugin'];
+        $slug   = $req_data['slug'];
 
-        // Validate plugin param for all actions except install
+        do_action('wphub_plugin_action_pre', $action, $plugin, $slug, $req_data);
+
         if (in_array($action, ['activate', 'deactivate', 'delete', 'update']) && (empty($plugin) || strpos($plugin, '/') === false)) {
             $this->log_action($site_url, $action, $endpoint, $req_data, 'Invalid or missing plugin param');
             return new WP_Error('invalid_plugin', 'Invalid or missing plugin param: expected plugin file path (e.g. akismet/akismet.php)');
@@ -175,26 +200,23 @@ class WPHub_Pro_Bridge {
 
         switch ($action) {
             case 'activate':
-                $resp = activate_plugin($plugin);
+                $resp = apply_filters('wphub_plugin_activate', $this->activate_plugin_file($plugin), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             case 'deactivate':
-                $resp = deactivate_plugins($plugin);
+                $resp = apply_filters('wphub_plugin_deactivate', $this->deactivate_plugin_file($plugin), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return true;
             case 'delete':
-                $resp = delete_plugins([$plugin]);
+                $resp = apply_filters('wphub_plugin_delete', $this->delete_plugin_file($plugin), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             case 'update':
-                $upgrader = new Plugin_Upgrader(new Quiet_Skin());
-                $resp = $upgrader->update($plugin);
+                $resp = apply_filters('wphub_plugin_update', $this->update_plugin_file($plugin), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             case 'install':
-                $upgrader = new Plugin_Upgrader(new Quiet_Skin());
-                $api = plugins_api('plugin_information', ['slug' => $slug, 'fields' => ['sections' => false]]);
-                $resp = $upgrader->install($api->download_link);
+                $resp = apply_filters('wphub_plugin_install', $this->install_plugin_by_slug($slug), $plugin, $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             default:
@@ -222,39 +244,58 @@ class WPHub_Pro_Bridge {
         return rest_ensure_response($response);
     }
 
+    // --- THEME MANAGEMENT HELPERS ---
+    private function activate_theme_slug($slug) {
+        return switch_theme($slug);
+    }
+
+    private function delete_theme_slug($slug) {
+        return delete_theme($slug);
+    }
+
+    private function update_theme_slug($slug) {
+        $upgrader = new Theme_Upgrader(new Quiet_Skin());
+        return $upgrader->update($slug);
+    }
+
+    private function install_theme_by_slug($slug) {
+        $upgrader = new Theme_Upgrader(new Quiet_Skin());
+        $api = themes_api('theme_information', ['slug' => $slug, 'fields' => ['sections' => false]]);
+        if (is_wp_error($api) || empty($api->download_link)) return $api;
+        return $upgrader->install($api->download_link);
+    }
+
     public function manage_theme($request) {
-                    $site_url = get_site_url();
-                    $endpoint = 'themes/manage';
-                    $req_data = [
-                        'action' => $request->get_param('action'),
-                        'slug' => $request->get_param('slug'),
-                    ];
-            error_log('[WPHub Bridge] manage_theme called: action=' . print_r($request->get_param('action'), true) . ' slug=' . print_r($request->get_param('slug'), true));
+        $site_url = get_site_url();
+        $endpoint = 'themes/manage';
+        $req_data = [
+            'action' => $request->get_param('action'),
+            'slug' => $request->get_param('slug'),
+        ];
         require_once ABSPATH . 'wp-admin/includes/theme.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-        $action = $request->get_param('action');
-        $slug   = $request->get_param('slug');
+        $action = $req_data['action'];
+        $slug   = $req_data['slug'];
+
+        do_action('wphub_theme_action_pre', $action, $slug, $req_data);
 
         switch ($action) {
             case 'activate':
-                $resp = switch_theme($slug);
+                $resp = apply_filters('wphub_theme_activate', $this->activate_theme_slug($slug), $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return true;
             case 'delete':
-                $resp = delete_theme($slug);
+                $resp = apply_filters('wphub_theme_delete', $this->delete_theme_slug($slug), $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             case 'update':
-                $upgrader = new Theme_Upgrader(new Quiet_Skin());
-                $resp = $upgrader->update($slug);
+                $resp = apply_filters('wphub_theme_update', $this->update_theme_slug($slug), $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             case 'install':
-                $upgrader = new Theme_Upgrader(new Quiet_Skin());
-                $api = themes_api('theme_information', ['slug' => $slug, 'fields' => ['sections' => false]]);
-                $resp = $upgrader->install($api->download_link);
+                $resp = apply_filters('wphub_theme_install', $this->install_theme_by_slug($slug), $slug, $req_data);
                 $this->log_action($site_url, $action, $endpoint, $req_data, $resp);
                 return $resp;
             default:

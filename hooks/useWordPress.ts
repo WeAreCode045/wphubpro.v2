@@ -9,7 +9,7 @@ export const useManageTheme = (siteId: string | undefined) => {
       return executeWpProxy<WordPressTheme>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: 'wphub/v1/themes/manage',
+        endpoint: 'wphubpro/v1/themes/manage',
         body: { action, slug: themeSlug },
         userId: user?.$id,
         useApiKey: true,
@@ -107,7 +107,7 @@ export const usePlugins = (siteId: string | undefined) => {
   return useQuery<WordPressPlugin[], Error>({
     queryKey: ['plugins', siteId],
     queryFn: async () => {
-      const raw = await executeWpProxy<any[]>({ siteId: siteId!, endpoint: 'wphub/v1/plugins', userId: user?.$id, useApiKey: true });
+      const raw = await executeWpProxy<any[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/plugins', userId: user?.$id, useApiKey: true });
       // Map file to plugin for compatibility
       return raw.map((p) => ({
         ...p,
@@ -123,7 +123,7 @@ export const useThemes = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressTheme[], Error>({
     queryKey: ['themes', siteId],
-    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: 'wphub/v1/themes', userId: user?.$id, useApiKey: true }),
+    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/themes', userId: user?.$id, useApiKey: true }),
     enabled: !!siteId,
   });
 };
@@ -140,7 +140,7 @@ export const useTogglePlugin = (siteId: string | undefined) => {
       return executeWpProxy<WordPressPlugin>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: 'wphub/v1/plugins/manage',
+        endpoint: 'wphubpro/v1/plugins/manage',
         body: { action: newStatus, plugin: pluginSlug },
         userId: user?.$id,
         useApiKey: true,
