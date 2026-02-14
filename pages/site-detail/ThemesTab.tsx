@@ -14,12 +14,14 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
 
   const manageTheme = useManageTheme(siteId);
 
-  const handleAction = (theme: any, action: 'activate' | 'deactivate' | 'update' | 'delete') => {
-    manageTheme.mutate({
-      themeSlug: theme.stylesheet,
-      action,
-      themeName: theme.name,
-    });
+  const handleActivate = (theme: any) => {
+    if (theme.status !== 'active') {
+      manageTheme.mutate({
+        themeSlug: theme.stylesheet,
+        action: 'activate',
+        themeName: theme.name,
+      });
+    }
   };
 
   if (isLoading) {
@@ -96,7 +98,7 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
                    size="sm"
                    variant="default"
                    disabled={manageTheme.isPending || theme.status === 'active'}
-                   onClick={() => handleAction(theme, 'activate')}
+                   onClick={() => handleActivate(theme)}
                  >
                    {theme.status === 'active' ? 'Active' : 'Activate'}
                  </Button>
