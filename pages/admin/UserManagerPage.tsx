@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../../services/appwrite';
 import { 
   Search, 
@@ -16,6 +16,9 @@ import Card, { CardHeader, CardContent } from '../../components/ui/Card';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import Modal from '../../components/ui/Modal';
+import Label from '../../components/ui/Label';
+import EditUserForm from './EditUserForm';
 
 const UserManagerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +67,45 @@ const UserManagerPage: React.FC = () => {
       return parsed.users || [];
     },
     staleTime: 1000 * 60, // 1 minute
+  });
+
+  const queryClient = useQueryClient();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+
+  const openEdit = (user: any) => {
+    setSelectedUser(user);
+    setIsEditOpen(true);
+  };
+
+  const closeEdit = () => {
+    setSelectedUser(null);
+    setIsEditOpen(false);
+  };
+
+  const editMutation = useMutation({
+    mutationFn: async (payload: { userId: string; updates: any }) => {
+      const functionId = 'admin-update-user';
+      const exec = await functions.createExecution(functionId, JSON.stringify(payload), false);
+      // poll if needed
+      if (!exec.responseBody || exec.responseBody.trim() === '') {
+        const polled = await (async () => {
+          for (let i = 0; i < 5; i++) {
+            const e = await functions.getExecution(functionId, exec.$id);
+            if (e.responseBody && e.responseBody.trim() !== '') return e;
+            if (e.status === 'completed' || e.status === 'failed') return e;
+            await new Promise((r) => setTimeout(r, 600));
+          }
+          return exec;
+        })();
+        if (polled) return polled;
+      }
+      return exec;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      closeEdit();
+    }
   });
 
   const filteredUsers = users.filter((user: any) => {
@@ -178,9 +220,11 @@ const UserManagerPage: React.FC = () => {
                     </td>
                     <td className="py-4 px-4 text-sm text-muted-foreground">{user.joined}</td>
                     <td className="py-4 px-4 text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
+                      <div className="flex justify-end">
+                        <Button onClick={() => openEdit(user)} variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -189,6 +233,19 @@ const UserManagerPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit User Modal */}
+      <Modal isOpen={isEditOpen} onClose={closeEdit} title={selectedUser ? `Edit ${selectedUser.name}` : 'Edit User'}>
+        {selectedUser && (
+          <EditUserForm
+            user={selectedUser}
+            onCancel={closeEdit}
+            onSave={async (updates: any) => {
+              await editMutation.mutateAsync({ userId: selectedUser.id, updates });
+            }}
+          />
+        )}
+      </Modal>
     </div>
   );
 };
