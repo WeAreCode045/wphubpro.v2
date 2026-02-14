@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Label from '../../components/ui/Label';
+import React, { useState } from "react";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Label from "../../components/ui/Label";
+import Checkbox from "../../components/ui/Checkbox";
+import Radio from "../../components/ui/Radio";
 
 interface Props {
   user: any;
@@ -10,19 +12,33 @@ interface Props {
 }
 
 const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
-  const [name, setName] = useState(user.name || '');
-  const [email, setEmail] = useState(user.email || '');
-  const [role, setRole] = useState(user.role || 'User');
-  const [planId, setPlanId] = useState(user.planId || '');
-  const [stripeId, setStripeId] = useState(user.stripeId || '');
-  const [status, setStatus] = useState(user.status || 'Active');
-  const [billingStart, setBillingStart] = useState<string | null>(user.billing_start_date || null);
-  const [billingNever, setBillingNever] = useState<boolean>(user.billing_never || false);
-  const [priceMode, setPriceMode] = useState<'plan'|'custom'>(user.plan_price_mode === 'custom' ? 'custom' : 'plan');
-  const [customPriceAmount, setCustomPriceAmount] = useState(user.plan_price?.amount || '');
-  const [customPriceCurrency, setCustomPriceCurrency] = useState(user.plan_price?.currency || 'usd');
-  const [customPriceInterval, setCustomPriceInterval] = useState(user.plan_price?.interval || 'month');
-  const [customLimits, setCustomLimits] = useState<string>(JSON.stringify(user.metadata || user.limits || {}, null, 2));
+  const [name, setName] = useState(user.name || "");
+  const [email, setEmail] = useState(user.email || "");
+  const [role, setRole] = useState(user.role || "User");
+  const [planId, setPlanId] = useState(user.planId || "");
+  const [stripeId, setStripeId] = useState(user.stripeId || "");
+  const [status, setStatus] = useState(user.status || "Active");
+  const [billingStart, setBillingStart] = useState<string | null>(
+    user.billing_start_date || null,
+  );
+  const [billingNever, setBillingNever] = useState<boolean>(
+    user.billing_never || false,
+  );
+  const [priceMode, setPriceMode] = useState<"plan" | "custom">(
+    user.plan_price_mode === "custom" ? "custom" : "plan",
+  );
+  const [customPriceAmount, setCustomPriceAmount] = useState(
+    user.plan_price?.amount || "",
+  );
+  const [customPriceCurrency, setCustomPriceCurrency] = useState(
+    user.plan_price?.currency || "usd",
+  );
+  const [customPriceInterval, setCustomPriceInterval] = useState(
+    user.plan_price?.interval || "month",
+  );
+  const [customLimits, setCustomLimits] = useState<string>(
+    JSON.stringify(user.metadata || user.limits || {}, null, 2),
+  );
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -35,9 +51,16 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
         planId,
         stripe_customer_id: stripeId,
         status,
-        billingStart: billingNever ? 'never' : billingStart,
+        billingStart: billingNever ? "never" : billingStart,
         priceMode,
-        customPrice: priceMode === 'custom' ? { amount: Number(customPriceAmount) || 0, currency: customPriceCurrency, interval: customPriceInterval } : null,
+        customPrice:
+          priceMode === "custom"
+            ? {
+                amount: Number(customPriceAmount) || 0,
+                currency: customPriceCurrency,
+                interval: customPriceInterval,
+              }
+            : null,
       };
       try {
         updates.customLimits = customLimits ? JSON.parse(customLimits) : {};
@@ -64,7 +87,11 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
         </div>
         <div className="space-y-2">
           <Label>Role</Label>
-          <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
+          <select
+            className="block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
             <option>User</option>
             <option>Admin</option>
           </select>
@@ -78,11 +105,18 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Stripe Customer ID</Label>
-          <Input value={stripeId} onChange={(e) => setStripeId(e.target.value)} />
+          <Input
+            value={stripeId}
+            onChange={(e) => setStripeId(e.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <Label>Status</Label>
-          <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select
+            className="block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
             <option>Active</option>
             <option>Inactive</option>
           </select>
@@ -96,14 +130,17 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
             <Label>Billing Start Date</Label>
             <Input
               type="date"
-              value={billingStart || ''}
+              value={billingStart || ""}
               onChange={(e) => setBillingStart(e.target.value || null)}
               disabled={billingNever}
             />
           </div>
           <div className="flex items-end justify-end">
             <label className="flex items-center gap-3 text-sm">
-              <input className="h-4 w-4 rounded border" type="checkbox" checked={billingNever} onChange={(e) => setBillingNever(e.target.checked)} />
+              <Checkbox
+                checked={billingNever}
+                onChange={(e) => setBillingNever((e.target as HTMLInputElement).checked)}
+              />
               <span className="text-sm">Never (manual billing)</span>
             </label>
           </div>
@@ -113,24 +150,46 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
           <Label>Price Option</Label>
           <div className="flex items-center gap-4 mt-2">
             <label className="flex items-center gap-2">
-              <input type="radio" name="priceMode" value="plan" checked={priceMode === 'plan'} onChange={() => setPriceMode('plan')} />
+              <Radio
+                name="priceMode"
+                value="plan"
+                checked={priceMode === "plan"}
+                onChange={() => setPriceMode("plan")}
+              />
               <span>Use Plan Price</span>
             </label>
             <label className="flex items-center gap-2">
-              <input type="radio" name="priceMode" value="custom" checked={priceMode === 'custom'} onChange={() => setPriceMode('custom')} />
+              <Radio
+                name="priceMode"
+                value="custom"
+                checked={priceMode === "custom"}
+                onChange={() => setPriceMode("custom")}
+              />
               <span>Custom Price</span>
             </label>
           </div>
 
-          {priceMode === 'custom' && (
-              <div className="grid grid-cols-3 gap-3 pt-2">
-                <Input placeholder="amount" value={String(customPriceAmount)} onChange={(e) => setCustomPriceAmount(e.target.value)} />
-                <Input placeholder="currency" value={customPriceCurrency} onChange={(e) => setCustomPriceCurrency(e.target.value)} />
-                <select className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none`} value={customPriceInterval} onChange={(e) => setCustomPriceInterval(e.target.value)}>
-                  <option value="month">Monthly</option>
-                  <option value="year">Yearly</option>
-                </select>
-              </div>
+          {priceMode === "custom" && (
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              <Input
+                placeholder="amount"
+                value={String(customPriceAmount)}
+                onChange={(e) => setCustomPriceAmount(e.target.value)}
+              />
+              <Input
+                placeholder="currency"
+                value={customPriceCurrency}
+                onChange={(e) => setCustomPriceCurrency(e.target.value)}
+              />
+              <select
+                className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none`}
+                value={customPriceInterval}
+                onChange={(e) => setCustomPriceInterval(e.target.value)}
+              >
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+              </select>
+            </div>
           )}
 
           <div className="pt-4">
@@ -145,8 +204,12 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <Button variant="outline" onClick={onCancel} disabled={saving}>Cancel</Button>
-        <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
+        <Button variant="outline" onClick={onCancel} disabled={saving}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? "Saving..." : "Save"}
+        </Button>
       </div>
     </div>
   );

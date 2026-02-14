@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
 interface TabsContextType {
   activeTab: string;
@@ -23,15 +23,27 @@ const Tabs = ({ defaultValue, children, className = "" }: TabsProps) => {
   );
 };
 
-const List = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const List = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
   <div className={`border-b border-border mb-6 ${className}`}>
-    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+    <nav className="-mb-px flex space-x-6" aria-label="Tabs">
       {children}
     </nav>
   </div>
 );
 
-const Trigger = ({ value, children }: { value: string; children: React.ReactNode }) => {
+const Trigger = ({
+  value,
+  children,
+}: {
+  value: string;
+  children: React.ReactNode;
+}) => {
   const context = useContext(TabsContext);
   if (!context) throw new Error("Tabs.Trigger must be used within Tabs");
 
@@ -42,8 +54,8 @@ const Trigger = ({ value, children }: { value: string; children: React.ReactNode
       onClick={() => context.setActiveTab(value)}
       className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
         isActive
-          ? 'border-primary text-primary'
-          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+          ? "border-primary text-primary"
+          : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
       }`}
     >
       {children}
@@ -51,7 +63,13 @@ const Trigger = ({ value, children }: { value: string; children: React.ReactNode
   );
 };
 
-const Content = ({ value, children }: { value: string; children: React.ReactNode }) => {
+const Content = ({
+  value,
+  children,
+}: {
+  value: string;
+  children: React.ReactNode;
+}) => {
   const context = useContext(TabsContext);
   if (!context) throw new Error("Tabs.Content must be used within Tabs");
 
