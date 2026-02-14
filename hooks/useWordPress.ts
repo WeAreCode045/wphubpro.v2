@@ -87,40 +87,39 @@ export const useThemes = (siteId: string | undefined) => {
 };
 
 export const useTogglePlugin = (siteId: string | undefined) => {
-    const queryClient = useQueryClient();
-    const { toast } = useToast();
-    const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
 
-    return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
-        mutationFn: ({ pluginSlug, status }) => {
-            const newStatus = status === 'active' ? 'inactive' : 'active';
-            // The WP REST API uses the plugin's file path (slug) in the URL, which needs encoding
-            const endpointSlug = pluginSlug.replace('/', '%2F');
-            return executeWpProxy<WordPressPlugin>({
-              siteId: siteId!,
-              method: 'POST',
-              endpoint: `/wp/v2/plugins/${endpointSlug}`,
-              body: { status: newStatus },
-              userId: user?.$id,
-              useApiKey: true,
-            });
-        },
-        onSuccess: (data, variables) => {
-            // Invalidate the plugins list to refetch the updated status
-            queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
-            const action = data.status === 'active' ? 'activated' : 'deactivated';
-            toast({
-              title: "Success",
-              description: `Plugin "${variables.pluginName}" has been ${action}.`,
-              variant: 'success'
-            });
-        },
-        onError: (error, variables) => {
-            toast({
-                title: "Action Failed",
-                description: `Could not toggle plugin "${variables.pluginName}": ${error.message}`,
-                variant: 'destructive',
-            });
-        }
-    });
+  return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
+    mutationFn: ({ pluginSlug, status }) => {
+      const newStatus = status === 'active' ? 'deactivate' : 'activate';
+      // Use the bridge endpoint for plugin management
+      return executeWpProxy<WordPressPlugin>({
+        siteId: siteId!,
+        method: 'POST',
+        endpoint: 'wphub/v1/plugins/manage',
+        body: { action: newStatus, plugin: pluginSlug },
+        userId: user?.$id,
+        useApiKey: true,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate the plugins list to refetch the updated status
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      const action = variables.status === 'active' ? 'deactivated' : 'activated';
+      toast({
+        title: "Success",
+        description: `Plugin \"${variables.pluginName}\" has been ${action}.`,
+        variant: 'success'
+      });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: "Action Failed",
+        description: `Could not toggle plugin \"${variables.pluginName}\": ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  });
 };
