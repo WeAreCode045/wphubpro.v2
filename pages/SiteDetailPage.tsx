@@ -91,7 +91,7 @@ const SiteDetailPage: React.FC = () => {
               <Tabs.Trigger value="plugins">Plugins</Tabs.Trigger>
               <Tabs.Trigger value="themes">Themes</Tabs.Trigger>
             </Tabs.List>
-            
+
             <Tabs.Content value="overview">
                <Card>
                  <CardContent className="p-6">
@@ -114,34 +114,6 @@ const SiteDetailPage: React.FC = () => {
           </Tabs>
         </CardContent>
       </Card>
-        <Tabs defaultValue="overview">
-          <Tabs.List>
-            <Tabs.Trigger value="overview">Overzicht</Tabs.Trigger>
-            <Tabs.Trigger value="plugins">Plugins</Tabs.Trigger>
-            <Tabs.Trigger value="themes">Themes</Tabs.Trigger>
-          </Tabs.List>
-          
-          <Tabs.Content value="overview">
-             <Card>
-               <CardContent className="p-6">
-                 <h3 className="text-lg font-medium">Status</h3>
-                 <p className="text-green-600 flex items-center mt-2">
-                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                   Actief verbonden met de WordPress REST API
-                 </p>
-               </CardContent>
-             </Card>
-          </Tabs.Content>
-
-          <Tabs.Content value="plugins">
-            <PluginsTab siteId={site.$id} />
-          </Tabs.Content>
-
-          <Tabs.Content value="themes">
-            <ThemesTab siteId={site.$id} />
-          </Tabs.Content>
-        </Tabs>
-      )}
     </div>
   );
 };
