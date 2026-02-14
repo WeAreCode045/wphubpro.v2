@@ -19,14 +19,14 @@ export const useManageTheme = (siteId: string | undefined) => {
       queryClient.invalidateQueries({ queryKey: ['themes', siteId] });
       toast({
         title: 'Success',
-        description: `Theme \"${variables.themeName}\" ${variables.action}d successfully.`,
+        description: `Theme "${variables.themeName}" ${variables.action}d successfully.`,
         variant: 'success',
       });
     },
     onError: (error, variables) => {
       toast({
         title: 'Action Failed',
-        description: `Could not ${variables.action} theme \"${variables.themeName}\": ${error.message}`,
+        description: `Could not ${variables.action} theme "${variables.themeName}": ${error.message}`,
         variant: 'destructive',
       });
     },
@@ -145,14 +145,14 @@ export const useTogglePlugin = (siteId: string | undefined) => {
       const action = variables.status === 'active' ? 'deactivated' : 'activated';
       toast({
         title: "Success",
-        description: `Plugin \"${variables.pluginName}\" has been ${action}.`,
+        description: `Plugin "${variables.pluginName}" has been ${action}.`,
         variant: 'success'
       });
     },
     onError: (error, variables) => {
       toast({
         title: "Action Failed",
-        description: `Could not toggle plugin \"${variables.pluginName}\": ${error.message}`,
+        description: `Could not toggle plugin "${variables.pluginName}": ${error.message}`,
         variant: 'destructive',
       });
     }

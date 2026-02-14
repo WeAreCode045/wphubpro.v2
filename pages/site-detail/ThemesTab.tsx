@@ -11,7 +11,16 @@ interface ThemesTabProps {
 
 const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
   const { data: themes, isLoading, isError, error } = useThemes(siteId);
+
   const manageTheme = useManageTheme(siteId);
+
+  const handleAction = (theme: any, action: 'activate' | 'deactivate' | 'update' | 'delete') => {
+    manageTheme.mutate({
+      themeSlug: theme.stylesheet,
+      action,
+      themeName: theme.name,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -85,7 +94,7 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
               <TableCell className="text-right space-x-2">
                  <Button
                    size="sm"
-                   variant="primary"
+                   variant="default"
                    disabled={manageTheme.isPending || theme.status === 'active'}
                    onClick={() => handleAction(theme, 'activate')}
                  >
