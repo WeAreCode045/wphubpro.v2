@@ -52,9 +52,11 @@ const ConnectCallback: React.FC = () => {
     // If we're running on localhost or receive a disable_encryption flag, request plaintext storage for testing
     const disableEnc = window.location.hostname.includes('localhost') || searchParams.get('disable_encryption') === '1';
 
-    updateSite({ siteId: matched.$id, username: username, password: decodeURIComponent(password), _disable_encryption: disableEnc }, {
+    updateSite({ siteId: matched.$id, username: username, password: decodeURIComponent(password) }, {
       onSuccess: () => {
         setStatus('success');
+        // Store encryption preference in localStorage for backend to consume
+        if (disableEnc) localStorage.setItem(`site_${matched.$id}_disable_encryption`, '1');
         setTimeout(() => navigate('/dashboard'), 1500);
       },
       onError: (err) => {

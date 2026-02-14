@@ -38,7 +38,6 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/connect/callback" element={<ConnectCallback />} />
       <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
       <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
 
