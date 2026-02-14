@@ -20,8 +20,7 @@ export const useSites = () => {
         SITES_COLLECTION_ID,
         [Query.equal('user_id', user.$id)]
       );
-      
-      // Map de snake_case velden uit de database naar camelCase voor de UI
+      // Map de database resultaten naar het Site type
       return response.documents.map(doc => ({
         ...doc,
         siteName: (doc as any).site_name || '',
@@ -39,17 +38,19 @@ export const useSite = (siteId: string | undefined) => {
         queryKey: ['site', siteId],
         queryFn: async () => {
             if (!siteId) throw new Error("Site ID is required.");
+            
             const document = await databases.getDocument(
                 DATABASE_ID,
                 SITES_COLLECTION_ID,
                 siteId
             );
 
+            // Controleer of de site van de huidige gebruiker is
             if ((document as any).user_id !== user?.$id) {
-                throw new Error("Forbidden: You do not have permission to view this site.");
+                throw new Error("Geen toegang tot deze site.");
             }
             
-            // Cruciale mapping: zorg dat de detailpagina siteName en siteUrl herkent
+            // Map snake_case naar camelCase zodat de UI de data vindt
             return {
                 ...document,
                 siteName: (document as any).site_name,
@@ -57,6 +58,7 @@ export const useSite = (siteId: string | undefined) => {
             } as unknown as Site;
         },
         enabled: !!siteId && !!user,
+        retry: 1 // Voorkom eindeloze retries bij 404
     });
 };
 

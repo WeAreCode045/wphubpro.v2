@@ -10,10 +10,12 @@ import ThemesTab from './site-detail/ThemesTab';
 
 const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: site, isLoading, isError } = useSite(id!);
+  const { data: site, isLoading, isError, error } = useSite(id);
 
   const handleConnectWordPress = () => {
     if (!site) return;
+    
+    // Sla het ID op in localStorage om de site te identificeren na de redirect
     localStorage.setItem('pending_site_id', site.$id);
 
     const callbackUrl = `${window.location.origin}/dashboard/connect-success`;
@@ -22,28 +24,59 @@ const SiteDetailPage: React.FC = () => {
       success_url: callbackUrl,
     });
 
+    // Gebruik de site_url voor de redirect naar de WordPress authorize pagina
     const targetUrl = (site as any).siteUrl || (site as any).site_url;
     window.location.href = `${targetUrl}/wp-admin/authorize-application.php?${params.toString()}`;
   };
 
-  if (isLoading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
-  if (isError || !site) return <div className="p-8 text-center text-destructive">Site niet gevonden.</div>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-24 space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Site gegevens ophalen...</p>
+      </div>
+    );
+  }
 
-  const isConnected = !!(site as any).password && (site as any).password !== "";
+  if (isError || !site) {
+    return (
+      <div className="p-12 text-center space-y-4">
+        <AlertTriangle className="w-12 h-12 text-destructive mx-auto" />
+        <h2 className="text-2xl font-bold">Site niet gevonden</h2>
+        <p className="text-muted-foreground">
+          {error?.message || `We konden geen site vinden met ID: ${id}`}
+        </p>
+        <Button onClick={() => window.location.href = '/sites'} variant="outline">
+          Terug naar overzicht
+        </Button>
+      </div>
+    );
+  }
+
+  // Controleer of de site verbonden is op basis van de aanwezigheid van een password
+  const isConnected = !!(site as any).password;
 
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{(site as any).siteName}</h1>
-        <p className="text-muted-foreground">{(site as any).siteUrl}</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {(site as any).siteName || (site as any).site_name || 'Naamloze site'}
+        </h1>
+        <p className="text-muted-foreground">
+          {(site as any).siteUrl || (site as any).site_url}
+        </p>
       </div>
 
       {!isConnected ? (
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="p-12 flex flex-col items-center text-center space-y-4">
-            <AlertTriangle className="w-12 h-12 text-amber-600" />
+            <div className="p-4 bg-amber-100 rounded-full">
+              <AlertTriangle className="w-12 h-12 text-amber-600" />
+            </div>
             <h2 className="text-2xl font-bold text-amber-900">Verbinding Vereist</h2>
-            <p className="text-amber-700 max-w-md">Klik op de knop om deze site veilig te koppelen via WordPress.</p>
+            <p className="text-amber-700 max-w-md">
+              Deze site is toegevoegd, maar de API koppeling is nog niet voltooid. Klik op de knop hieronder om veilig verbinding te maken via je WordPress dashboard.
+            </p>
             <Button onClick={handleConnectWordPress} size="lg" className="bg-blue-600 hover:bg-blue-700">
               <Globe className="w-4 h-4 mr-2" />
               Nu Verbinden met WordPress
@@ -59,10 +92,15 @@ const SiteDetailPage: React.FC = () => {
           </Tabs.List>
           
           <Tabs.Content value="overview">
-            <div className="p-6 border rounded-lg bg-card text-card-foreground">
-              <h3 className="font-semibold mb-2">Systeeminformatie</h3>
-              <p className="text-sm text-muted-foreground">Je bent verbonden met de WordPress REST API.</p>
-            </div>
+             <Card>
+               <CardContent className="p-6">
+                 <h3 className="text-lg font-medium">Status</h3>
+                 <p className="text-green-600 flex items-center mt-2">
+                   <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                   Actief verbonden met de WordPress REST API
+                 </p>
+               </CardContent>
+             </Card>
           </Tabs.Content>
 
           <Tabs.Content value="plugins">

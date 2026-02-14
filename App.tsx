@@ -46,7 +46,7 @@ const AppRoutes: React.FC = () => {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="sites" element={<SitesPage />} />
-        <Route path="sites/:siteId" element={<SiteDetailPage />} />
+<Route path="/sites/:id" element={<SiteDetailPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="/dashboard/connect-success" element={<ConnectSuccess />} />
