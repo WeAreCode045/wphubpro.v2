@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useThemes } from '../../hooks/useWordPress';
+import { useThemes, useToggleTheme } from '../../hooks/useWordPress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -11,6 +11,7 @@ interface ThemesTabProps {
 
 const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
   const { data: themes, isLoading, isError, error } = useThemes(siteId);
+  const toggleThemeMutation = useToggleTheme(siteId);
 
   if (isLoading) {
     return (
@@ -82,7 +83,14 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
               </TableCell>
               <TableCell>{theme.version}</TableCell>
               <TableCell className="text-right space-x-2">
-                 <Button variant="ghost" size="sm" disabled={theme.status === 'active'}>Activate</Button>
+                 <Button
+                   variant="ghost"
+                   size="sm"
+                   disabled={toggleThemeMutation.isPending || theme.status === 'active'}
+                   onClick={() => toggleThemeMutation.mutate({ themeSlug: theme.stylesheet, status: theme.status, themeName: theme.name })}
+                 >
+                   {toggleThemeMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Activate'}
+                 </Button>
                  <Button variant="outline" size="sm" disabled>Update</Button>
               </TableCell>
             </TableRow>

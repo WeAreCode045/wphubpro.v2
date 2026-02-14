@@ -1,3 +1,38 @@
+export const useToggleTheme = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  return useMutation<WordPressTheme, Error, { themeSlug: string; status: 'active' | 'inactive'; themeName: string }>({
+    mutationFn: ({ themeSlug, status }) => {
+      const action = status === 'active' ? 'deactivate' : 'activate';
+      return executeWpProxy<WordPressTheme>({
+        siteId: siteId!,
+        method: 'POST',
+        endpoint: 'wphub/v1/themes/manage',
+        body: { action, slug: themeSlug },
+        userId: user?.$id,
+        useApiKey: true,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['themes', siteId] });
+      const action = variables.status === 'active' ? 'deactivated' : 'activated';
+      toast({
+        title: 'Success',
+        description: `Theme "${variables.themeName}" has been ${action}.`,
+        variant: 'success',
+      });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: 'Action Failed',
+        description: `Could not toggle theme "${variables.themeName}": ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+};
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { functions } from '../services/appwrite';
