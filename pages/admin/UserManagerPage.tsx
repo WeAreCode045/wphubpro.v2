@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { databases } from '../../services/appwrite';
+import { COLLECTIONS, DATABASE_ID } from '../../services/appwrite';
 import { 
   Search, 
   MoreHorizontal, 
@@ -16,13 +19,21 @@ import Input from '../../components/ui/Input';
 const UserManagerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Placeholder data
-  const users = [
-    { id: '1', name: 'John Doe', email: 'john@example.com', role: 'User', stripeId: 'cus_QW8291', status: 'Active', joined: 'Oct 24, 2025' },
-    { id: '2', name: 'Sarah Smith', email: 'sarah@design.co', role: 'User', stripeId: 'cus_LX0283', status: 'Active', joined: 'Nov 12, 2025' },
-    { id: '3', name: 'Admin User', email: 'admin@theplatform.com', role: 'Admin', stripeId: 'n/a', status: 'Active', joined: 'Jan 01, 2025' },
-    { id: '4', name: 'Mike Johnson', email: 'mike@agency.net', role: 'User', stripeId: 'cus_PP7721', status: 'Past Due', joined: 'Dec 05, 2025' },
-  ];
+  const { data: users = [], isLoading, isError, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const res = await databases.listDocuments(DATABASE_ID, COLLECTIONS.SITES);
+      return res.documents.map((doc) => ({
+        id: doc.$id,
+        name: doc.user_name || doc.name || 'Unknown',
+        email: doc.user_email || doc.email || '',
+        role: doc.role || 'User',
+        stripeId: doc.stripe_customer_id || 'n/a',
+        status: doc.status || 'Active',
+        joined: doc.joined || doc.$createdAt,
+      }));
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -71,7 +82,12 @@ const UserManagerPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {isLoading ? (
+                <tr><td colSpan={6}>Loading...</td></tr>
+              ) : isError ? (
+                <tr><td colSpan={6}>Error: {error.message}</td></tr>
+              ) : (
+                users.map((user) => (
                 <tr key={user.id} className="border-b border-border hover:bg-muted/30 transition-colors group">
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
@@ -116,7 +132,8 @@ const UserManagerPage: React.FC = () => {
                     </Button>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </Table>
         </CardContent>

@@ -15,47 +15,16 @@ import Modal from '../../components/ui/Modal';
 const PlanManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Placeholder data
-  const plans = [
-    { 
-      id: 'prod_RK9283', 
-      name: 'Starter', 
-      description: 'Ideal for small bloggers and simple sites.', 
-      monthlyPrice: '12.00', 
-      yearlyPrice: '120.00',
-      status: 'Active',
-      metadata: [
-        { key: 'sites_limit', value: '1' },
-        { key: 'storage_gb', value: '5' }
-      ]
+  const { data: plans = [], isLoading, isError, error } = useQuery({
+    queryKey: ['plans'],
+    queryFn: async () => {
+      const result = await functions.createExecution('stripe-list-products');
+      if (result.responseStatusCode >= 400) {
+        throw new Error(JSON.parse(result.responseBody).message || 'Failed to fetch plans.');
+      }
+      return JSON.parse(result.responseBody).plans;
     },
-    { 
-      id: 'prod_PL0291', 
-      name: 'Pro', 
-      description: 'The best value for growing agencies.', 
-      monthlyPrice: '29.00', 
-      yearlyPrice: '290.00',
-      status: 'Active',
-      metadata: [
-        { key: 'sites_limit', value: '5' },
-        { key: 'storage_gb', value: '25' },
-        { key: 'support', value: 'priority' }
-      ]
-    },
-    { 
-      id: 'prod_BS7721', 
-      name: 'Business', 
-      description: 'Unlimited possibilities for enterprises.', 
-      monthlyPrice: '59.00', 
-      yearlyPrice: '590.00',
-      status: 'Active',
-      metadata: [
-        { key: 'sites_limit', value: '25' },
-        { key: 'storage_gb', value: '100' },
-        { key: 'whitelabel', value: 'true' }
-      ]
-    }
-  ];
+  });
 
   return (
     <div className="space-y-6">
@@ -77,7 +46,17 @@ const PlanManagementPage: React.FC = () => {
       </header>
 
       <div className="grid gap-6">
-        {plans.map((plan) => (
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : isError ? (
+          <div>Error: {error.message}</div>
+        ) : (
+          plans.map((plan) => (
+            <Card key={plan.id} className="overflow-hidden border-l-4 border-l-primary">
+              {/* ...existing code... */}
+            </Card>
+          ))
+        )}
           <Card key={plan.id} className="overflow-hidden border-l-4 border-l-primary">
             <div className="flex flex-col lg:flex-row">
               <div className="flex-1 p-6">

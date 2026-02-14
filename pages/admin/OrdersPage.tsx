@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { functions } from '../../services/appwrite';
 import { 
   Search, 
   Download, 
@@ -17,14 +19,16 @@ import Input from '../../components/ui/Input';
 const OrdersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Placeholder data
-  const orders = [
-    { id: 'ORD-7281', customer: 'John Doe', email: 'john@example.com', plan: 'Pro Monthly', amount: '$29.00', status: 'Succeeded', date: 'Feb 13, 2026 14:22' },
-    { id: 'ORD-7280', customer: 'Sarah Smith', email: 'sarah@design.co', plan: 'Business Yearly', amount: '$490.00', status: 'Succeeded', date: 'Feb 12, 2026 09:15' },
-    { id: 'ORD-7279', customer: 'Mike Johnson', email: 'mike@agency.net', plan: 'Starter Monthly', amount: '$12.00', status: 'Succeeded', date: 'Feb 10, 2026 11:45' },
-    { id: 'ORD-7278', customer: 'Alex Wilson', email: 'alex@startup.io', plan: 'Pro Monthly', amount: '$29.00', status: 'Failed', date: 'Feb 09, 2026 18:30' },
-    { id: 'ORD-7277', customer: 'Emma Davis', email: 'emma@blog.com', plan: 'Pro Monthly', amount: '$29.00', status: 'Pending', date: 'Feb 09, 2026 10:20' },
-  ];
+  const { data: orders = [], isLoading, isError, error } = useQuery({
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const result = await functions.createExecution('stripe-list-payment-intents');
+      if (result.responseStatusCode >= 400) {
+        throw new Error(JSON.parse(result.responseBody).message || 'Failed to fetch orders.');
+      }
+      return JSON.parse(result.responseBody).orders;
+    },
+  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -95,7 +99,12 @@ const OrdersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {isLoading ? (
+                <tr><td colSpan={7}>Loading...</td></tr>
+              ) : isError ? (
+                <tr><td colSpan={7}>Error: {error.message}</td></tr>
+              ) : (
+                orders.map((order) => (
                 <tr key={order.id} className="border-b border-border hover:bg-muted/30 transition-colors group">
                   <td className="py-4 px-4">
                     <div className="font-mono text-xs text-primary font-bold">{order.id}</div>
@@ -132,7 +141,8 @@ const OrdersPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </Table>
         </CardContent>
