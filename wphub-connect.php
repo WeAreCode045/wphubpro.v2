@@ -162,9 +162,16 @@ class WPHub_Pro_Bridge {
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
         
+
         $action = $request->get_param('action');
         $plugin = $request->get_param('plugin'); // bijv: "akismet/akismet.php"
         $slug   = $request->get_param('slug');   // bijv: "akismet"
+
+        // Validate plugin param for all actions except install
+        if (in_array($action, ['activate', 'deactivate', 'delete', 'update']) && (empty($plugin) || strpos($plugin, '/') === false)) {
+            $this->log_action($site_url, $action, $endpoint, $req_data, 'Invalid or missing plugin param');
+            return new WP_Error('invalid_plugin', 'Invalid or missing plugin param: expected plugin file path (e.g. akismet/akismet.php)');
+        }
 
         switch ($action) {
             case 'activate':
