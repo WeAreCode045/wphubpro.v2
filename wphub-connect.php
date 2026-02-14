@@ -44,17 +44,30 @@ function wphub_handle_connect() {
 // Voeg een simpele knop toe in het WordPress menu
 add_action('admin_menu', function () {
     add_menu_page('WPHub Connect', 'WPHub Connect', 'manage_options', 'wphub-connect', function () {
+        $current_key = get_option('wphub_pro_api_key');
         echo '<div class="wrap"><h1>WPHub Pro Connection</h1>';
-        echo '<p>Klik op de knop hieronder om deze site veilig te koppelen aan je dashboard.</p>';
-        echo '<button id="wphub-conn-btn" class="button button-primary">Verbind met WPHub Pro</button>';
-        echo '<script>
-            document.getElementById("wphub-conn-btn").onclick = function() {
-                fetch("/wp-json/wphub/v1/connect", {
-                    headers: { "X-WP-Nonce": "' . wp_create_nonce('wp_rest') . '" }
-                })
-                .then(r => r.json())
-                .then(data => { if(data.redirect) window.location.href = data.redirect; });
-            };
-        </script></div>';
+            echo '<p>Klik op de knop hieronder om deze site veilig te koppelen aan je dashboard.</p>';
+            echo '<button id="wphub-conn-btn" class="button button-primary">Verbind met WPHub Pro</button>';
+            if ($current_key) {
+                echo '<p style="margin-top:12px"><strong>Huidige API Key:</strong> ' . esc_html($current_key) . '</p>';
+                echo '<button id="wphub-copy-key" class="button" style="margin-top:6px">Kopieer API Key</button>';
+            }
+            echo '<script>
+                document.getElementById("wphub-conn-btn").onclick = function() {
+                    fetch("/wp-json/wphub/v1/connect", {
+                        headers: { "X-WP-Nonce": "' . wp_create_nonce('wp_rest') . '" }
+                    })
+                    .then(r => r.json())
+                    .then(data => { if(data.redirect) window.location.href = data.redirect; });
+                };
+                var copyBtn = document.getElementById("wphub-copy-key");
+                if(copyBtn) {
+                  copyBtn.onclick = function() {
+                    var keyText = ' . ( $current_key ? json_encode( $current_key ) : '""' ) . ';
+                    navigator.clipboard && navigator.clipboard.writeText(keyText);
+                    alert("API Key gekopieerd naar klembord");
+                  };
+                }
+            </script></div>';
     });
 });

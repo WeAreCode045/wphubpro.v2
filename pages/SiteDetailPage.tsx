@@ -93,15 +93,28 @@ const SiteDetailPage: React.FC = () => {
             </Tabs.List>
 
             <Tabs.Content value="overview">
-               <Card>
-                 <CardContent className="p-6">
-                   <h3 className="text-lg font-medium">Status</h3>
-                   <p className={isConnected ? "text-green-600 flex items-center mt-2" : "text-amber-700 flex items-center mt-2"}>
-                     <span className={`w-2 h-2 ${isConnected ? 'bg-green-500' : 'bg-amber-500'} rounded-full mr-2`}></span>
-                     {isConnected ? 'Actief verbonden met de WordPress REST API' : 'Niet verbonden'}
-                   </p>
-                 </CardContent>
-               </Card>
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-medium">Status</h3>
+                    <p className={isConnected ? "text-green-600 flex items-center mt-2" : "text-amber-700 flex items-center mt-2"}>
+                      <span className={`w-2 h-2 ${isConnected ? 'bg-green-500' : 'bg-amber-500'} rounded-full mr-2`}></span>
+                      {isConnected ? 'Actief verbonden met de WordPress REST API' : 'Niet verbonden'}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent>
+                    <h4 className="font-medium">Connection Details</h4>
+                    <div className="mt-2 text-sm text-muted-foreground space-y-1">
+                      <div><strong>Gebruikersnaam:</strong> {(site as any).username || '—'}</div>
+                      <div><strong>Basis REST URL:</strong> {(site as any).site_url ? `${(site as any).site_url.replace(/\/$/, '')}/wp-json/` : '—'}</div>
+                      <div><strong>API Key:</strong> {(site as any).api_key || (site as any).apiKey || (site as any).password || '—'}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </Tabs.Content>
 
             <Tabs.Content value="plugins">
