@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useThemes, useToggleTheme } from '../../hooks/useWordPress';
+import { useThemes, useManageTheme } from '../../hooks/useWordPress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -11,7 +11,7 @@ interface ThemesTabProps {
 
 const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
   const { data: themes, isLoading, isError, error } = useThemes(siteId);
-  const toggleThemeMutation = useToggleTheme(siteId);
+  const manageTheme = useManageTheme(siteId);
 
   if (isLoading) {
     return (
@@ -84,14 +84,29 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
               <TableCell>{theme.version}</TableCell>
               <TableCell className="text-right space-x-2">
                  <Button
-                   variant="ghost"
                    size="sm"
-                   disabled={toggleThemeMutation.isPending || theme.status === 'active'}
-                   onClick={() => toggleThemeMutation.mutate({ themeSlug: theme.stylesheet, status: theme.status, themeName: theme.name })}
+                   variant="primary"
+                   disabled={manageTheme.isPending || theme.status === 'active'}
+                   onClick={() => handleAction(theme, 'activate')}
                  >
-                   {toggleThemeMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Activate'}
+                   {theme.status === 'active' ? 'Active' : 'Activate'}
                  </Button>
-                 <Button variant="outline" size="sm" disabled>Update</Button>
+                 <Button
+                   size="sm"
+                   variant="secondary"
+                   disabled={manageTheme.isPending}
+                   onClick={() => handleAction(theme, 'update')}
+                 >
+                   Update
+                 </Button>
+                 <Button
+                   size="sm"
+                   variant="destructive"
+                   disabled={manageTheme.isPending}
+                   onClick={() => handleAction(theme, 'delete')}
+                 >
+                   Delete
+                 </Button>
               </TableCell>
             </TableRow>
           ))}

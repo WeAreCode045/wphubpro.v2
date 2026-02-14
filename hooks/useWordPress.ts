@@ -1,11 +1,11 @@
-export const useToggleTheme = (siteId: string | undefined) => {
+
+export const useManageTheme = (siteId: string | undefined) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  return useMutation<WordPressTheme, Error, { themeSlug: string; status: 'active' | 'inactive'; themeName: string }>({
-    mutationFn: ({ themeSlug, status }) => {
-      const action = status === 'active' ? 'deactivate' : 'activate';
+  return useMutation<WordPressTheme, Error, { themeSlug: string; action: 'activate' | 'deactivate' | 'delete' | 'update'; themeName: string }>({
+    mutationFn: ({ themeSlug, action }) => {
       return executeWpProxy<WordPressTheme>({
         siteId: siteId!,
         method: 'POST',
@@ -17,17 +17,16 @@ export const useToggleTheme = (siteId: string | undefined) => {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['themes', siteId] });
-      const action = variables.status === 'active' ? 'deactivated' : 'activated';
       toast({
         title: 'Success',
-        description: `Theme "${variables.themeName}" has been ${action}.`,
+        description: `Theme \"${variables.themeName}\" ${variables.action}d successfully.`,
         variant: 'success',
       });
     },
     onError: (error, variables) => {
       toast({
         title: 'Action Failed',
-        description: `Could not toggle theme "${variables.themeName}": ${error.message}`,
+        description: `Could not ${variables.action} theme \"${variables.themeName}\": ${error.message}`,
         variant: 'destructive',
       });
     },
