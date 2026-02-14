@@ -128,14 +128,19 @@ export const useUpdateSite = () => {
         mutationFn: async ({ siteId, ...updates }) => {
             if (!user) throw new Error('User not authenticated.');
 
-            // Bepaal of we de server functie nodig hebben voor encryptie
-            const needsServerProcessing = !!(updates.password || updates.username);
-            
+            // Decide if server processing is needed. Use property presence (not truthiness)
+            const hasOwn = (obj: any, key: string) => Object.prototype.hasOwnProperty.call(obj || {}, key);
+            const needsServerProcessing = hasOwn(updates, 'password') || hasOwn(updates, 'username');
+
             if (!needsServerProcessing) {
-                // Directe DB update voor simpele metadata
+                // Direct DB update for simple metadata
                 const dbUpdates: any = {};
                 if (updates.siteName) dbUpdates.site_name = updates.siteName;
                 if (updates.siteUrl) dbUpdates.site_url = updates.siteUrl;
+                // If there are no dbUpdates, avoid calling updateDocument with empty payload
+                if (Object.keys(dbUpdates).length === 0) {
+                    throw new Error('No fields to update.');
+                }
                 return await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, dbUpdates);
             }
 
@@ -158,6 +163,9 @@ export const useUpdateSite = () => {
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
             queryClient.invalidateQueries({ queryKey: ['site', variables.siteId] });
+            // Invalidate plugins/themes for this site so the UI refetches using updated credentials
+            queryClient.invalidateQueries({ queryKey: ['plugins', variables.siteId] });
+            queryClient.invalidateQueries({ queryKey: ['themes', variables.siteId] });
             toast({ title: 'Site bijgewerkt', description: 'De gegevens zijn succesvol opgeslagen.', variant: 'success' });
         },
         onError: (err) => {

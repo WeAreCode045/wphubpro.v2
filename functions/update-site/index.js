@@ -45,33 +45,78 @@ module.exports = async ({ req, res, log, error }) => {
 
   const finalUpdates = {};
   
-  // Map variants: user_login -> username, site_url variants -> site_url
-  const usernameRaw = updates.username || updates.user_login || updates.userLogin || null;
-  const siteNameRaw = updates.siteName || updates.site_name || null;
-  const siteUrlCandidate = siteUrlRaw || updates.siteUrl || updates.site_url || null;
+  // Map variants and respect empty values: allow clearing fields by passing empty strings
+  const hasProp = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
 
-  // If a password is supplied (Connect flow), encrypt before saving
-  if (updates.password) {
-    if (!ENCRYPTION_KEY) {
-      return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
-    }
-    finalUpdates.password = encrypt(updates.password, ENCRYPTION_KEY);
+  let usernameRaw = null;
+  if (hasProp(updates, 'username')) usernameRaw = updates.username;
+  else if (hasProp(updates, 'user_login')) usernameRaw = updates.user_login;
+  else if (hasProp(updates, 'userLogin')) usernameRaw = updates.userLogin;
+
+  let siteNameRaw = null;
+  if (hasProp(updates, 'siteName')) siteNameRaw = updates.siteName;
+  else if (hasProp(updates, 'site_name')) siteNameRaw = updates.site_name;
+
+  let siteUrlCandidate = siteUrlRaw;
+  if (!siteUrlCandidate) {
+    if (hasProp(updates, 'siteUrl')) siteUrlCandidate = updates.siteUrl;
+    else if (hasProp(updates, 'site_url')) siteUrlCandidate = updates.site_url;
   }
 
-  if (usernameRaw) finalUpdates.username = usernameRaw;
-  if (siteNameRaw) finalUpdates.site_name = siteNameRaw;
-  if (siteUrlCandidate) finalUpdates.site_url = siteUrlCandidate;
+  // If a password is supplied (Connect flow) — including empty string to clear — handle accordingly
+  if (hasProp(updates, 'password')) {
+    const rawPass = updates.password;
+    // Allow disabling encryption via environment or explicit client flag (_disable_encryption)
+    const disableEncEnv = env.DISABLE_ENCRYPTION === '1' || env.DISABLE_ENCRYPTION === 'true';
+    const disableEncFlag = hasProp(updates, '_disable_encryption') && !!updates._disable_encryption;
+    const disableEnc = disableEncEnv || disableEncFlag;
+    if (rawPass === '' || rawPass === null) {
+      // Explicitly clear password
+      finalUpdates.password = '';
+    } else if (disableEnc) {
+      finalUpdates.password = rawPass;
+    } else {
+      if (!ENCRYPTION_KEY) {
+        return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
+      }
+      finalUpdates.password = encrypt(rawPass, ENCRYPTION_KEY);
+    }
+  }
+
+  if (usernameRaw !== null) finalUpdates.username = usernameRaw;
+  if (siteNameRaw !== null) finalUpdates.site_name = siteNameRaw;
+  if (siteUrlCandidate !== null) finalUpdates.site_url = siteUrlCandidate;
 
   // If siteId wasn't provided, try to find the site by site_url or create it
   try {
     if (!siteId && siteUrlCandidate) {
       const decodedUrl = typeof siteUrlCandidate === 'string' ? decodeURIComponent(siteUrlCandidate) : siteUrlCandidate;
       log('Searching for site by URL: ' + decodedUrl);
-      const list = await databases.listDocuments('platform_db', 'sites', [sdk.Query.equal('site_url', decodedUrl)]);
-      log('List result: ' + JSON.stringify(list));
-      if (list && list.total > 0 && list.documents && list.documents.length > 0) {
-        siteId = list.documents[0].$id;
-        log('Found existing site id: ' + siteId);
+      // Try to scope search to the current user if available
+      const userId = (payloadObj && (payloadObj.userId || payloadObj.user_id)) || (updates && (updates.userId || updates.user_id)) || null;
+      let list;
+      try {
+        if (userId) {
+          list = await databases.listDocuments('platform_db', 'sites', [sdk.Query.equal('user_id', userId)]);
+        } else {
+          // Fallback: list all (not ideal for production)
+          list = await databases.listDocuments('platform_db', 'sites', []);
+        }
+      } catch (e) {
+        log('Error listing documents: ' + e.message);
+        list = { total: 0, documents: [] };
+      }
+
+      // Normalize helper
+      const normalize = (u) => {
+        try { return String(u).replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase(); } catch { return String(u); }
+      };
+
+      const target = normalize(decodedUrl);
+      const found = (list && list.documents || []).find(d => normalize((d.site_url || d.siteUrl || '')) === target);
+      if (found) {
+        siteId = found.$id;
+        log('Found existing site id by normalized URL: ' + siteId);
       } else {
         // create new site document with provided fields
         const createData = Object.assign({}, finalUpdates);
@@ -89,6 +134,16 @@ module.exports = async ({ req, res, log, error }) => {
   log('Updating site id: ' + siteId + ' with: ' + JSON.stringify(finalUpdates));
 
   try {
+    // Guard: ensure we have updates to apply
+    if (!siteId) {
+      return res.json({ success: false, message: 'Missing siteId to update' }, 400);
+    }
+
+    if (!finalUpdates || Object.keys(finalUpdates).length === 0) {
+      log('No updates provided to update-site for siteId: ' + siteId);
+      return res.json({ success: false, message: 'No update fields provided' }, 400);
+    }
+
     const updated = await databases.updateDocument('platform_db', 'sites', siteId, finalUpdates);
     return res.json({ success: true, document: updated });
   } catch (e) {

@@ -11,7 +11,7 @@ interface PluginsTabProps {
 }
 
 const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
-  const { data: plugins, isLoading, isError, error } = usePlugins(siteId);
+  const { data: plugins, isLoading, isError, error, refetch } = usePlugins(siteId);
   const togglePluginMutation = useTogglePlugin(siteId);
 
   const handleToggle = (plugin: WordPressPlugin) => {
@@ -32,12 +32,38 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
   }
 
   if (isError) {
+    const message = error?.message || String(error);
     return (
-      <div className="flex items-center p-4 text-sm text-destructive bg-destructive/10 rounded-md">
-        <AlertCircle className="w-5 h-5 mr-2" />
-        <div>
-          <p className="font-semibold">Error loading plugins</p>
-          <p>{error?.message}</p>
+      <div className="p-4 rounded-md border border-border bg-card">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-6 h-6 text-destructive mt-1" />
+          <div className="flex-1">
+            <p className="font-semibold">Error loading plugins</p>
+            <p className="text-sm text-muted-foreground mt-1">{message}</p>
+
+            <div className="mt-3 text-sm space-y-2">
+              <p><strong>Wat te controleren</strong></p>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                <li>Controleer of de WordPress REST API beschikbaar is op <code>/wp-json/wp/v2/plugins</code>.</li>
+                <li>Controleer of de opgeslagen site-credentials correct zijn en dat de runtime `ENCRYPTION_KEY` heeft om versleutelde wachtwoorden te ontsleutelen.</li>
+                <li>Zorg dat de gebruiker met de opgeslagen credentials voldoende rechten heeft om plugins te zien (Administrator).</li>
+              </ul>
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
+              <Button variant="ghost" size="sm" onClick={() => {
+                // Copy a diagnostic curl command to clipboard for manual testing
+                const curl = `curl -u <username>:<password> "https://<site_url>/wp-json/wp/v2/plugins"`;
+                try { navigator.clipboard.writeText(curl); } catch { void 0; }
+              }}>Copy test command</Button>
+            </div>
+
+            <details className="mt-3 text-xs text-muted-foreground">
+              <summary className="cursor-pointer">Fout details</summary>
+              <pre className="whitespace-pre-wrap mt-2 text-xs">{message}</pre>
+            </details>
+          </div>
         </div>
       </div>
     );

@@ -23,6 +23,7 @@ import OrdersPage from './pages/admin/OrdersPage';
 import PlanManagementPage from './pages/admin/PlanManagementPage';
 import { Loader2 } from 'lucide-react';
 import ConnectSuccess from './pages/ConnectSuccess';
+import ConnectCallback from './pages/ConnectCallback';
 
 const AppRoutes: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -38,6 +39,7 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/connect/callback" element={<ConnectCallback />} />
       <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
       <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
 

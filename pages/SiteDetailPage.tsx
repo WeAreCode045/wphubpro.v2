@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSite } from '../hooks/useSites';
 import { Globe, AlertTriangle, Loader2 } from 'lucide-react';
+import { useUpdateSite } from '../hooks/useSites';
 import Button from '../components/ui/Button';
 import Card, { CardContent } from '../components/ui/Card';
 import Tabs from '../components/ui/Tabs';
@@ -11,6 +12,8 @@ import ThemesTab from './site-detail/ThemesTab';
 const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: site, isLoading, isError, error } = useSite(id);
+  // Hooks must be called unconditionally - keep mutations at top-level
+  const { mutate: disconnectSite, isPending: disconnecting } = useUpdateSite();
 
   const handleConnectWordPress = () => {
     if (!site) return;
@@ -18,7 +21,9 @@ const SiteDetailPage: React.FC = () => {
     // Sla het ID op in localStorage om de site te identificeren na de redirect
     localStorage.setItem('pending_site_id', site.$id);
 
-    const callbackUrl = `${window.location.origin}/dashboard/connect-success`;
+    // Use a hash-based callback URL so HashRouter recognizes the route after external redirects
+    const callbackPath = '/connect/callback';
+    const callbackUrl = `${window.location.origin}/#${callbackPath}`;
     const params = new URLSearchParams({
       app_name: "WPHubPro",
       success_url: callbackUrl,
@@ -56,6 +61,14 @@ const SiteDetailPage: React.FC = () => {
   // Controleer of de site verbonden is op basis van de aanwezigheid van een password
   const isConnected = !!(site as any).password;
 
+  const handleDisconnect = () => {
+    if (!site) return;
+    const ok = window.confirm('Weet je zeker dat je de verbinding wilt verbreken? De opgeslagen gebruikersnaam en het wachtwoord worden verwijderd.');
+    if (!ok) return;
+
+    disconnectSite({ siteId: site.$id, username: '', password: '' });
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -65,6 +78,17 @@ const SiteDetailPage: React.FC = () => {
         <p className="text-muted-foreground">
           {(site as any).siteUrl || (site as any).site_url}
         </p>
+        {isConnected && (
+          <div className="mt-3">
+            <button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Ontkoppelen
+            </button>
+          </div>
+        )}
       </div>
 
       {!isConnected ? (

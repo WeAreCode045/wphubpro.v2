@@ -21,8 +21,9 @@ module.exports = async ({ req, res, log, error }) => {
   const APPWRITE_FUNCTION_PROJECT_ID = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
   const APPWRITE_FUNCTION_API_KEY = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY || env.APPWRITE_KEY;
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
+  const DISABLE_ENCRYPTION = env.DISABLE_ENCRYPTION === '1' || env.DISABLE_ENCRYPTION === 'true';
 
-  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY || !ENCRYPTION_KEY) {
+  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY || (!ENCRYPTION_KEY && !DISABLE_ENCRYPTION)) {
     error('Function environment is not configured');
     return res.json({ success: false, message: 'Function environment is not configured.' }, 500);
   }
@@ -50,7 +51,7 @@ module.exports = async ({ req, res, log, error }) => {
   try {
     let encryptedPassword = "";
 
-    // Alleen valideren en versleutelen als er gegevens zijn meegeleverd
+    // Alleen valideren en (optioneel) versleutelen als er gegevens zijn meegeleverd
     if (username && password) {
       const url = `${site_url.replace(/\/$/, '')}/wp-json/wp/v2/plugins`;
       const auth = Buffer.from(`${username}:${password}`).toString('base64');
@@ -59,7 +60,13 @@ module.exports = async ({ req, res, log, error }) => {
       if (!resp.ok) {
         return res.json({ success: false, message: 'WP validation failed' }, resp.status);
       }
-      encryptedPassword = encrypt(password, ENCRYPTION_KEY);
+      // Allow a client-provided flag to disable encryption for testing (payloadObj._disable_encryption)
+      const disableEncFlag = (payloadObj && (payloadObj._disable_encryption || payloadObj.disable_encryption)) || (req.query && (req.query._disable_encryption || req.query.disable_encryption));
+      if (DISABLE_ENCRYPTION || disableEncFlag) {
+        encryptedPassword = password;
+      } else {
+        encryptedPassword = encrypt(password, ENCRYPTION_KEY);
+      }
     }
 
     const document = {

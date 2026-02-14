@@ -11,38 +11,13 @@ const ConnectSuccess: React.FC = () => {
   const processedRef = useRef(false);
 
   useEffect(() => {
-    // Voorkom dubbele uitvoering en wacht tot sites geladen zijn
-    if (processedRef.current || isLoading || !sites) return;
+    // Instead of processing and redirecting here, forward to the dedicated callback route
+    if (processedRef.current) return;
+    processedRef.current = true;
 
-    const siteUrlParam = searchParams.get('site_url');
-    const username = searchParams.get('user_login');
-    const password = searchParams.get('password');
-
-    if (siteUrlParam && username && password) {
-      // Normaliseer URLs voor een betrouwbare match (verwijder trailing slashes en protocols)
-      const normalize = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      const targetUrl = normalize(siteUrlParam);
-
-      const matchingSite = sites.find(s => normalize(s.siteUrl) === targetUrl);
-
-      if (matchingSite) {
-        processedRef.current = true;
-        
-        // Trigger de update-site functie via de hook
-        updateSite({
-          siteId: matchingSite.$id,
-          username: username,
-          password: password,
-        });
-
-        // Redirect na opslaan
-        const timer = setTimeout(() => {
-          navigate('/dashboard');
-        }, 3000);
-
-        return () => clearTimeout(timer);
-      }
-    }
+    const qs = searchParams.toString();
+    // Preserve the query string when navigating to the callback page
+    navigate(`/connect/callback${qs ? `?${qs}` : ''}`);
   }, [searchParams, sites, isLoading, updateSite, navigate]);
 
   return (

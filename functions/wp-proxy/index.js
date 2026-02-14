@@ -40,7 +40,11 @@ module.exports = async ({ req, res, log, error }) => {
 
   // Fallback to query parameters (some createExecution calls ended up encoding data as query params)
   const siteId = payload.siteId || (req && req.query && (req.query.siteId || req.query.site_id));
-  const endpoint = payload.endpoint || (req && req.query && req.query.endpoint);
+  let endpoint = payload.endpoint || (req && req.query && req.query.endpoint);
+  // If endpoint came via query params it may be percent-encoded (e.g. %2Fwp%2Fv2%2Fplugins)
+  if (req && req.query && req.query.endpoint && typeof endpoint === 'string') {
+    try { endpoint = decodeURIComponent(endpoint); } catch (e) { /* leave as-is */ }
+  }
   const method = payload.method || (req && req.query && req.query.method) || 'GET';
   const body = payload.body || (req && req.query && req.query.body && (() => {
     try { return JSON.parse(decodeURIComponent(req.query.body)); } catch { return undefined; }
@@ -85,7 +89,12 @@ module.exports = async ({ req, res, log, error }) => {
       const envLocal = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
       const ENCRYPTION_KEY = envLocal.ENCRYPTION_KEY;
       // Log presence (do NOT log the key itself)
-      try { log && log(`DEBUG_ENCRYPTION_KEY_PRESENT ${!!ENCRYPTION_KEY}`); } catch (_) {}
+      try { log && log(`DEBUG_ENCRYPTION_KEY_PRESENT ${!!ENCRYPTION_KEY}`); } catch (_) { void 0; }
+
+      // If the stored password looks encrypted but no ENCRYPTION_KEY is available, fail early with a clear message
+      if (!ENCRYPTION_KEY && typeof password === 'string' && password.split(':').length === 3) {
+        return res.json({ success: false, message: 'Function runtime missing ENCRYPTION_KEY to decrypt stored site credentials.' }, 500);
+      }
 
       if (ENCRYPTION_KEY && typeof password === 'string' && password.split(':').length === 3) {
         decryptionAttempted = true;
@@ -108,21 +117,24 @@ module.exports = async ({ req, res, log, error }) => {
       }
     } catch (e) {
       // Log detailed error for debugging, but do not fail the request — fall back to stored password (assume plaintext)
-      try { error && error('Credential decryption failed, falling back to stored password. Decryption error: ' + (e && e.message ? e.message : String(e))); } catch (_) {}
+      try { error && error('Credential decryption failed, falling back to stored password. Decryption error: ' + (e && e.message ? e.message : String(e))); } catch (_) { void 0; }
       // proceed using original `password` value (may be plaintext)
     }
 
     // Emit result of decryption attempt
-    try { log && log(`DEBUG_DECRYPTION_RESULT siteId=${siteId} attempted=${decryptionAttempted} success=${decryptionSucceeded}`); } catch (_) {}
+    try { log && log(`DEBUG_DECRYPTION_RESULT siteId=${siteId} attempted=${decryptionAttempted} success=${decryptionSucceeded}`); } catch (_) { void 0; }
 
     const decryptedPassword = password;
     // DEBUG: log the credentials used for the proxied request (temporary, remove after debugging)
     try {
       log && log(`DEBUG_CREDENTIALS username=${username} password=${decryptedPassword}`);
     } catch (e) {
-      // ignore logging errors
+      void 0;
     }
     const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${endpoint.replace(/^\//, '')}`;
+
+    // Detailed debug logging to verify the exact API URL and context used for the proxied request
+    try { log && log(`WP_PROXY_DEBUG siteId=${siteId} callerUserId=${callerUserId} endpointParam=${endpoint} computedProxyUrl=${proxyUrl}`); } catch (_) { void 0; }
 
     const authString = Buffer.from(`${username}:${decryptedPassword}`).toString('base64');
 
