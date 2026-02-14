@@ -25,8 +25,8 @@ function wphub_handle_connect() {
 
     $current_user = wp_get_current_user();
     
-    // De URL van jouw platform — gebruik de SPA hash route so the HashRouter can parse query params
-    $platform_url = "https://wphubpro.netlify.app/#/dashboard/connect-success"; // Pas aan naar jouw daadwerkelijke callback URL
+    // De URL van jouw platform — direct path that will be handled by static fallback
+    $platform_url = "https://wphubpro.netlify.app/connect-success"; // Pas aan naar jouw daadwerkelijke callback URL
     
     $params = [
         'site_url'   => get_site_url(),

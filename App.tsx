@@ -50,6 +50,7 @@ const AppRoutes: React.FC = () => {
         <Route path="library" element={<LibraryPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
         <Route path="/dashboard/connect-success" element={<ConnectSuccess />} />
+        <Route path="/connect-success" element={<ConnectSuccess />} />
         
         {/* Admin Specific Routes */}
         <Route path="admin" element={<AdminRoute><Outlet /></AdminRoute>}>
