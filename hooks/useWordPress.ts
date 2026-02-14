@@ -67,11 +67,12 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
 
 
 // --- Hooks ---
+// Use the new bridge endpoint for plugin list
 export const usePlugins = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressPlugin[], Error>({
     queryKey: ['plugins', siteId],
-    queryFn: () => executeWpProxy<WordPressPlugin[]>({ siteId: siteId!, endpoint: '/wp/v2/plugins', userId: user?.$id, useApiKey: true }),
+    queryFn: () => executeWpProxy<WordPressPlugin[]>({ siteId: siteId!, endpoint: 'wphub/v1/plugins', userId: user?.$id, useApiKey: true }),
     enabled: !!siteId,
   });
 };

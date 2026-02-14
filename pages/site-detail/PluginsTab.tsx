@@ -37,7 +37,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
     const message = error?.message || String(error);
     return (
       <div className="p-4 rounded-md border border-border bg-card">
-        <div className="mb-2 text-sm text-muted-foreground">API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wp/v2/plugins` : 'unknown'}</div>
+        <div className="mb-2 text-sm text-muted-foreground">API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphub/v1/plugins` : 'unknown'}</div>
         <div className="flex items-start gap-3">
           <AlertCircle className="w-6 h-6 text-destructive mt-1" />
           <div className="flex-1">
@@ -47,8 +47,8 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
             <div className="mt-3 text-sm space-y-2">
               <p><strong>Wat te controleren</strong></p>
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                <li>Controleer of de WordPress REST API beschikbaar is op <code>/wp-json/wp/v2/plugins</code>.</li>
-                <li>Controleer of de opgeslagen site-credentials correct zijn en dat de runtime `ENCRYPTION_KEY` heeft om versleutelde wachtwoorden te ontsleutelen.</li>
+                <li>Controleer of de WPHub Bridge plugin actief is en de endpoint <code>/wp-json/wphub/v1/plugins</code> beschikbaar is.</li>
+                <li>Controleer of de opgeslagen API key correct is en overeenkomt met de WordPress Bridge plugin.</li>
                 <li>Zorg dat de gebruiker met de opgeslagen credentials voldoende rechten heeft om plugins te zien (Administrator).</li>
               </ul>
             </div>
@@ -57,7 +57,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
               <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
               <Button variant="ghost" size="sm" onClick={() => {
                 // Copy a diagnostic curl command to clipboard for manual testing
-                const curl = `curl -H "X-WPHub-Key: <api_key>" "${site ? String(site.siteUrl).replace(/\/$/, '') : 'https://<site_url>'}/wp-json/wp/v2/plugins"`;
+                const curl = `curl -H \"X-WPHub-Key: <api_key>\" \"${site ? String(site.siteUrl).replace(/\/$/, '') : 'https://<site_url>'}/wp-json/wphub/v1/plugins\"`;
                 try { navigator.clipboard.writeText(curl); } catch { void 0; }
               }}>Copy test command</Button>
             </div>
@@ -74,7 +74,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
 
   return (
     <div className="rounded-lg border border-border bg-card">
-      <div className="p-4 border-b border-border text-sm text-muted-foreground">API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wp/v2/plugins` : 'unknown'}</div>
+      <div className="p-4 border-b border-border text-sm text-muted-foreground">API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphub/v1/plugins` : 'unknown'}</div>
       <Table>
         <TableHeader>
           <TableRow>
