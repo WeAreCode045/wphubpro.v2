@@ -77,11 +77,12 @@ export const usePlugins = (siteId: string | undefined) => {
   });
 };
 
+// Use the new bridge endpoint for theme list
 export const useThemes = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressTheme[], Error>({
     queryKey: ['themes', siteId],
-    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: '/wp/v2/themes', userId: user?.$id, useApiKey: true }),
+    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: 'wphub/v1/themes', userId: user?.$id, useApiKey: true }),
     enabled: !!siteId,
   });
 };
