@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { databases, DATABASE_ID, COLLECTIONS } from '../../services/appwrite';
-// import { Query } from 'appwrite';
+import { functions } from '../../services/appwrite';
 import { 
   Search, 
   MoreHorizontal, 
@@ -21,31 +20,48 @@ import Input from '../../components/ui/Input';
 const UserManagerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
+  const waitForExecutionResponse = async (executionId: string, functionId: string) => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const execution = await functions.getExecution(functionId, executionId);
+      const body = execution.responseBody;
+      if (body && typeof body === 'string' && body.trim() !== '') {
+        return execution;
+      }
+      if (execution.status === 'completed' || execution.status === 'failed') {
+        return execution;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+    return null;
+  };
+
   const { data: users = [], isLoading, isError, error } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
-      // Fetch all subscriptions to get user data
-      const subsResponse = await databases.listDocuments(DATABASE_ID, COLLECTIONS.SUBSCRIPTIONS);
-      
-      // Map subscriptions to user data
-      const userMap = new Map();
-      
-      subsResponse.documents.forEach((sub: any) => {
-        if (!userMap.has(sub.user_id)) {
-          userMap.set(sub.user_id, {
-            id: sub.user_id,
-            name: sub.user_name || `User ${sub.user_id.substring(0, 8)}`,
-            email: sub.user_email || 'N/A',
-            role: 'User',
-            stripeId: sub.stripe_customer_id || 'n/a',
-            status: sub.status === 'active' ? 'Active' : 'Inactive',
-            planId: sub.plan_id,
-            joined: new Date(sub.$createdAt).toLocaleDateString()
-          });
+      const functionId = 'admin-list-users';
+      const result = await functions.createExecution(functionId, JSON.stringify({ limit: 100 }), false);
+      let finalResult = result;
+      let body = result.responseBody;
+      if (!body || typeof body !== 'string' || body.trim() === '') {
+        const execution = await waitForExecutionResponse(result.$id, functionId);
+        if (execution) {
+          finalResult = execution;
+          body = execution.responseBody;
         }
-      });
-
-      return Array.from(userMap.values());
+      }
+      if (!body || typeof body !== 'string' || body.trim() === '') {
+        throw new Error(`No response from server. Status: ${finalResult.responseStatusCode || 'n/a'}.`);
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(body);
+      } catch {
+        throw new Error('Invalid JSON response from server.');
+      }
+      if (finalResult.responseStatusCode >= 400) {
+        throw new Error(parsed?.message || 'Failed to fetch users.');
+      }
+      return parsed.users || [];
     },
     staleTime: 1000 * 60, // 1 minute
   });
