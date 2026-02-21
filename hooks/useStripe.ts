@@ -68,7 +68,8 @@ export const useStripePlans = () => {
       if (execution.responseStatusCode >= 400) {
         throw new Error(JSON.parse(execution.responseBody).error || 'Failed to fetch plans.');
       }
-      return JSON.parse(execution.responseBody);
+      const response = JSON.parse(execution.responseBody);
+      return response.plans || []; // Extract the 'plans' array and fallback to an empty array
     },
     enabled: !!user, // Only fetch if the user is logged in
     staleTime: 1000 * 60 * 60, // 1 hour
