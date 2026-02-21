@@ -20,6 +20,7 @@ import AdminRoute from './components/layout/AdminRoute';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagerPage from './pages/admin/UserManagerPage';
+import UserDetailPage from './pages/admin/UserDetailPage';
 import OrdersPage from './pages/admin/OrdersPage';
 import PlanManagementPage from './pages/admin/PlanManagementPage';
 import SubscriptionsPage from './pages/admin/SubscriptionsPage';
@@ -64,6 +65,7 @@ const AppRoutes: React.FC = () => {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="users" element={<UserManagerPage />} />
+          <Route path="users/:userId" element={<UserDetailPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="plans" element={<PlanManagementPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />

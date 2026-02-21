@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { functions } from "../../services/appwrite";
 import {
   Search,
-  MoreHorizontal,
   UserPlus,
   Mail,
   Shield,
@@ -11,17 +10,18 @@ import {
   Filter,
   Loader2,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import Card, { CardHeader, CardContent } from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import Modal from "../../components/ui/Modal";
-import Label from "../../components/ui/Label";
-import EditUserForm from "./EditUserForm";
+import { useNavigate } from "react-router-dom";
+import { avatars } from "../../services/appwrite";
 
 const UserManagerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const waitForExecutionResponse = async (
     executionId: string,
@@ -84,49 +84,6 @@ const UserManagerPage: React.FC = () => {
       return parsed.users || [];
     },
     staleTime: 1000 * 60, // 1 minute
-  });
-
-  const queryClient = useQueryClient();
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
-
-  const openEdit = (user: any) => {
-    setSelectedUser(user);
-    setIsEditOpen(true);
-  };
-
-  const closeEdit = () => {
-    setSelectedUser(null);
-    setIsEditOpen(false);
-  };
-
-  const editMutation = useMutation({
-    mutationFn: async (payload: { userId: string; updates: any }) => {
-      const functionId = "admin-update-user";
-      const exec = await functions.createExecution(
-        functionId,
-        JSON.stringify(payload),
-        false,
-      );
-      // poll if needed
-      if (!exec.responseBody || exec.responseBody.trim() === "") {
-        const polled = await (async () => {
-          for (let i = 0; i < 5; i++) {
-            const e = await functions.getExecution(functionId, exec.$id);
-            if (e.responseBody && e.responseBody.trim() !== "") return e;
-            if (e.status === "completed" || e.status === "failed") return e;
-            await new Promise((r) => setTimeout(r, 600));
-          }
-          return exec;
-        })();
-        if (polled) return polled;
-      }
-      return exec;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
-      closeEdit();
-    },
   });
 
   const filteredUsers = users.filter((user: any) => {
@@ -220,37 +177,40 @@ const UserManagerPage: React.FC = () => {
                 {filteredUsers.map((user: any) => (
                   <tr
                     key={user.id}
-                    className="border-b border-border hover:bg-muted/30 transition-colors group"
+                    onClick={() => navigate(`/admin/users/${user.id}`)}
+                    className="border-b border-border hover:bg-muted/30 transition-colors group cursor-pointer"
                   >
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
+                        <img 
+                          src={avatars.getInitials(user.name, 64, 64).toString()} 
+                          alt={user.name}
+                          className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 object-cover"
+                        />
                         <div>
-                          <div className="font-medium text-foreground">
+                          <div className="font-medium text-foreground text-sm">
                             {user.name}
                           </div>
-                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <div className="text-[11px] text-muted-foreground flex items-center gap-1">
                             <Mail className="w-3 h-3" /> {user.email}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-4 text-sm">
                       <div className="flex items-center gap-1.5">
                         <Shield
-                          className={`w-3.5 h-3.5 ${user.role === "Admin" ? "text-primary" : "text-muted-foreground"}`}
+                          className={`w-3.5 h-3.5 ${user.isAdmin ? "text-primary" : "text-muted-foreground"}`}
                         />
                         <span className="text-sm">
                           {user.planName || user.planId || "Free Tier"}
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-4 text-sm">
                       {user.stripeId !== "n/a" ? (
-                        <div className="flex items-center gap-1.5 text-sm font-mono bg-secondary/50 px-2 py-1 rounded w-fit border border-border">
-                          <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
+                        <div className="flex items-center gap-1.5 font-mono bg-secondary/50 px-2 py-1 rounded w-fit border border-border text-[11px]">
+                          <CreditCard className="w-3 h-3 text-muted-foreground" />
                           {user.stripeId}
                         </div>
                       ) : (
@@ -276,12 +236,11 @@ const UserManagerPage: React.FC = () => {
                     <td className="py-4 px-4 text-right">
                       <div className="flex justify-end">
                         <Button
-                          onClick={() => openEdit(user)}
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <MoreHorizontal className="w-4 h-4" />
+                          <ArrowRight className="w-4 h-4" />
                         </Button>
                       </div>
                     </td>
@@ -292,26 +251,6 @@ const UserManagerPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Edit User Modal */}
-      <Modal
-        isOpen={isEditOpen}
-        onClose={closeEdit}
-        title={selectedUser ? `Edit ${selectedUser.name}` : "Edit User"}
-      >
-        {selectedUser && (
-          <EditUserForm
-            user={selectedUser}
-            onCancel={closeEdit}
-            onSave={async (updates: any) => {
-              await editMutation.mutateAsync({
-                userId: selectedUser.id,
-                updates,
-              });
-            }}
-          />
-        )}
-      </Modal>
     </div>
   );
 };

@@ -59,7 +59,7 @@ module.exports = async ({ req, res, log, error }) => {
     // Get current user to compare values
     const currentUser = await users.get(userId);
 
-    // Update Appwrite user via Users API for simple fields (only if changed)
+      // Update Appwrite user via Users API for simple fields (only if changed)
     try {
       if (updates.name && updates.name !== currentUser.name) {
         await users.updateName(userId, updates.name);
@@ -67,6 +67,22 @@ module.exports = async ({ req, res, log, error }) => {
       if (updates.email && updates.email !== currentUser.email) {
         await users.updateEmail(userId, updates.email);
       }
+      
+      // Update Stripe if name or email changed and user has a stripe_customer_id
+      const stripeCustomerId = updates.stripe_customer_id || currentUser.prefs?.stripe_customer_id;
+      if (stripeCustomerId && (updates.name || updates.email)) {
+        try {
+          const stripeUpdate = {};
+          if (updates.name) stripeUpdate.name = updates.name;
+          if (updates.email) stripeUpdate.email = updates.email;
+          
+          await stripe.customers.update(stripeCustomerId, stripeUpdate);
+          log(`Updated Stripe customer ${stripeCustomerId} with new details`);
+        } catch (stripeErr) {
+          log(`Warning: Failed to update Stripe customer: ${stripeErr.message}`);
+        }
+      }
+
       if (Object.prototype.hasOwnProperty.call(updates, 'status')) {
         const newStatus = updates.status === 'Active';
         if (newStatus !== currentUser.status) {

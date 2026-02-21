@@ -58,14 +58,14 @@ const UserSubscriptionDetailPage: React.FC = () => {
   };
 
   const {
-    data: subscriptionId,
+    data: subscriptionDoc,
     isLoading: isLoadingSubscription,
   } = useQuery({
-    queryKey: ["user-subscription-id", user?.$id],
+    queryKey: ["user-subscription-doc", user?.$id],
     queryFn: async () => {
       if (!user?.$id) throw new Error("Not authenticated");
 
-      // Get subscription ID from subscriptions collection
+      // Get subscription document from subscriptions collection
       const response = await databases.listDocuments(
         DATABASE_ID,
         "subscriptions",
@@ -76,7 +76,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
         throw new Error("No subscription found");
       }
 
-      return response.documents[0].stripe_subscription_id;
+      return response.documents[0];
     },
     enabled: !!user?.$id,
   });
@@ -87,9 +87,65 @@ const UserSubscriptionDetailPage: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["subscription-details", subscriptionId],
+    queryKey: ["subscription-details", subscriptionDoc?.$id],
     queryFn: async () => {
-      if (!subscriptionId) throw new Error("No subscription ID");
+      if (!subscriptionDoc) throw new Error("No subscription found");
+
+      // If it's a local plan, fetch from local_plans collection
+      if (subscriptionDoc.source === 'local') {
+        const planLabel = subscriptionDoc.plan_label || subscriptionDoc.plan_id;
+        const planDocs = await databases.listDocuments(
+          DATABASE_ID,
+          "local_plans",
+          [Query.equal("label", planLabel)]
+        );
+
+        const localPlan = planDocs.documents[0] || {
+          name: subscriptionDoc.plan_id || "Local Plan",
+          sites_limit: 1,
+          library_limit: 5,
+          storage_limit: 10,
+          price: "0",
+          interval: "month"
+        };
+
+        // Synthesize a details object that matches the Stripe response structure
+        return {
+          subscription: {
+            id: subscriptionDoc.$id,
+            status: subscriptionDoc.status || 'active',
+            current_period_start: Math.floor(new Date(subscriptionDoc.billing_start_date || subscriptionDoc.$createdAt).getTime() / 1000),
+            current_period_end: subscriptionDoc.billing_end_date ? Math.floor(new Date(subscriptionDoc.billing_end_date).getTime() / 1000) : null,
+            created: Math.floor(new Date(subscriptionDoc.$createdAt).getTime() / 1000),
+            source: 'local'
+          },
+          customer: {
+            name: subscriptionDoc.user_name || user?.name,
+            email: subscriptionDoc.user_email || user?.email,
+            created: Math.floor(new Date(subscriptionDoc.$createdAt).getTime() / 1000),
+          },
+          plan: {
+            product_name: localPlan.name,
+            product_description: "Admin-assigned local plan",
+            unit_amount: parseFloat(localPlan.price || "0") * 100,
+            currency: "eur",
+            interval: localPlan.interval || "month",
+            interval_count: 1,
+            limits: {
+              sites_limit: localPlan.sites_limit,
+              library_limit: localPlan.library_limit,
+              storage_limit: localPlan.storage_limit
+            }
+          },
+          invoices: [],
+          upcoming_invoice: null,
+          payment_method: null
+        };
+      }
+
+      // Stripe flow
+      const subscriptionId = subscriptionDoc.stripe_subscription_id;
+      if (!subscriptionId) throw new Error("No Stripe subscription ID found");
 
       const functionId = "stripe-get-subscription-details";
       const result = await functions.createExecution(
@@ -131,7 +187,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
 
       return parsed;
     },
-    enabled: !!subscriptionId,
+    enabled: !!subscriptionDoc,
     staleTime: 1000 * 60,
   });
 

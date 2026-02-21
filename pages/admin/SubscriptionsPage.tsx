@@ -277,7 +277,7 @@ const SubscriptionsPage: React.FC = () => {
                   {filteredSubscriptions.map((sub: any) => (
                     <tr
                       key={sub.$id}
-                      onClick={() => navigate(`/admin/subscriptions/${sub.stripe_subscription_id}`)}
+                      onClick={() => navigate(`/admin/subscriptions/${sub.$id}`)}
                       className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
                     >
                       <td className="py-4 px-4 text-sm">

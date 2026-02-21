@@ -50,6 +50,7 @@ module.exports = async ({ req, res, log, error }) => {
       .setKey(APPWRITE_API_KEY);
 
     const users = new sdk.Users(client);
+    const databases = new sdk.Databases(client);
     const queries = [sdk.Query.limit(limit), sdk.Query.offset(offset)];
 
     log(`Listing users: limit=${limit}, offset=${offset}, search=${search || 'none'}`);
@@ -57,12 +58,36 @@ module.exports = async ({ req, res, log, error }) => {
     const response = search ? await users.list(queries, search) : await users.list(queries);
     const rawUsers = response.users || response.documents || [];
 
+    // Fetch all active subscriptions from the database to map correct plan names
+    const DATABASE_ID = req.variables?.DATABASE_ID || process.env.DATABASE_ID || 'platform_db';
+    const SUBS_COLLECTION_ID = req.variables?.SUBS_COLLECTION_ID || process.env.SUBS_COLLECTION_ID || 'subscriptions';
+
+    let userSubscriptions = {};
+    try {
+      const subsResponse = await databases.listDocuments(DATABASE_ID, SUBS_COLLECTION_ID, [
+        sdk.Query.limit(100) // Assuming max 100 active users for simplicity in this batch
+      ]);
+      
+      subsResponse.documents.forEach(doc => {
+        userSubscriptions[doc.user_id] = {
+          planLabel: doc.plan_label,
+          status: doc.status,
+          stripeId: doc.stripe_subscription_id
+        };
+      });
+    } catch (e) {
+      log('Could not fetch subscriptions for mapping: ' + e.message);
+    }
+
     const formatted = rawUsers.map((user) => {
       const labels = Array.isArray(user.labels) ? user.labels : [];
       const isAdmin = labels.some((label) => String(label).toLowerCase() === 'admin');
       
-      // Get plan name from labels (first non-admin label)
-      const planLabel = labels.find((label) => String(label).toLowerCase() !== 'admin');
+      // Get plan info from subscriptions mapping
+      const subInfo = userSubscriptions[user.$id || user.id];
+      
+      // Fallback for plan name: Subscription mapping -> Prefs -> Labels -> Free Tier
+      const planName = subInfo?.planLabel || user.prefs?.plan_label || user.prefs?.plan_id || labels.find((l) => String(l).toLowerCase() !== 'admin') || 'Free Tier';
       
       return {
         id: user.$id || user.id,
@@ -70,8 +95,8 @@ module.exports = async ({ req, res, log, error }) => {
         email: user.email || 'N/A',
         role: isAdmin ? 'Admin' : 'User',
         isAdmin: isAdmin,
-        planName: planLabel || null,
-        planId: user.prefs?.plan_id || null,
+        planName: planName,
+        stripeId: subInfo?.stripeId || user.prefs?.stripe_customer_id || 'n/a',
         status: user.status === false ? 'Inactive' : 'Active',
         joined: user.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : 'n/a',
         prefs: user.prefs || {}

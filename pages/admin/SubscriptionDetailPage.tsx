@@ -50,19 +50,90 @@ const SubscriptionDetailPage: React.FC = () => {
   };
 
   const {
+    data: subscriptionDoc,
+    isLoading: isLoadingDoc,
+  } = useQuery({
+    queryKey: ["subscription-doc", subscriptionId],
+    queryFn: async () => {
+      if (!subscriptionId) throw new Error("No ID provided");
+      return await databases.getDocument(DATABASE_ID, "subscriptions", subscriptionId);
+    },
+    enabled: !!subscriptionId,
+  });
+
+  const {
     data: details,
-    isLoading,
+    isLoading: isLoadingDetails,
     isError,
     error,
   } = useQuery({
-    queryKey: ["subscription-details", subscriptionId],
+    queryKey: ["subscription-details", subscriptionDoc?.$id],
     queryFn: async () => {
-      if (!subscriptionId) throw new Error("No subscription ID");
+      if (!subscriptionDoc) throw new Error("No subscription document");
+
+      // If it's a local plan, fetch from local_plans collection
+      if (subscriptionDoc.source === 'local') {
+        const planLabel = subscriptionDoc.plan_label || subscriptionDoc.plan_id;
+        const planDocs = await databases.listDocuments(
+          DATABASE_ID,
+          "local_plans",
+          [Query.equal("label", planLabel)]
+        );
+
+        const localPlan = planDocs.documents[0] || {
+          name: subscriptionDoc.plan_id || "Local Plan",
+          sites_limit: 1,
+          library_limit: 5,
+          storage_limit: 10,
+          price: "0",
+          interval: "month"
+        };
+
+        return {
+          subscription: {
+            id: subscriptionDoc.$id,
+            status: subscriptionDoc.status || 'active',
+            current_period_start: Math.floor(new Date(subscriptionDoc.billing_start_date || subscriptionDoc.$createdAt).getTime() / 1000),
+            current_period_end: subscriptionDoc.billing_end_date ? Math.floor(new Date(subscriptionDoc.billing_end_date).getTime() / 1000) : null,
+            created: Math.floor(new Date(subscriptionDoc.$createdAt).getTime() / 1000),
+            source: 'local'
+          },
+          customer: {
+            id: subscriptionDoc.stripe_customer_id || 'local',
+            name: subscriptionDoc.user_name || "—",
+            email: subscriptionDoc.user_email || "—",
+            created: Math.floor(new Date(subscriptionDoc.$createdAt).getTime() / 1000),
+            balance: 0
+          },
+          plan: {
+            product_id: 'local',
+            product_name: localPlan.name,
+            product_description: "Admin-assigned local plan",
+            price_id: localPlan.$id,
+            unit_amount: parseFloat(localPlan.price || "0") * 100,
+            currency: "eur",
+            interval: localPlan.interval || "month",
+            interval_count: 1,
+            limits: {
+              sites_limit: localPlan.sites_limit,
+              library_limit: localPlan.library_limit,
+              storage_limit: localPlan.storage_limit
+            }
+          },
+          invoices: [],
+          upcoming_invoice: null,
+          payment_method: null
+        };
+      }
+
+      // Stripe flow
+      const stripeSubId = subscriptionDoc.stripe_subscription_id;
+      if (!stripeSubId) throw new Error("No Stripe subscription ID found");
 
       const functionId = "stripe-get-subscription-details";
       const result = await functions.createExecution(
         functionId,
-        JSON.stringify({ subscriptionId }),
+        JSON.stringify({ subscriptionId: stripeSubId }),
         false,
       );
 
@@ -99,24 +170,15 @@ const SubscriptionDetailPage: React.FC = () => {
 
       return parsed;
     },
-    enabled: !!subscriptionId,
+    enabled: !!subscriptionDoc,
     staleTime: 1000 * 60,
   });
 
   const { data: usage } = useQuery({
-    queryKey: ["user-usage", details?.customer?.email],
+    queryKey: ["user-usage", subscriptionDoc?.user_id],
     queryFn: async () => {
-      if (!details?.customer?.email) return null;
-
-      // Find user by email in subscriptions collection to get user_id
-      const subDocs = await databases.listDocuments(
-        DATABASE_ID,
-        "subscriptions",
-        [Query.equal("stripe_subscription_id", subscriptionId || "")]
-      );
-
-      if (subDocs.total === 0) return null;
-      const userId = subDocs.documents[0].user_id;
+      if (!subscriptionDoc?.user_id) return null;
+      const userId = subscriptionDoc.user_id;
 
       // Fetch sites and library items
       const [sites, library, localUploads] = await Promise.all([
@@ -135,7 +197,7 @@ const SubscriptionDetailPage: React.FC = () => {
         storageUsed: localUploads.total
       };
     },
-    enabled: !!details && !!subscriptionId
+    enabled: !!subscriptionDoc
   });
 
   const getStatusBadge = (status: string) => {
@@ -200,6 +262,8 @@ const SubscriptionDetailPage: React.FC = () => {
     // Open Stripe hosted invoice page for payment
     window.open(hostedUrl, '_blank');
   };
+
+  const isLoading = isLoadingDoc || isLoadingDetails;
 
   if (isLoading) {
     return (

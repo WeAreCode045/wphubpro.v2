@@ -1,5 +1,5 @@
 
-import { Client, Account, Databases, Functions, Storage, Teams, ID } from 'appwrite';
+import { Client, Account, Databases, Functions, Storage, Teams, Avatars, ID } from 'appwrite';
 
 /**
  * Appwrite Productie Configuratie
@@ -23,6 +23,7 @@ export const databases = new Databases(client);
 export const functions = new Functions(client);
 export const storage = new Storage(client);
 export const teams = new Teams(client);
+export const avatars = new Avatars(client);
 
 export { client, ID };
 
