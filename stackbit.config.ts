@@ -4,7 +4,13 @@ export default defineStackbitConfig({
     "stackbitVersion": "~0.6.0",
     "nodeVersion": "18",
     "ssgName": "custom",
-    "contentSources": [],
+    "contentSources": [
+        {
+            "name": "local",
+            "type": "files",
+            "rootPath": "content"
+        }
+    ],
     "postInstallCommand": "npm i --no-save @stackbit/types",
     "models": {
         "page": {
