@@ -614,7 +614,7 @@ const PlanManagementPage: React.FC = () => {
           <div className="flex items-center gap-2 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
             <Checkbox
               checked={isLocalPlan}
-              onChange={(e) => setIsLocalPlan(e.target.checked)}
+              onCheckedChange={(checked) => setIsLocalPlan(checked === true)}
             />
             <div className="flex-1">
               <Label className="font-semibold text-sm flex items-center gap-2">
@@ -695,7 +695,7 @@ const PlanManagementPage: React.FC = () => {
 
                 <div className="space-y-2 col-span-2">
                   <Label htmlFor="storageLimit">
-                    Upload Limit (MB) <span className="text-destructive">*</span>
+                    Upload Limit <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="storageLimit"
@@ -704,7 +704,7 @@ const PlanManagementPage: React.FC = () => {
                     value={storageLimit}
                     onChange={(e) => setStorageLimit(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">Maximum upload size in MB. Use 9999 for unlimited</p>
+                  <p className="text-xs text-muted-foreground">Maximum number of uploads allowed. Use 9999 for unlimited</p>
                 </div>
               </>
             ) : (

@@ -30,6 +30,7 @@ const Sidebar: React.FC = () => {
     { to: "/admin/users", icon: Users, label: "User Manager" },
     { to: "/admin/orders", icon: CreditCard, label: "Orders" },
     { to: "/admin/plans", icon: Package, label: "Plan Management" },
+    { to: "/admin/subscriptions", icon: Gem, label: "Subscriptions" },
     { to: "/admin/settings", icon: Settings, label: "Platform Settings" },
   ];
 

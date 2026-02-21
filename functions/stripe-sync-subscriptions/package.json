@@ -1,0 +1,10 @@
+{
+  "name": "stripe-sync-subscriptions",
+  "version": "1.0.0",
+  "description": "Sync all Stripe subscriptions to Appwrite",
+  "main": "index.js",
+  "dependencies": {
+    "node-appwrite": "^14.0.0",
+    "stripe": "^14.0.0"
+  }
+}

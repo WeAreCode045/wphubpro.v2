@@ -37,8 +37,9 @@ export const DATABASE_ID = 'platform_db';
  *
  */
 export const COLLECTIONS = {
-    SUBSCRIPTIONS: 'subscriptions',
     SITES: 'sites',
     LIBRARY: 'library',
-    SETTINGS: 'platform_settings'
+    SETTINGS: 'platform_settings',
+    LOCAL_PLANS: 'local_plans',
+ACCOUNTS: 'accounts'
 };

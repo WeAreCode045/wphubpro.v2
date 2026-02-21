@@ -60,12 +60,18 @@ module.exports = async ({ req, res, log, error }) => {
     const formatted = rawUsers.map((user) => {
       const labels = Array.isArray(user.labels) ? user.labels : [];
       const isAdmin = labels.some((label) => String(label).toLowerCase() === 'admin');
+      
+      // Get plan name from labels (first non-admin label)
+      const planLabel = labels.find((label) => String(label).toLowerCase() !== 'admin');
+      
       return {
         id: user.$id || user.id,
         name: user.name || user.email || `User ${(user.$id || user.id || '').substring(0, 8)}`,
         email: user.email || 'N/A',
         role: isAdmin ? 'Admin' : 'User',
         isAdmin: isAdmin,
+        planName: planLabel || null,
+        planId: user.prefs?.plan_id || null,
         status: user.status === false ? 'Inactive' : 'Active',
         joined: user.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : 'n/a',
         prefs: user.prefs || {}

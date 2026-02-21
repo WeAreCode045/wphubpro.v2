@@ -17,136 +17,162 @@ export const useSubscription = () => {
         queryFn: async () => {
             if (!user?.$id) return null;
 
-            // Check for labels that indicate a subscription (exclude 'admin' label)
+            // First, check the accounts table for current_plan_id
+            let currentPlanId: string | null = null;
+            let stripeCustomerId: string | null = null;
+            
+            try {
+                const accountDocs = await databases.listDocuments(
+                    DATABASE_ID,
+                    'accounts',
+                    [Query.equal('user_id', user.$id), Query.limit(1)]
+                );
+                
+                if (accountDocs.documents.length > 0) {
+                    currentPlanId = accountDocs.documents[0].current_plan_id || null;
+                    stripeCustomerId = accountDocs.documents[0].stripe_customer_id || null;
+                }
+            } catch (e) {
+                console.error('Failed to fetch accounts data:', e);
+            }
+
+            // If user has a current_plan_id, check if it's a local plan first
+            if (currentPlanId) {
+                try {
+                    const localPlanDocs = await databases.listDocuments(
+                        DATABASE_ID,
+                        'local_plans',
+                        [Query.equal('label', currentPlanId)]
+                    );
+
+                    if (localPlanDocs.documents.length > 0) {
+                        const plan = localPlanDocs.documents[0];
+                        return {
+                            userId: user.$id,
+                            planId: plan.name || 'LOCAL',
+                            status: 'active',
+                            sitesLimit: plan.sites_limit || 1,
+                            libraryLimit: plan.library_limit || 5,
+                            storageLimit: plan.storage_limit || 10,
+                            source: 'local',
+                        } as Subscription;
+                    }
+                } catch (e) {
+                    console.error('Failed to search for local plan:', e);
+                }
+
+                // If not a local plan and user has Stripe customer ID, assume it's a Stripe product label
+                if (stripeCustomerId) {
+                    try {
+                        const execution = await functions.createExecution(
+                            GET_SUBSCRIPTION_FUNCTION_ID,
+                            '', // No body needed
+                            false // isAsync
+                        );
+
+                        if (execution.responseStatusCode >= 400) {
+                            const errorBody = JSON.parse(execution.responseBody);
+                            throw new Error(errorBody.error || 'Failed to fetch subscription.');
+                        }
+                        
+                        const responseBody = execution.responseBody ? JSON.parse(execution.responseBody) : null;
+                        
+                        // Return Stripe subscription if it exists and is not canceled
+                        if (responseBody && responseBody.status !== 'canceled') {
+                            return {
+                                ...responseBody,
+                                source: 'stripe',
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch Stripe subscription:', e);
+                    }
+                }
+            }
+
+            // Fallback: Check for labels (for backwards compatibility)
             const subscriptionLabel = user.labels?.find(l => 
                 l.toLowerCase() !== 'admin'
             );
 
-            // User has no subscription label (Stripe price or local plan), use default limits
-            if (!subscriptionLabel) {
-                // Fetch free plan limits from platform settings
+            if (subscriptionLabel) {
+                // Check if label matches a local plan
                 try {
-                    const settingsDocs = await databases.listDocuments(
+                    const localPlanDocs = await databases.listDocuments(
                         DATABASE_ID,
-                        COLLECTIONS.SETTINGS,
-                        [Query.equal('category', 'freePlanLimits')]
+                        'local_plans',
+                        [Query.equal('label', subscriptionLabel)]
                     );
 
-                    if (settingsDocs.documents.length > 0) {
-                        const settings = settingsDocs.documents[0].settings;
+                    if (localPlanDocs.documents.length > 0) {
+                        const plan = localPlanDocs.documents[0];
                         return {
                             userId: user.$id,
-                            planId: 'FREE',
+                            planId: plan.name || 'LOCAL',
                             status: 'active',
-                            sitesLimit: parseInt(settings.sitesLimit || '1', 10),
-                            libraryLimit: parseInt(settings.libraryLimit || '5', 10),
-                            storageLimit: parseInt(settings.storageLimit || '100', 10),
-                            source: 'free',
+                            sitesLimit: plan.sites_limit || 1,
+                            libraryLimit: plan.library_limit || 5,
+                            storageLimit: plan.storage_limit || 10,
+                            source: 'local',
                         } as Subscription;
                     }
                 } catch (e) {
-                    console.error('Failed to fetch free plan limits:', e);
+                    console.error('Failed to search for local plan by label:', e);
                 }
 
-                // Fallback to default free limits
-                return {
-                    userId: user.$id,
-                    planId: 'FREE',
-                    status: 'active',
-                    sitesLimit: 1,
-                    libraryLimit: 5,
-                    storageLimit: 10,
-                    source: 'free',
-                } as Subscription;
-            }
+                // If not local plan, try fetching Stripe subscription
+                if (stripeCustomerId) {
+                    try {
+                        const execution = await functions.createExecution(
+                            GET_SUBSCRIPTION_FUNCTION_ID,
+                            '', // No body needed
+                            false // isAsync
+                        );
 
-            // User has a subscription label, check if it's a local plan
-            let stripeSubscription: Subscription | null = null;
-            let isLocalPlan = false;
-            
-            // First, try to find if this label matches a local plan
-            try {
-                const localPlanDocs = await databases.listDocuments(
-                    DATABASE_ID,
-                    'local_plans',
-                    [Query.equal('label', subscriptionLabel)]
-                );
-
-                if (localPlanDocs.documents.length > 0) {
-                    const plan = localPlanDocs.documents[0];
-                    isLocalPlan = true;
-                    return {
-                        userId: user.$id,
-                        planId: plan.name || 'LOCAL',
-                        status: 'active',
-                        sitesLimit: plan.sites_limit || 1,
-                        libraryLimit: plan.library_limit || 5,
-                        storageLimit: plan.storage_limit || 10,
-                        source: 'local',
-                    } as Subscription;
-                }
-            } catch (e) {
-                console.error('Failed to search for local plan:', e);
-            }
-
-            // If not a local plan, assume it's a Stripe subscription label (product metadata label)
-            if (!isLocalPlan) {
-                try {
-                    const execution = await functions.createExecution(
-                        GET_SUBSCRIPTION_FUNCTION_ID,
-                        '', // No body needed
-                        false // isAsync
-                    );
-
-                    if (execution.responseStatusCode >= 400) {
-                        const errorBody = JSON.parse(execution.responseBody);
-                        throw new Error(errorBody.error || 'Failed to fetch subscription.');
+                        if (execution.responseStatusCode >= 400) {
+                            const errorBody = JSON.parse(execution.responseBody);
+                            throw new Error(errorBody.error || 'Failed to fetch subscription.');
+                        }
+                        
+                        const responseBody = execution.responseBody ? JSON.parse(execution.responseBody) : null;
+                        
+                        if (responseBody && responseBody.status !== 'canceled') {
+                            return {
+                                ...responseBody,
+                                source: 'stripe',
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch Stripe subscription from label:', e);
                     }
-                    
-                    const responseBody = execution.responseBody ? JSON.parse(execution.responseBody) : null;
-                    
-                    // Store the Stripe subscription (might be null or canceled)
-                    stripeSubscription = responseBody as Subscription;
-
-                } catch (e) {
-                    console.error('Failed to fetch Stripe subscription:', e);
-                    // Don't throw here, continue
-                }
-
-                // Return Stripe subscription if it exists and is not canceled
-                if (stripeSubscription && stripeSubscription.status !== 'canceled') {
-                    return {
-                        ...stripeSubscription,
-                        source: 'stripe',
-                    };
                 }
             }
 
-            // If we reach here with a label but no valid subscription found, use default limits
+            // No subscription found, return free tier
             try {
                 const settingsDocs = await databases.listDocuments(
                     DATABASE_ID,
                     COLLECTIONS.SETTINGS,
-                    [Query.equal('category', 'freePlanLimits')]
+                    [Query.equal('key', 'freePlanLimits')]
                 );
 
                 if (settingsDocs.documents.length > 0) {
-                    const settings = settingsDocs.documents[0].settings;
+                    const settings = JSON.parse(settingsDocs.documents[0].value as string);
                     return {
                         userId: user.$id,
                         planId: 'FREE',
                         status: 'active',
                         sitesLimit: parseInt(settings.sitesLimit || '1', 10),
                         libraryLimit: parseInt(settings.libraryLimit || '5', 10),
-                        storageLimit: parseInt(settings.storageLimit || '100', 10),
-                        source: 'free',
+                        storageLimit: parseInt(settings.storageLimit || '10', 10),
+                        source: 'free-tier',
                     } as Subscription;
                 }
             } catch (e) {
-                console.error('Failed to fetch default limits:', e);
+                console.error('Failed to fetch free plan limits:', e);
             }
 
-            // Fallback to absolute defaults
+            // Fallback to default free limits
             return {
                 userId: user.$id,
                 planId: 'FREE',
@@ -154,7 +180,7 @@ export const useSubscription = () => {
                 sitesLimit: 1,
                 libraryLimit: 5,
                 storageLimit: 10,
-                source: 'free',
+                source: 'free-tier',
             } as Subscription;
         },
         enabled: !!user,

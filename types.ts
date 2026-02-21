@@ -10,9 +10,11 @@ export interface Subscription {
   planId: string;
   status: 'active' | 'trialing' | 'canceled' | 'past_due';
   sitesLimit: number;
-  storageLimit: number; // in MB
+  storageLimit: number; // number of uploads
   libraryLimit: number;
-  source?: 'stripe' | 'local' | 'free'; // Where the subscription data originates
+  source?: 'stripe' | 'local' | 'free-tier'; // Where the subscription data originates
+  currentPeriodEnd?: number; // Stripe: Unix timestamp for billing date
+  cancelAtPeriodEnd?: boolean; // Stripe: Whether subscription cancels at period end
 }
 
 export interface Site {

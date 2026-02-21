@@ -105,6 +105,7 @@ module.exports = async ({ req, res, log, error }) => {
             // Get limits from product metadata
             sitesLimit: parseInt(product.metadata.sites_limit || product.metadata.site_limit || '9999', 10), 
             libraryLimit: parseInt(product.metadata.library_limit || '9999', 10),
+            storageLimit: parseInt(product.metadata.storage_limit || '9999', 10),
         };
 
         return res.json(subscriptionData);

@@ -243,7 +243,7 @@ const UserManagerPage: React.FC = () => {
                           className={`w-3.5 h-3.5 ${user.role === "Admin" ? "text-primary" : "text-muted-foreground"}`}
                         />
                         <span className="text-sm">
-                          {user.planId || "Free Tier"}
+                          {user.planName || user.planId || "Free Tier"}
                         </span>
                       </div>
                     </td>

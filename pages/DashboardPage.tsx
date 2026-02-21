@@ -93,9 +93,37 @@ const DashboardPage: React.FC = () => {
                               {subscription?.status}
                           </p>
                       </div>
+                      {subscription?.source === 'stripe' && subscription?.currentPeriodEnd && (
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Next Billing Date</p>
+                            <p className="font-semibold text-foreground">
+                              {new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </p>
+                        </div>
+                      )}
                       <div>
-                          <p className="text-sm font-medium text-muted-foreground">Next Billing Date</p>
-                          <p className="font-semibold text-foreground">October 25, 2024</p>
+                          <p className="text-sm font-medium text-muted-foreground mb-4">Plan Limits</p>
+                          <div className="grid grid-cols-3 gap-3">
+                            <UsageGauge 
+                              label="Sites" 
+                              used={usage?.sitesUsed || 0} 
+                              limit={subscription?.sitesLimit || 0} 
+                            />
+                            <UsageGauge 
+                              label="Library" 
+                              used={usage?.libraryUsed || 0} 
+                              limit={subscription?.libraryLimit || 0} 
+                            />
+                            <UsageGauge 
+                              label="Uploads" 
+                              used={usage?.storageUsed || 0} 
+                              limit={subscription?.storageLimit || 0} 
+                            />
+                          </div>
                       </div>
                   </div>
                   <Button className="mt-6 w-full">Manage Subscription</Button>

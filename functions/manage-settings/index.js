@@ -5,6 +5,7 @@ module.exports = async ({ req, res, log, error }) => {
   const client = new sdk.Client();
   const databases = new sdk.Databases(client);
   const users = new sdk.Users(client);
+  const teams = new sdk.Teams(client);
 
   // Some Appwrite runtimes inject variables on `req.variables` rather than `process.env`.
   const env = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
@@ -51,11 +52,23 @@ module.exports = async ({ req, res, log, error }) => {
   log('User ID: ' + userId);
 
   try {
-    const user = await users.get(userId);
-    const isAdmin = user.labels?.some(l => l.toLowerCase() === 'admin' || l.toLowerCase() === 'administrator');
+    // Check if user is member of admin team
+    let isAdmin = false;
+    try {
+      const adminTeamId = 'admin';
+      const memberships = await teams.listMemberships(adminTeamId);
+      isAdmin = memberships.memberships.some(m => m.userId === userId);
+      log('User admin check - Team memberships found: ' + memberships.total + ', isAdmin: ' + isAdmin);
+    } catch (teamErr) {
+      log('Could not check team membership: ' + teamErr.message);
+      // Fallback to label check for backwards compatibility
+      const user = await users.get(userId);
+      isAdmin = user.labels?.some(l => l.toLowerCase() === 'admin' || l.toLowerCase() === 'administrator');
+      log('User admin check (fallback) - Labels: ' + JSON.stringify(user.labels) + ', isAdmin: ' + isAdmin);
+    }
 
     if (!isAdmin) {
-      log('User ' + userId + ' is not an admin. Labels: ' + JSON.stringify(user.labels));
+      log('User ' + userId + ' is not an admin');
       return res.json({ success: false, message: 'Forbidden: Admin access required' }, 403);
     }
 

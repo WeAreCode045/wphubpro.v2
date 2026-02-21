@@ -427,7 +427,7 @@ const AdminSettingsPage: React.FC = () => {
                           value={settings.freePlanLimits.storageLimit} 
                           onChange={(e) => handleInputChange('freePlanLimits', 'storageLimit', e.target.value)}
                         />
-                        <p className="text-xs text-muted-foreground">Maximum upload limit in MB for free users (use 9999 for unlimited)</p>
+                        <p className="text-xs text-muted-foreground">Maximum number of uploads allowed for free users (use 9999 for unlimited)</p>
                       </div>
                     </div>
                   </CardContent>

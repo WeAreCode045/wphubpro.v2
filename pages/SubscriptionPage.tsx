@@ -44,11 +44,14 @@ const SubscriptionPage: React.FC = () => {
     });
   };
 
+  // Show plan selection for users without subscription or with free tier
+  const shouldShowPlanSelection = !subscription || subscription.source === 'free-tier';
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight text-foreground">Subscription</h1>
       
-      {!subscription && (
+      {shouldShowPlanSelection && (
         <Card>
           <CardHeader>
             <CardTitle>Choose Your Plan</CardTitle>
@@ -110,7 +113,7 @@ const SubscriptionPage: React.FC = () => {
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Your Plan</CardTitle>
-              {subscription.source === 'free' && (
+              {subscription.source === 'free-tier' && (
                 <CardDescription className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                     Free Tier
@@ -153,9 +156,13 @@ const SubscriptionPage: React.FC = () => {
                     <span className="text-muted-foreground">Library Limit</span>
                     <span className="font-semibold text-foreground">{subscription.libraryLimit === 9999 ? 'Unlimited' : subscription.libraryLimit}</span>
                   </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-muted-foreground">Upload Limit</span>
+                    <span className="font-semibold text-foreground">{subscription.storageLimit === 9999 ? 'Unlimited' : subscription.storageLimit}</span>
+                  </div>
                   
                   <div className="space-y-3 mt-6">
-                    {subscription.source !== 'free' && subscription.source === 'stripe' && (
+                    {subscription.source === 'stripe' && (
                       <>
                         <Button 
                           className="w-full" 
@@ -212,17 +219,6 @@ const SubscriptionPage: React.FC = () => {
                         </p>
                       </div>
                     )}
-                    
-                    {subscription.source === 'free' && (
-                      <Button 
-                        className="w-full" 
-                        variant="default"
-                        onClick={() => setShowUpgradeSection(true)}
-                      >
-                        <CreditCard className="mr-2 h-4 w-4" />
-                        Upgrade to Premium
-                      </Button>
-                    )}
                   </div>
                 </div>
               )}
@@ -244,9 +240,9 @@ const SubscriptionPage: React.FC = () => {
       {subscription && showUpgradeSection && (
         <Card>
           <CardHeader>
-            <CardTitle>{subscription.source === 'free' ? 'Choose Your Plan' : 'Available Plans'}</CardTitle>
+            <CardTitle>{subscription.source === 'free-tier' ? 'Choose Your Plan' : 'Available Plans'}</CardTitle>
             <CardDescription>
-              {subscription.source === 'free' 
+              {subscription.source === 'free-tier' 
                 ? 'Upgrade to a premium plan to unlock more features and higher limits.' 
                 : 'Upgrade or downgrade your subscription to better fit your needs.'}
             </CardDescription>

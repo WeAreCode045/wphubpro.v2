@@ -295,7 +295,7 @@
             "path": "functions/stripe-list-products",
             "entrypoint": "index.js",
             "execute": [
-                "team:admin"
+                "any"
             ],
             "enabled": true,
             "logging": true,
@@ -385,6 +385,32 @@
             "specification": "s-0.5vcpu-512mb"
         },
         {
+            "$id": "stripe-sync-subscriptions",
+            "name": "stripe-sync-subscriptions",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-sync-subscriptions",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 90,
+            "commands": "npm install",
+            "scopes": [
+                "users.read",
+                "databases.read",
+                "databases.write",
+                "collections.read",
+                "collections.write",
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
             "$id": "admin-list-users",
             "name": "admin-list-users",
             "runtime": "node-18.0",
@@ -419,7 +445,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm run build",
+            "commands": "npm install",
             "scopes": [
                 "sessions.write",
                 "users.read",
@@ -959,7 +985,7 @@
                 {
                     "key": "stripe_customer_id",
                     "type": "string",
-                    "required": true,
+                    "required": false,
                     "array": false,
                     "size": 255,
                     "default": null,
@@ -982,6 +1008,192 @@
                     "status": "available",
                     "columns": [
                         "user_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "subscriptions",
+            "$permissions": [
+                "read(\"team:admin\")",
+                "create(\"team:admin\")",
+                "read(\"team:admin\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Subscriptions",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "user_name",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "user_email",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "plan_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "plan_price_mode",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "plan_price",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "billing_start_date",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "billing_never",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "metadata",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 10000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": "active",
+                    "encrypt": false
+                },
+                {
+                    "key": "stripe_customer_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "stripe_subscription_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "plan_label",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "updated_at",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "user_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "stripe_subscription_id_index",
+                    "type": "unique",
+                    "status": "available",
+                    "columns": [
+                        "stripe_subscription_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "status_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "status"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "plan_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "plan_id"
                     ],
                     "orders": [
                         "ASC"

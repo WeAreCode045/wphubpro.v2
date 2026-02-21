@@ -21,8 +21,6 @@ module.exports = async ({ req, res, log, error }) => {
     const APPWRITE_ENDPOINT = req.variables?.APPWRITE_ENDPOINT || process.env.APPWRITE_ENDPOINT;
     const APPWRITE_PROJECT_ID = req.variables?.APPWRITE_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
     const APPWRITE_API_KEY = req.variables?.APPWRITE_API_KEY || process.env.APPWRITE_API_KEY;
-    const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-
     if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY) {
       error('Appwrite configuration missing');
       return res.json({ success: false, message: 'Appwrite configuration missing' }, 500);
@@ -30,51 +28,69 @@ module.exports = async ({ req, res, log, error }) => {
 
     let payload = {};
     try {
-      if (req.payload && typeof req.payload === 'string') payload = JSON.parse(req.payload);
+      if (req.body && typeof req.body === 'object') payload = req.body;
+      else if (req.bodyRaw && typeof req.bodyRaw === 'string') payload = JSON.parse(req.bodyRaw);
+      else if (req.payload && typeof req.payload === 'string') payload = JSON.parse(req.payload);
       else if (req.payload && typeof req.payload === 'object') payload = req.payload;
     } catch (e) {
       payload = {};
     }
 
-    const userId = payload.userId || (payload.updates && payload.updates.userId);
     const updates = payload.updates || {};
+    const userId =
+      payload.userId ||
+      updates.userId ||
+      req.variables?.APPWRITE_FUNCTION_USER_ID ||
+      req.variables?.APPWRITE_USER_ID ||
+      req.headers?.['x-appwrite-user-id'];
 
     if (!userId) {
       return res.json({ success: false, message: 'userId is required' }, 400);
     }
 
-    // Update Appwrite user via REST patch for simple fields
-    const url = `${APPWRITE_ENDPOINT}/users/${encodeURIComponent(userId)}`;
+    const client = new sdk.Client()
+      .setEndpoint(APPWRITE_ENDPOINT)
+      .setProject(APPWRITE_PROJECT_ID)
+      .setKey(APPWRITE_API_KEY);
 
-    const body = {};
-    if (updates.name) body.name = updates.name;
-    if (updates.email) body.email = updates.email;
-    if (updates.status) body.status = updates.status === 'Active' ? true : false;
+    const databases = new sdk.Databases(client);
+    const users = new sdk.Users(client);
 
-    const prefs = {};
-    if (updates.planId) prefs.plan_id = updates.planId;
-    if (updates.stripe_customer_id) prefs.stripe_customer_id = updates.stripe_customer_id;
-    if (Object.keys(updates.customLimits || {}).length > 0) prefs.limits = updates.customLimits;
-    if (Object.keys(prefs).length > 0) body.prefs = prefs;
+    // Get current user to compare values
+    const currentUser = await users.get(userId);
 
-    const response = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-        'X-Appwrite-Key': APPWRITE_API_KEY
-      },
-      body: JSON.stringify(body)
-    });
-
-    const json = await response.json();
-    if (!response.ok) {
-      error(`Appwrite update failed: ${JSON.stringify(json)}`);
-      return res.json({ success: false, message: json.message || 'Failed to update user' }, response.status);
+    // Update Appwrite user via Users API for simple fields (only if changed)
+    try {
+      if (updates.name && updates.name !== currentUser.name) {
+        await users.updateName(userId, updates.name);
+      }
+      if (updates.email && updates.email !== currentUser.email) {
+        await users.updateEmail(userId, updates.email);
+      }
+      if (Object.prototype.hasOwnProperty.call(updates, 'status')) {
+        const newStatus = updates.status === 'Active';
+        if (newStatus !== currentUser.status) {
+          await users.updateStatus(userId, newStatus);
+        }
+      }
+      
+      // Update user prefs only for plan assignment fields (not current_plan_id)
+      const prefs = {};
+      if (updates.planId) prefs.plan_id = updates.planId;
+      if (updates.stripe_customer_id) prefs.stripe_customer_id = updates.stripe_customer_id;
+      if (Object.keys(updates.customLimits || {}).length > 0) prefs.limits = updates.customLimits;
+      if (Object.keys(prefs).length > 0) {
+        await users.updatePrefs(userId, { ...currentUser.prefs, ...prefs });
+      }
+    } catch (err) {
+      error(`Appwrite update failed: ${err.message}`);
+      return res.json({ success: false, message: err.message || 'Failed to update user' }, 500);
     }
 
+    const json = await users.get(userId);
+
     // Handle admin status if provided
-    if (Object.prototype.hasOwnProperty.call(updates, 'isAdmin')) {
+    if (Object.prototype.hasOwnProperty.call(updates, 'isAdmin') && typeof updates.isAdmin === 'boolean') {
       try {
         const adminExec = await fetch(`${APPWRITE_ENDPOINT}/functions/set-admin/executions`, {
           method: 'POST',
@@ -98,14 +114,41 @@ module.exports = async ({ req, res, log, error }) => {
     }
 
     // Manage subscription document in platform_db.subscriptions
-    const client = new sdk.Client()
-      .setEndpoint(APPWRITE_ENDPOINT)
-      .setProject(APPWRITE_PROJECT_ID)
-      .setKey(APPWRITE_API_KEY);
+    const upsertAccountCurrentPlan = async (currentPlanId) => {
+      const accountDocs = await databases.listDocuments(
+        'platform_db',
+        'accounts',
+        [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]
+      );
 
-    const databases = new sdk.Databases(client);
-    const functions = new sdk.Functions(client);
-    const users = new sdk.Users(client);
+      const updateData = { current_plan_id: currentPlanId };
+      if (Object.prototype.hasOwnProperty.call(updates, 'stripe_customer_id')) {
+        updateData.stripe_customer_id = updates.stripe_customer_id || null;
+      }
+
+      if (accountDocs.documents && accountDocs.documents.length > 0) {
+        await databases.updateDocument('platform_db', 'accounts', accountDocs.documents[0].$id, updateData);
+        log(`Updated current_plan_id to ${currentPlanId || 'null'} in accounts table for doc ${accountDocs.documents[0].$id}`);
+        return;
+      }
+
+      const accountData = {
+        user_id: userId,
+        stripe_customer_id: updates.stripe_customer_id || null,
+        current_plan_id: currentPlanId
+      };
+
+      const permissions = [
+        sdk.Permission.read(sdk.Role.user(userId)),
+        sdk.Permission.update(sdk.Role.user(userId)),
+        sdk.Permission.read(sdk.Role.team('admin')),
+        sdk.Permission.update(sdk.Role.team('admin')),
+        sdk.Permission.delete(sdk.Role.team('admin'))
+      ];
+
+      await databases.createDocument('platform_db', 'accounts', sdk.ID.unique(), accountData, permissions);
+      log(`Created accounts document for user ${userId} with current_plan_id ${currentPlanId || 'null'}`);
+    };
 
     // Handle local plan assignment or removal
     if (Object.prototype.hasOwnProperty.call(updates, 'localPlanId')) {
@@ -129,42 +172,12 @@ module.exports = async ({ req, res, log, error }) => {
             // Update user labels directly
             await users.updateLabels(userId, updatedLabels);
             
-            // Update accounts table and user prefs with current plan ID
+            // Update accounts.current_plan_id with plan label
+            const currentPlanLabel = plan.label;
             try {
-              const accountDocs = await databases.listDocuments('platform_db', 'accounts', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
-              if (accountDocs.documents && accountDocs.documents.length > 0) {
-                await databases.updateDocument('platform_db', 'accounts', accountDocs.documents[0].$id, {
-                  current_plan_id: updates.localPlanId
-                });
-                log(`Updated current_plan_id to ${updates.localPlanId} in accounts table for doc ${accountDocs.documents[0].$id}`);
-              } else {
-                log(`Warning: No accounts document found for user ${userId}`);
-              }
+              await upsertAccountCurrentPlan(currentPlanLabel);
             } catch (accountErr) {
               log(`Warning: Failed to update accounts table: ${accountErr.message}`);
-            }
-            
-            // Update user prefs with current plan ID
-            try {
-              const prefsUrl = `${APPWRITE_ENDPOINT}/users/${encodeURIComponent(userId)}`;
-              const prefsBody = { prefs: { current_plan_id: updates.localPlanId } };
-              const prefsResponse = await fetch(prefsUrl, {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                  'X-Appwrite-Key': APPWRITE_API_KEY
-                },
-                body: JSON.stringify(prefsBody)
-              });
-              if (prefsResponse.ok) {
-                log(`Updated current_plan_id to ${updates.localPlanId} in user prefs`);
-              } else {
-                const prefsErr = await prefsResponse.json();
-                log(`Warning: Failed to update user prefs: ${JSON.stringify(prefsErr)}`);
-              }
-            } catch (prefsErr) {
-              log(`Warning: Failed to update user prefs: ${prefsErr.message}`);
             }
             
             log(`Applied local plan label "${plan.label}" to user ${userId}`);
@@ -205,28 +218,8 @@ module.exports = async ({ req, res, log, error }) => {
           
           await users.updateLabels(userId, updatedLabels);
           
-          // Update accounts table and user prefs with current plan ID
-          const accountDocs = await databases.listDocuments('platform_db', 'accounts', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
-          if (accountDocs.documents.length > 0) {
-            await databases.updateDocument('platform_db', 'accounts', accountDocs.documents[0].$id, {
-              current_plan_id: stripePriceId || null
-            });
-            log(`Updated current_plan_id to ${stripePriceId || 'null'} in accounts table`);
-          }
-          
-          // Update user prefs with current plan ID
-          const prefsUrl = `${APPWRITE_ENDPOINT}/users/${encodeURIComponent(userId)}`;
-          const prefsBody = { prefs: { current_plan_id: stripePriceId || null } };
-          await fetch(prefsUrl, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-              'X-Appwrite-Key': APPWRITE_API_KEY
-            },
-            body: JSON.stringify(prefsBody)
-          });
-          log(`Updated current_plan_id to ${stripePriceId || 'null'} in user prefs`);
+          // Update accounts.current_plan_id
+          await upsertAccountCurrentPlan(stripePriceId || null);
           
           if (stripeLabel) {
             log(`Removed local plan and restored Stripe label "${stripeLabel}" for user ${userId}`);

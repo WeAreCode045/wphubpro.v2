@@ -83,7 +83,19 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
       </div>
 
       <div className="space-y-2 pt-4">
-        <Label>Assign Local Plan (Optional)</Label>
+        <div className="flex items-center justify-between">
+          <Label>Assign Local Plan (Optional)</Label>
+          {localPlanId && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setLocalPlanId("")}
+              type="button"
+            >
+              Remove Plan
+            </Button>
+          )}
+        </div>
         {isLoadingPlans ? (
           <div className="text-sm text-muted-foreground">Loading plans...</div>
         ) : (
@@ -100,7 +112,7 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
           </Select>
         )}
         <p className="text-xs text-muted-foreground">
-          Assigning a local plan will set the plan's label on the user
+          Assigning a local plan will set the plan's label on the user. Removing a plan will restore their Stripe subscription if they have one, or revert to free tier.
         </p>
       </div>
 
