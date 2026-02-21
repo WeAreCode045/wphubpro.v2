@@ -3,12 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useLibraryItems } from './useLibrary';
 import { useSites } from './useSites';
 import { useAuth } from '../contexts/AuthContext';
-import { databases } from '../services/appwrite';
-import { Query } from 'appwrite';
+import { functions } from '../services/appwrite';
 import { Subscription } from '../types';
 
-const DATABASE_ID = 'platform_db';
-const SUBSCRIPTIONS_COLLECTION_ID = 'subscriptions';
+const GET_SUBSCRIPTION_FUNCTION_ID = 'stripe-get-subscription';
 
 export const useSubscription = () => {
     const { user } = useAuth();
@@ -16,28 +14,45 @@ export const useSubscription = () => {
         queryKey: ['subscription', user?.$id],
         queryFn: async () => {
             if (!user?.$id) return null;
-            const response = await databases.listDocuments(
-                DATABASE_ID,
-                SUBSCRIPTIONS_COLLECTION_ID,
-                [Query.equal('user_id', user.$id), Query.limit(1)]
-            );
-            
-            if (response.documents.length > 0) {
-                return response.documents[0] as unknown as Subscription;
+
+            try {
+                const execution = await functions.createExecution(
+                    GET_SUBSCRIPTION_FUNCTION_ID,
+                    '', // No body needed
+                    false // isAsync
+                );
+
+                if (execution.responseStatusCode >= 400) {
+                    const errorBody = JSON.parse(execution.responseBody);
+                    throw new Error(errorBody.error || 'Failed to fetch subscription.');
+                }
+                
+                const responseBody = execution.responseBody ? JSON.parse(execution.responseBody) : null;
+                
+                // If the function returns null (no subscription found), we pass that along.
+                if (responseBody === null) {
+                    // Return a default or mock subscription if none is found,
+                    // so the app doesn't break for new users.
+                    return {
+                        userId: user.$id,
+                        planId: 'Free Tier',
+                        status: 'active',
+                        sitesLimit: 1,
+                        storageLimit: 100, // in MB
+                        libraryLimit: 5,
+                    };
+                }
+
+                // The function is designed to return data in the `Subscription` format.
+                return responseBody as Subscription;
+
+            } catch (e) {
+                // If the execution fails (e.g., function not found, network error), rethrow.
+                throw new Error(`An error occurred while fetching subscription: ${e.message}`);
             }
-            
-            // Return a default or mock subscription if none is found,
-            // so the app doesn't break for new users.
-            return {
-                userId: user.$id,
-                planId: 'Free Tier',
-                status: 'active',
-                sitesLimit: 1,
-                storageLimit: 100, // in MB
-                libraryLimit: 5,
-            };
         },
         enabled: !!user,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 };
 

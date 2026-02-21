@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useThemes } from '../../hooks/useWordPress';
+import { useThemes, useManageTheme } from '../../hooks/useWordPress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -11,6 +10,21 @@ interface ThemesTabProps {
 
 const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
   const { data: themes, isLoading, isError, error } = useThemes(siteId);
+  const manageTheme = useManageTheme(siteId);
+
+  const handleActivate = (theme: any) => {
+    if (theme.status !== 'active') {
+      manageTheme.mutate({
+        themeSlug: theme.stylesheet,
+        action: 'activate',
+        themeName: theme.name,
+      });
+    }
+  };
+
+  const handleAction = (_theme: any, _action: string) => {
+    // Implement theme action logic here (update/delete)
+  };
 
   if (isLoading) {
     return (
@@ -23,11 +37,33 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
 
   if (isError) {
     return (
-      <div className="flex items-center p-4 text-sm text-destructive bg-destructive/10 rounded-md">
-        <AlertCircle className="w-5 h-5 mr-2" />
-        <div>
-          <p className="font-semibold">Error loading themes</p>
-          <p>{error?.message}</p>
+      <div className="p-4 rounded-md border border-border bg-card">
+        <div className="mb-2 text-sm text-muted-foreground">API: /wp-json/wphub/v1/themes</div>
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-6 h-6 text-destructive mt-1" />
+          <div className="flex-1">
+            <p className="font-semibold">Error loading themes</p>
+            <p className="text-sm text-muted-foreground mt-1">{error?.message}</p>
+            <div className="mt-3 text-sm space-y-2">
+              <p><strong>Wat te controleren</strong></p>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                <li>Controleer of de WPHub Bridge plugin actief is en de endpoint <code>/wp-json/wphub/v1/themes</code> beschikbaar is.</li>
+                <li>Controleer of de opgeslagen API key correct is en overeenkomt met de WordPress Bridge plugin.</li>
+                <li>Zorg dat de gebruiker met de opgeslagen credentials voldoende rechten heeft om themes te zien (Administrator).</li>
+              </ul>
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>Retry</Button>
+              <Button variant="ghost" size="sm" onClick={() => {
+                const curl = `curl -H 'X-WPHub-Key: <api_key>' '<site_url>/wp-json/wphub/v1/themes'`;
+                try { navigator.clipboard.writeText(curl); } catch { void 0; }
+              }}>Copy test command</Button>
+            </div>
+            <details className="mt-3 text-xs text-muted-foreground">
+              <summary className="cursor-pointer">Fout details</summary>
+              <pre className="whitespace-pre-wrap mt-2 text-xs">{error?.message}</pre>
+            </details>
+          </div>
         </div>
       </div>
     );
@@ -35,6 +71,7 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
 
   return (
     <div className="rounded-lg border border-border bg-card">
+      <div className="p-4 border-b border-border text-sm text-muted-foreground">API: /wp-json/wphub/v1/themes</div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -49,15 +86,37 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
             <TableRow key={theme.name}>
               <TableCell className="font-medium">{theme.name}</TableCell>
               <TableCell>
-                 <div className="flex items-center">
+                <div className="flex items-center">
                   <span className={`w-2.5 h-2.5 rounded-full mr-2 ${theme.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                   <span className="capitalize">{theme.status}</span>
                 </div>
               </TableCell>
               <TableCell>{theme.version}</TableCell>
               <TableCell className="text-right space-x-2">
-                 <Button variant="ghost" size="sm" disabled={theme.status === 'active'}>Activate</Button>
-                 <Button variant="outline" size="sm" disabled>Update</Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  disabled={manageTheme.isPending || theme.status === 'active'}
+                  onClick={() => handleActivate(theme)}
+                >
+                  {theme.status === 'active' ? 'Active' : 'Activate'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={manageTheme.isPending}
+                  onClick={() => handleAction(theme, 'update')}
+                >
+                  Update
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={manageTheme.isPending}
+                  onClick={() => handleAction(theme, 'delete')}
+                >
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}

@@ -24,4 +24,11 @@ dist-ssr
 *.sw?
 .env
 /scripts/*.js
-/functions
+/functions/*/package.json
+/functions/*/node_modules
+/functions/*/dist
+/functions/*/dist-ssr
+/functions/*/*.log
+/functions/*/.env
+/functions/*/index.js
+package-lock.json

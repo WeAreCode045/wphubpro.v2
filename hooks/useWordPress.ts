@@ -1,3 +1,37 @@
+
+export const useManageTheme = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  return useMutation<WordPressTheme, Error, { themeSlug: string; action: 'activate' | 'deactivate' | 'delete' | 'update'; themeName: string }>({
+    mutationFn: ({ themeSlug, action }) => {
+      return executeWpProxy<WordPressTheme>({
+        siteId: siteId!,
+        method: 'POST',
+        endpoint: 'wphubpro/v1/themes/manage',
+        body: { action, slug: themeSlug },
+        userId: user?.$id,
+        useApiKey: true,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['themes', siteId] });
+      toast({
+        title: 'Success',
+        description: `Theme "${variables.themeName}" ${variables.action}d successfully.`,
+        variant: 'success',
+      });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: 'Action Failed',
+        description: `Could not ${variables.action} theme "${variables.themeName}": ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+};
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { functions } from '../services/appwrite';
@@ -8,7 +42,7 @@ import { useAuth } from '../contexts/AuthContext';
 const FUNCTION_ID = 'wp-proxy';
 
 // --- API Helper ---
-const executeWpProxy = async <T>(payload: { siteId: string; method?: string; endpoint: string; body?: any; userId?: string }): Promise<T> => {
+const executeWpProxy = async <T>(payload: { siteId: string; method?: string; endpoint: string; body?: any; userId?: string; useApiKey?: boolean }): Promise<T> => {
   try {
     // Some Appwrite runtimes drop `req.payload`; encode parameters in the execution path as a fallback.
     const qs = new URLSearchParams();
@@ -18,6 +52,8 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
     if (payload.body) qs.set('body', encodeURIComponent(JSON.stringify(payload.body)));
     // include caller identity to satisfy function authorization when runtime doesn't inject it
     if (payload.userId) qs.set('userId', payload.userId);
+    // instruct the proxy to prefer api_key field when available
+    if (payload.useApiKey) qs.set('useApiKey', '1');
 
     const path = `/?${qs.toString()}`;
 
@@ -65,58 +101,67 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
 
 
 // --- Hooks ---
+// Use the new bridge endpoint for plugin list
 export const usePlugins = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressPlugin[], Error>({
     queryKey: ['plugins', siteId],
-    queryFn: () => executeWpProxy<WordPressPlugin[]>({ siteId: siteId!, endpoint: '/wp/v2/plugins', userId: user?.$id }),
+    queryFn: async () => {
+      const raw = await executeWpProxy<any[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/plugins', userId: user?.$id, useApiKey: true });
+      // Map file to plugin for compatibility
+      return raw.map((p) => ({
+        ...p,
+        plugin: p.plugin || p.file,
+      })) as WordPressPlugin[];
+    },
     enabled: !!siteId,
   });
 };
 
+// Use the new bridge endpoint for theme list
 export const useThemes = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressTheme[], Error>({
     queryKey: ['themes', siteId],
-    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: '/wp/v2/themes', userId: user?.$id }),
+    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/themes', userId: user?.$id, useApiKey: true }),
     enabled: !!siteId,
   });
 };
 
 export const useTogglePlugin = (siteId: string | undefined) => {
-    const queryClient = useQueryClient();
-    const { toast } = useToast();
-    const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
 
-    return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
-        mutationFn: ({ pluginSlug, status }) => {
-            const newStatus = status === 'active' ? 'inactive' : 'active';
-            // The WP REST API uses the plugin's file path (slug) in the URL, which needs encoding
-            const endpointSlug = pluginSlug.replace('/', '%2F');
-            return executeWpProxy<WordPressPlugin>({
-              siteId: siteId!,
-              method: 'POST',
-              endpoint: `/wp/v2/plugins/${endpointSlug}`,
-              body: { status: newStatus },
-              userId: user?.$id,
-            });
-        },
-        onSuccess: (data, variables) => {
-            // Invalidate the plugins list to refetch the updated status
-            queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
-            const action = data.status === 'active' ? 'activated' : 'deactivated';
-            toast({
-              title: "Success",
-              description: `Plugin "${variables.pluginName}" has been ${action}.`,
-              variant: 'success'
-            });
-        },
-        onError: (error, variables) => {
-            toast({
-                title: "Action Failed",
-                description: `Could not toggle plugin "${variables.pluginName}": ${error.message}`,
-                variant: 'destructive',
-            });
-        }
-    });
+  return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
+    mutationFn: ({ pluginSlug, status }) => {
+      const newStatus = status === 'active' ? 'deactivate' : 'activate';
+      // Use the bridge endpoint for plugin management
+      return executeWpProxy<WordPressPlugin>({
+        siteId: siteId!,
+        method: 'POST',
+        endpoint: 'wphubpro/v1/plugins/manage',
+        body: { action: newStatus, plugin: pluginSlug },
+        userId: user?.$id,
+        useApiKey: true,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate the plugins list to refetch the updated status
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      const action = variables.status === 'active' ? 'deactivated' : 'activated';
+      toast({
+        title: "Success",
+        description: `Plugin "${variables.pluginName}" has been ${action}.`,
+        variant: 'success'
+      });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: "Action Failed",
+        description: `Could not toggle plugin "${variables.pluginName}": ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  });
 };

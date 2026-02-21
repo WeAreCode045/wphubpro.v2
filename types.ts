@@ -28,6 +28,7 @@ export interface Site {
   lastChecked: string;
   wpVersion: string;
   phpVersion: string;
+  action_log?: any[];
 }
 
 export enum LibraryItemType {

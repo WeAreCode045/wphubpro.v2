@@ -1,6 +1,11 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+// Preline: interactive UI utilities (Tailwind plugin + JS behaviors)
+// TypeScript: the package has no types bundled; ignore the next import for TS.
+// @ts-ignore
+import 'preline';
+import { DesignSystemProvider } from './components/ui/DesignSystem';
 import App from './App';
 
 const rootElement = document.getElementById('root');
@@ -11,6 +16,8 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <DesignSystemProvider>
+      <App />
+    </DesignSystemProvider>
   </React.StrictMode>
 );
