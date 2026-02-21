@@ -7,15 +7,18 @@ import { useAuth } from '../contexts/AuthContext';
 
 const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
 const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';
+const STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID = 'stripe-cancel-subscription';
 
-interface StripePlan {
+export interface StripePlan {
   id: string;
   name: string;
   description: string;
-  price: number;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  monthlyPriceId: string | null;
+  yearlyPriceId: string | null;
   currency: string;
-  priceId: string;
-  features: string[];
+  metadata: Array<{ key: string; value: string }>;
 }
 
 const LIST_INVOICES_FUNCTION_ID = 'stripe-list-invoices';
@@ -80,21 +83,82 @@ export const useCreateCheckoutSession = () => {
     const { toast } = useToast();
     return useMutation<{ sessionId: string, url: string }, Error, { priceId: string }>({
         mutationFn: async ({ priceId }) => {
+            // Get current origin for dynamic redirect URLs
+            const returnUrl = window.location.origin;
+            
             const execution = await functions.createExecution(
                 STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID,
-                JSON.stringify({ priceId }),
+                JSON.stringify({ priceId, returnUrl }),
                 false // Not async
             );
 
+            console.log('Stripe checkout execution:', {
+                statusCode: execution.responseStatusCode,
+                body: execution.responseBody,
+                stderr: execution.stderr,
+                stdout: execution.stdout
+            });
+
             if (execution.responseStatusCode >= 400) {
-                 throw new Error(JSON.parse(execution.responseBody).error || 'Failed to create checkout session.');
+                let errorMessage = 'Failed to create checkout session.';
+                try {
+                    const errorData = JSON.parse(execution.responseBody);
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    errorMessage = execution.responseBody || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
-            return JSON.parse(execution.responseBody);
+
+            if (!execution.responseBody) {
+                throw new Error('Function returned empty response. Check function logs in Appwrite Console.');
+            }
+
+            try {
+                return JSON.parse(execution.responseBody);
+            } catch (e) {
+                console.error('Failed to parse response:', execution.responseBody);
+                throw new Error(`Invalid response from server: ${execution.responseBody}`);
+            }
         },
         onError: (error) => {
             toast({
                 title: "Error",
                 description: `Could not initiate subscription: ${error.message}`,
+                variant: "destructive",
+            });
+        },
+    });
+};
+
+export const useCancelSubscription = () => {
+    const { toast } = useToast();
+    return useMutation<{ success: boolean }, Error, void>({
+        mutationFn: async () => {
+            const execution = await functions.createExecution(
+                STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID,
+                '',
+                false
+            );
+
+            if (execution.responseStatusCode >= 400) {
+                const errorData = JSON.parse(execution.responseBody);
+                throw new Error(errorData.error || 'Failed to cancel subscription.');
+            }
+
+            return JSON.parse(execution.responseBody);
+        },
+        onSuccess: () => {
+            toast({
+                title: "Subscription Cancelled",
+                description: "Your subscription will be cancelled at the end of the billing period.",
+                variant: "default",
+            });
+        },
+        onError: (error) => {
+            toast({
+                title: "Error",
+                description: `Could not cancel subscription: ${error.message}`,
                 variant: "destructive",
             });
         },

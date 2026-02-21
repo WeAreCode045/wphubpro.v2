@@ -2,13 +2,16 @@
 module.exports = {
   content: [
     './index.html',
-    './**/*.{html,js,ts,jsx,tsx}'
+    './components/**/*.{js,ts,jsx,tsx}',
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './hooks/**/*.{js,ts,jsx,tsx}',
+    './contexts/**/*.{js,ts,jsx,tsx}',
+    './lib/**/*.{js,ts,jsx,tsx}',
+    './services/**/*.{js,ts,jsx,tsx}',
+    './*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {},
   },
-  plugins: [
-    // Preline UI is now imported via CSS in index.css
-    // require('preline/plugin')
-  ],
+  plugins: [],
 }

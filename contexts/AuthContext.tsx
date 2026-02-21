@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { account, ID, functions } from '../services/appwrite';
+import { account, teams, ID } from '../services/appwrite';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -20,62 +20,91 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    
     const checkSession = async () => {
       try {
         const currentUser = await account.get();
-        console.log('Current User Labels:', currentUser.labels); // Debug log for the user
-        const adminStatus = currentUser.labels?.some(l => 
-          l.toLowerCase() === 'admin' || l.toLowerCase() === 'administrator'
-        ) || false;
+        if (!mounted) return;
+        
+        console.log('Current User ID:', currentUser.$id);
+        
+        // Check if user is in the admin team
+        let adminStatus = false;
+        try {
+          const teamMemberships = await teams.listMemberships('admin');
+          adminStatus = teamMemberships.memberships.some(m => m.userId === currentUser.$id);
+        } catch (err) {
+          console.warn('Could not fetch admin team memberships:', err);
+          adminStatus = false;
+        }
+        
         setUser({ ...currentUser, isAdmin: adminStatus });
         setIsAdmin(adminStatus);
       } catch {
+        if (!mounted) return;
         setUser(null);
         setIsAdmin(false);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
+    
     checkSession();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {
-    await account.createEmailPasswordSession(email, pass);
-    const currentUser = await account.get();
-    console.log('Login User Labels:', currentUser.labels); // Debug log for the user
-    const adminStatus = currentUser.labels?.some(l => 
-      l.toLowerCase() === 'admin' || l.toLowerCase() === 'administrator'
-    ) || false;
-    setUser({ ...currentUser, isAdmin: adminStatus });
-    setIsAdmin(adminStatus);
+    try {
+      await account.createEmailPasswordSession(email, pass);
+      const currentUser = await account.get();
+      console.log('✅ Login successful - User:', currentUser.$id, 'Email:', currentUser.email);
+      
+      // Check if user is in the admin team
+      let adminStatus = false;
+      try {
+        const teamMemberships = await teams.listMemberships('admin');
+        adminStatus = teamMemberships.memberships.some(m => m.userId === currentUser.$id);
+      } catch (err) {
+        console.warn('Could not fetch admin team memberships:', err);
+      }
+      
+      console.log('🔐 Admin Status:', adminStatus);
+      const userWithAdmin = { ...currentUser, isAdmin: adminStatus };
+      console.log('👤 Setting user state:', userWithAdmin);
+      
+      setUser(userWithAdmin);
+      setIsAdmin(adminStatus);
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log('🚀 Login state update complete');
+    } catch (error) {
+      console.error('❌ Login failed:', error);
+      throw error;
+    }
   };
 
   const register = async (name: string, email: string, pass: string) => {
-    await account.create(ID.unique(), email, pass, name);
+    const userId = ID.unique();
+    await account.create(userId, email, pass, name);
     await account.createEmailPasswordSession(email, pass);
     
+    const currentUser = await account.get();
+    let adminStatus = false;
     try {
-      const currentUser = await account.get();
-      await functions.createExecution('set-admin', JSON.stringify({ userId: currentUser.$id }));
-      
-      // Give the function a moment and re-fetch
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const updatedUser = await account.get();
-      console.log('Post-Register User Labels:', updatedUser.labels);
-      const adminStatus = updatedUser.labels?.some(l => 
-        l.toLowerCase() === 'admin' || l.toLowerCase() === 'administrator'
-      ) || false;
-      setUser({ ...updatedUser, isAdmin: adminStatus });
-      setIsAdmin(adminStatus);
-    } catch (e) {
-      console.warn('set-admin function call failed', e);
-      const currentUser = await account.get();
-      const adminStatus = currentUser.labels?.some(l => 
-        l.toLowerCase() === 'admin' || l.toLowerCase() === 'administrator'
-      ) || false;
-      setUser({ ...currentUser, isAdmin: adminStatus });
-      setIsAdmin(adminStatus);
+      const teamMemberships = await teams.listMemberships('admin');
+      adminStatus = teamMemberships.memberships.some(m => m.userId === currentUser.$id);
+    } catch (err) {
+      console.warn('New users are not in admin team by default');
     }
+    
+    setUser({ ...currentUser, isAdmin: adminStatus });
+    setIsAdmin(adminStatus);
   };
 
   const logout = async () => {

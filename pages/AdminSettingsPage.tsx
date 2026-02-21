@@ -12,7 +12,8 @@ import {
   AlertCircle,
   Upload,
   Loader2,
-  Undo2
+  Undo2,
+  Gift
 } from 'lucide-react';
 import { usePlatformSettings, useUpdatePlatformSettings } from '../hooks/usePlatformSettings';
 import { useToast } from '../contexts/ToastContext';
@@ -34,7 +35,8 @@ const AdminSettingsPage: React.FC = () => {
     details: { name: '', subtitle: '', logoUrl: '' },
     branding: { ...DEFAULT_BRANDING },
     database: { endpoint: '', projectId: '', apiKey: '' },
-    s3: { endpoint: '', accessKey: '', secretKey: '', region: '' }
+    s3: { endpoint: '', accessKey: '', secretKey: '', region: '' },
+    freePlanLimits: { sitesLimit: '1', libraryLimit: '5', storageLimit: '100' }
   });
 
   // Fetch all settings categories
@@ -42,13 +44,15 @@ const AdminSettingsPage: React.FC = () => {
   const { data: brandingData, isLoading: loadingBranding } = usePlatformSettings('branding');
   const { data: databaseData, isLoading: loadingDatabase } = usePlatformSettings('database');
   const { data: s3Data, isLoading: loadingS3 } = usePlatformSettings('s3');
+  const { data: freePlanData, isLoading: loadingFreePlan } = usePlatformSettings('freePlanLimits');
 
   useEffect(() => {
     if (detailsData) setSettings((prev: any) => ({ ...prev, details: { ...prev.details, ...detailsData } }));
     if (brandingData) setSettings((prev: any) => ({ ...prev, branding: { ...prev.branding, ...brandingData } }));
     if (databaseData) setSettings((prev: any) => ({ ...prev, database: { ...prev.database, ...databaseData } }));
     if (s3Data) setSettings((prev: any) => ({ ...prev, s3: { ...prev.s3, ...s3Data } }));
-  }, [detailsData, brandingData, databaseData, s3Data]);
+    if (freePlanData) setSettings((prev: any) => ({ ...prev, freePlanLimits: { ...prev.freePlanLimits, ...freePlanData } }));
+  }, [detailsData, brandingData, databaseData, s3Data, freePlanData]);
 
   const handleInputChange = (category: string, field: string, value: string) => {
     setSettings((prev: any) => ({
@@ -97,9 +101,10 @@ const AdminSettingsPage: React.FC = () => {
     { id: 'branding', label: 'Platform Branding', icon: Palette },
     { id: 'database', label: 'Database Connectivity', icon: Database },
     { id: 's3', label: 'AWS S3 Storage', icon: Cloud },
+    { id: 'freePlanLimits', label: 'Free Plan Limits', icon: Gift },
   ];
 
-  const isLoading = loadingDetails || loadingBranding || loadingDatabase || loadingS3;
+  const isLoading = loadingDetails || loadingBranding || loadingDatabase || loadingS3 || loadingFreePlan;
 
   return (
     <div className="space-y-6">
@@ -358,6 +363,71 @@ const AdminSettingsPage: React.FC = () => {
                             <p className="text-xs text-muted-foreground">/platform/global/</p>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {activeTab === 'freePlanLimits' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Free Plan Limits</CardTitle>
+                    <CardDescription>Set default limits for users without a subscription (no labels).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex gap-3">
+                      <AlertCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                      <div className="text-sm text-blue-700 dark:text-blue-300">
+                        <p className="font-medium mb-1">How it works:</p>
+                        <ul className="list-disc list-inside space-y-1 text-xs">
+                          <li>New users have no labels by default</li>
+                          <li>Users without subscription labels see these free tier limits</li>
+                          <li>Stripe subscriptions set the product metadata 'label' value as user label</li>
+                          <li>Local plans set their custom label on assigned users</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4">
+                      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs text-amber-700 dark:text-amber-200">
+                        <p className="font-medium mb-1">Unlimited Plans:</p>
+                        <p>Set a limit to 9999 to make it unlimited for that plan type.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="freeSitesLimit">Sites Limit</Label>
+                        <Input 
+                          id="freeSitesLimit"
+                          type="number"
+                          min="0"
+                          value={settings.freePlanLimits.sitesLimit} 
+                          onChange={(e) => handleInputChange('freePlanLimits', 'sitesLimit', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">Maximum number of sites free users can create (use 9999 for unlimited)</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="freeLibraryLimit">Library Items Limit</Label>
+                        <Input 
+                          id="freeLibraryLimit"
+                          type="number"
+                          min="0"
+                          value={settings.freePlanLimits.libraryLimit} 
+                          onChange={(e) => handleInputChange('freePlanLimits', 'libraryLimit', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">Maximum number of library items free users can store (use 9999 for unlimited)</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="freeStorageLimit">Upload Limit</Label>
+                        <Input 
+                          id="freeStorageLimit"
+                          type="number"
+                          min="0"
+                          value={settings.freePlanLimits.storageLimit} 
+                          onChange={(e) => handleInputChange('freePlanLimits', 'storageLimit', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">Maximum upload limit in MB for free users (use 9999 for unlimited)</p>
                       </div>
                     </div>
                   </CardContent>

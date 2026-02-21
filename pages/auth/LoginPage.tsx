@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
@@ -14,7 +14,6 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,10 +21,9 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      // Navigation handled automatically by App.tsx route when user state updates
     } catch (err: any) {
       setError(err.message || 'Invalid email or password. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

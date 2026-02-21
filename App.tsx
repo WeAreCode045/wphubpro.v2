@@ -27,6 +27,9 @@ import ConnectSuccess from './pages/ConnectSuccess';
 const AppRoutes: React.FC = () => {
   const { user, isLoading } = useAuth();
 
+  console.log('🔄 AppRoutes render - isLoading:', isLoading, 'user:', user?.$id, 'isAdmin:', user?.isAdmin);
+
+  // Centralized loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-secondary">
@@ -37,24 +40,24 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
-      <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
+      {/* Public Routes - only redirect if auth is fully initialized */}
+      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
 
       {/* Protected Layout Routes */}
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="sites" element={<SitesPage />} />
-<Route path="/sites/:id" element={<SiteDetailPage />} />
-        <Route path="library" element={<LibraryPage />} />
-        <Route path="subscription" element={<SubscriptionPage />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/sites" element={<SitesPage />} />
+        <Route path="/sites/:id" element={<SiteDetailPage />} />
+        <Route path="/library" element={<LibraryPage />} />
+        <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/dashboard/connect-success" element={<ConnectSuccess />} />
         <Route path="/connect-success" element={<ConnectSuccess />} />
         
         {/* Admin Specific Routes */}
-        <Route path="admin" element={<AdminRoute><Outlet /></AdminRoute>}>
-          <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="/admin" element={<AdminRoute><Outlet /></AdminRoute>}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="users" element={<UserManagerPage />} />
           <Route path="orders" element={<OrdersPage />} />

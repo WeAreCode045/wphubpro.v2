@@ -133,8 +133,8 @@ deploy_function() {
 }
 
 # Deploy all functions
-deploy_function "stripe-list-payment-intents" "stripe-list-payment-intents" "label:Admin" ""
-deploy_function "stripe-list-products" "stripe-list-products" "label:Admin" ""
+deploy_function "stripe-list-payment-intents" "stripe-list-payment-intents" "label:admin" ""
+deploy_function "stripe-list-products" "stripe-list-products" "label:admin" ""
 deploy_function "stripe-list-invoices" "stripe-list-invoices" "users" "databases.read,documents.read"
 deploy_function "stripe-portal-link" "stripe-portal-link" "users" "databases.read,documents.read"
 

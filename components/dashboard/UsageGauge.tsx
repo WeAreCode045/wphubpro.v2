@@ -13,12 +13,14 @@ const UsageGauge: React.FC<UsageGaugeProps> = ({
   limit,
   unit: _unit,
 }) => {
-  const percentage = limit > 0 ? (used / limit) * 100 : 0;
+  const isUnlimited = limit === 9999 || limit === 0;
+  const percentage = !isUnlimited && limit > 0 ? (used / limit) * 100 : 0;
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const getStrokeColor = () => {
+    if (isUnlimited) return "stroke-primary";
     if (percentage > 90) return "stroke-destructive";
     if (percentage > 75) return "stroke-orange-500";
     return "stroke-primary";
@@ -51,7 +53,7 @@ const UsageGauge: React.FC<UsageGaugeProps> = ({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold text-foreground">{used}</span>
-          <span className="text-xs text-muted-foreground">of {limit}</span>
+          <span className="text-xs text-muted-foreground">{isUnlimited ? "Unlimited" : `of ${limit}`}</span>
         </div>
       </div>
       <p className="text-sm font-medium text-muted-foreground">{label}</p>

@@ -19,12 +19,17 @@ export const useLibraryItems = () => {
     queryKey: ['libraryItems', user?.$id],
     queryFn: async () => {
       if (!user?.$id) return [];
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        LIBRARY_COLLECTION_ID,
-        [Query.equal('user_id', user.$id)]
-      );
-      return response.documents as unknown as LibraryItem[];
+      try {
+        const response = await databases.listDocuments(
+          DATABASE_ID,
+          LIBRARY_COLLECTION_ID,
+          [Query.equal('user_id', user.$id)]
+        );
+        return response.documents as unknown as LibraryItem[];
+      } catch (error) {
+        // Re-throw Appwrite errors so React Query can handle them
+        throw error;
+      }
     },
     enabled: !!user,
   });

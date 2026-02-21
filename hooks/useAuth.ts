@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { account } from '../services/appwrite';
+import { account, teams } from '../services/appwrite';
 
 /**
- * Hook om de huidige ingelogde gebruiker op te halen inclusief rollen/labels.
+ * Hook om de huidige ingelogde gebruiker op te halen inclusief rollen/team membership.
  */
 export const useUser = () => {
   return useQuery({
@@ -11,10 +11,19 @@ export const useUser = () => {
       try {
         const user = await account.get();
         
-        // We voegen een isAdmin helper toe op basis van het Appwrite Auth Label
+        // Check if user is in the admin team
+        let isAdmin = false;
+        try {
+          const teamMemberships = await teams.listMemberships('admin');
+          isAdmin = teamMemberships.memberships.some(m => m.userId === user.$id);
+        } catch (err) {
+          console.warn('Could not fetch admin team membership');
+          isAdmin = false;
+        }
+        
         return {
           ...user,
-          isAdmin: user.labels?.includes('Admin') || false,
+          isAdmin,
         } as any; 
       } catch {
         // Als er geen actieve sessie is, geven we null terug

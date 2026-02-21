@@ -12,6 +12,7 @@ export interface Subscription {
   sitesLimit: number;
   storageLimit: number; // in MB
   libraryLimit: number;
+  source?: 'stripe' | 'local' | 'free'; // Where the subscription data originates
 }
 
 export interface Site {

@@ -121,7 +121,7 @@
             "path": "functions/stripe-list-payment-intents",
             "entrypoint": "index.js",
             "execute": [
-                "label:Admin"
+                "team:admin"
             ],
             "enabled": true,
             "logging": true,
@@ -142,7 +142,7 @@
             "path": "functions/stripe-list-products",
             "entrypoint": "index.js",
             "execute": [
-                "label:Admin"
+                "team:admin"
             ],
             "enabled": true,
             "logging": true,
@@ -255,7 +255,8 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [
-                "users.read"
+                "teams.read",
+                "teams.write"
             ],
             "variables": {
                 "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
@@ -272,7 +273,7 @@
             "path": "functions/manage-settings",
             "entrypoint": "index.js",
             "execute": [
-                "label:Admin"
+                "team:admin"
             ],
             "enabled": true,
             "logging": true,
@@ -281,7 +282,9 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [
-                "users.read"
+                "users.read",
+                "documents.read",
+                "documents.write"
             ],
             "variables": {
                 "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
@@ -528,7 +531,7 @@
             "entrypoint": "index.js",
             "execute": [
                 "any",
-                "label:Admin"
+                "team:admin"
             ],
             "enabled": true,
             "logging": true,
@@ -548,7 +551,7 @@
             "path": "functions/admin-update-user",
             "entrypoint": "index.js",
             "execute": [
-                "label:Admin"
+                "team:admin"
             ],
             "enabled": true,
             "logging": true,
@@ -558,7 +561,10 @@
             "commands": "npm install",
             "scopes": [
                 "users.read",
-                "users.write"
+                "users.write",
+                "databases.read",
+                "documents.read",
+                "documents.write"
             ],
             "specification": "s-1vcpu-512mb"
         },
@@ -609,12 +615,10 @@
             "variables": {
                 "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
                 "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "YOUR_SERVER_API_KEY_WITH_DOCUMENTS_READ",
+                "APPWRITE_API_KEY": "",
                 "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
                 "DATABASE_ID": "platform_db",
-                "ACCOUNTS_COLLECTION_ID": "accounts",
-                "SUCCESS_URL": "http://localhost:3000/subscription?success=true",
-                "CANCEL_URL": "http://localhost:3000/subscription?canceled=true"
+                "ACCOUNTS_COLLECTION_ID": "accounts"
             }
         },
         {
@@ -636,7 +640,32 @@
             "variables": {
                 "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
                 "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "YOUR_SERVER_API_KEY_WITH_DOCUMENTS_READ",
+                "APPWRITE_API_KEY": "",
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "DATABASE_ID": "platform_db",
+                "ACCOUNTS_COLLECTION_ID": "accounts"
+            }
+        },
+        {
+            "$id": "stripe-cancel-subscription",
+            "name": "stripe-cancel-subscription",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-cancel-subscription",
+            "entrypoint": "index.js",
+            "execute": ["users"],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "",
                 "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
                 "DATABASE_ID": "platform_db",
                 "ACCOUNTS_COLLECTION_ID": "accounts"
@@ -675,8 +704,8 @@
             "$permissions": [
                 "read(\"users\")",
                 "update(\"users\")",
-                "create(\"label:Admin\")",
-                "delete(\"label:Admin\")"
+                "create(\"label:admin\")",
+                "delete(\"label:admin\")"
             ],
             "databaseId": "platform_db",
             "name": "Accounts",
@@ -696,6 +725,15 @@
                     "key": "stripe_customer_id",
                     "type": "string",
                     "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "current_plan_id",
+                    "type": "string",
+                    "required": false,
                     "array": false,
                     "size": 255,
                     "default": null,
@@ -793,10 +831,10 @@
             "$id": "library",
             "$permissions": [
                 "create(\"users\")",
-                "create(\"label:Admin\")",
-                "read(\"label:Admin\")",
-                "update(\"label:Admin\")",
-                "delete(\"label:Admin\")"
+                "create(\"label:admin\")",
+                "read(\"label:admin\")",
+                "update(\"label:admin\")",
+                "delete(\"label:admin\")"
             ],
             "databaseId": "platform_db",
             "name": "Library",
@@ -916,10 +954,10 @@
             "$id": "platform_settings",
             "$permissions": [
                 "read(\"any\")",
-                "create(\"label:Admin\")",
-                "read(\"label:Admin\")",
-                "update(\"label:Admin\")",
-                "delete(\"label:Admin\")"
+                "create(\"label:admin\")",
+                "read(\"label:admin\")",
+                "update(\"label:admin\")",
+                "delete(\"label:admin\")"
             ],
             "databaseId": "platform_db",
             "name": "Platform Settings",
@@ -952,6 +990,97 @@
                     "status": "available",
                     "columns": [
                         "key"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "local_plans",
+            "$permissions": [
+                "read(\"label:admin\")",
+                "create(\"label:admin\")",
+                "update(\"label:admin\")",
+                "delete(\"label:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Local Plans",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "label",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "sites_limit",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 999999,
+                    "default": null
+                },
+                {
+                    "key": "library_limit",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 999999,
+                    "default": null
+                },
+                {
+                    "key": "storage_limit",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 999999,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": "active",
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "label_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "label"
                     ],
                     "orders": [
                         "ASC"
