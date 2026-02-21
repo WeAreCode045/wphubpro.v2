@@ -1,0 +1,13 @@
+{
+  "name": "stripe-create-checkout-session",
+  "version": "1.0.0",
+  "description": "Creates a Stripe Checkout session for a user to subscribe to a plan.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.1",
+    "stripe": "^14.10.0"
+  }
+}

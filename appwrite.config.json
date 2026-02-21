@@ -106,108 +106,6 @@
                 "log.read",
                 "log.write"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
-                "ENCRYPTION_KEY": "df88aacd5ce2bd37b97b40e29578171801e4cf094b84a605b7cd10f47320cde6"
-            },
-            "specification": "s-0.5vcpu-512mb"
-        },
-        {
-            "$id": "stripe-list-payment-intents",
-            "name": "stripe-list-payment-intents",
-            "runtime": "node-18.0",
-            "path": "functions/stripe-list-payment-intents",
-            "entrypoint": "index.js",
-            "execute": [
-                "team:admin"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 15,
-            "commands": "npm install",
-            "scopes": [],
-            "variables": {
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm"
-            },
-            "specification": "s-0.5vcpu-512mb"
-        },
-        {
-            "$id": "stripe-list-products",
-            "name": "stripe-list-products",
-            "runtime": "node-18.0",
-            "path": "functions/stripe-list-products",
-            "entrypoint": "index.js",
-            "execute": [
-                "team:admin"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 15,
-            "commands": "npm install",
-            "scopes": [],
-            "variables": {
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm"
-            },
-            "specification": "s-0.5vcpu-512mb"
-        },
-        {
-            "$id": "stripe-list-invoices",
-            "name": "stripe-list-invoices",
-            "runtime": "node-18.0",
-            "path": "functions/stripe-list-invoices",
-            "entrypoint": "index.js",
-            "execute": [
-                "users"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 15,
-            "commands": "npm install",
-            "scopes": [
-                "databases.read",
-                "documents.read"
-            ],
-            "variables": {
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
-            },
-            "specification": "s-0.5vcpu-512mb"
-        },
-        {
-            "$id": "stripe-portal-link",
-            "name": "stripe-portal-link",
-            "runtime": "node-18.0",
-            "path": "functions/stripe-portal-link",
-            "entrypoint": "index.js",
-            "execute": [
-                "users"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 15,
-            "commands": "npm install",
-            "scopes": [
-                "databases.read",
-                "documents.read"
-            ],
-            "variables": {
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd"
-            },
             "specification": "s-0.5vcpu-512mb"
         },
         {
@@ -228,42 +126,6 @@
             "scopes": [
                 "users.read"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
-                "S3_BUCKET": "code045-wphub",
-                "S3_REGION": "eu-central-1",
-                "S3_ACCESS_KEY_ID": "AKIAWCRJLC2GGWOC4RX2",
-                "S3_SECRET_ACCESS_KEY": "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"
-            },
-            "specification": "s-0.5vcpu-512mb"
-        },
-        {
-            "$id": "set-admin",
-            "name": "set-admin",
-            "runtime": "node-18.0",
-            "path": "functions/set-admin",
-            "entrypoint": "index.js",
-            "execute": [
-                "any"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 15,
-            "commands": "npm install",
-            "scopes": [
-                "teams.read",
-                "teams.write"
-            ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
-                "ENCRYPTION_KEY": "df88aacd5ce2bd37b97b40e29578171801e4cf094b84a605b7cd10f47320cde6"
-            },
             "specification": "s-0.5vcpu-512mb"
         },
         {
@@ -286,82 +148,7 @@
                 "documents.read",
                 "documents.write"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
-                "ENCRYPTION_KEY": "df88aacd5ce2bd37b97b40e29578171801e4cf094b84a605b7cd10f47320cde6"
-            },
             "specification": "s-0.5vcpu-512mb"
-        },
-        {
-            "$id": "validate-wp",
-            "name": "validate-wp",
-            "runtime": "node-18.0",
-            "path": "functions/validate-wp",
-            "entrypoint": "index.js",
-            "execute": [
-                "users"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 15,
-            "commands": "npm install",
-            "scopes": [
-                "sessions.write",
-                "users.read",
-                "users.write",
-                "teams.read",
-                "teams.write",
-                "databases.read",
-                "databases.write",
-                "tables.read",
-                "collections.read",
-                "tables.write",
-                "collections.write",
-                "columns.read",
-                "attributes.read",
-                "columns.write",
-                "attributes.write",
-                "indexes.read",
-                "indexes.write",
-                "rows.read",
-                "documents.read",
-                "rows.write",
-                "documents.write",
-                "files.read",
-                "files.write",
-                "buckets.read",
-                "buckets.write",
-                "functions.read",
-                "functions.write",
-                "execution.read",
-                "execution.write",
-                "targets.read",
-                "targets.write",
-                "providers.read",
-                "providers.write",
-                "messages.read",
-                "messages.write",
-                "topics.read",
-                "topics.write",
-                "subscribers.read",
-                "subscribers.write",
-                "locale.read",
-                "avatars.read",
-                "health.read",
-                "migrations.read",
-                "migrations.write",
-                "tokens.read",
-                "tokens.write",
-                "sites.read",
-                "sites.write",
-                "log.read",
-                "log.write"
-            ],
-            "specification": "s-1vcpu-512mb"
         },
         {
             "$id": "create-site",
@@ -502,6 +289,84 @@
             "specification": "s-1vcpu-512mb"
         },
         {
+            "$id": "stripe-list-products",
+            "name": "stripe-list-products",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-products",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-list-payment-intents",
+            "name": "stripe-list-payment-intents",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-payment-intents",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-portal-link",
+            "name": "stripe-portal-link",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-portal-link",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "documents.read"
+            ],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-list-invoices",
+            "name": "stripe-list-invoices",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-invoices",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "documents.read"
+            ],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
             "$id": "stripe-webhook",
             "name": "stripe-webhook",
             "runtime": "node-18.0",
@@ -517,10 +382,6 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [],
-            "variables": {
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "STRIPE_WEBHOOK_SECRET": "YOUR_STRIPE_WEBHOOK_SECRET"
-            },
             "specification": "s-0.5vcpu-512mb"
         },
         {
@@ -558,13 +419,58 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "npm run build",
             "scopes": [
+                "sessions.write",
                 "users.read",
                 "users.write",
+                "teams.read",
+                "teams.write",
                 "databases.read",
+                "databases.write",
+                "tables.read",
+                "collections.read",
+                "tables.write",
+                "collections.write",
+                "columns.read",
+                "attributes.read",
+                "columns.write",
+                "attributes.write",
+                "indexes.read",
+                "indexes.write",
+                "rows.read",
                 "documents.read",
-                "documents.write"
+                "rows.write",
+                "documents.write",
+                "files.read",
+                "files.write",
+                "buckets.read",
+                "buckets.write",
+                "functions.read",
+                "functions.write",
+                "execution.read",
+                "execution.write",
+                "targets.read",
+                "targets.write",
+                "providers.read",
+                "providers.write",
+                "messages.read",
+                "messages.write",
+                "topics.read",
+                "topics.write",
+                "subscribers.read",
+                "subscribers.write",
+                "locale.read",
+                "avatars.read",
+                "health.read",
+                "migrations.read",
+                "migrations.write",
+                "tokens.read",
+                "tokens.write",
+                "sites.read",
+                "sites.write",
+                "log.read",
+                "log.write"
             ],
             "specification": "s-1vcpu-512mb"
         },
@@ -587,14 +493,7 @@
                 "documents.write",
                 "users.read"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "DATABASE_ID": "platform_db",
-                "ACCOUNTS_COLLECTION_ID": "accounts"
-            }
+            "specification": "s-1vcpu-512mb"
         },
         {
             "$id": "stripe-create-checkout-session",
@@ -602,7 +501,9 @@
             "runtime": "node-18.0",
             "path": "functions/stripe-create-checkout-session",
             "entrypoint": "index.js",
-            "execute": ["users"],
+            "execute": [
+                "users"
+            ],
             "enabled": true,
             "logging": true,
             "events": [],
@@ -612,14 +513,7 @@
             "scopes": [
                 "documents.read"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "",
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "DATABASE_ID": "platform_db",
-                "ACCOUNTS_COLLECTION_ID": "accounts"
-            }
+            "specification": "s-1vcpu-512mb"
         },
         {
             "$id": "stripe-get-subscription",
@@ -627,7 +521,9 @@
             "runtime": "node-18.0",
             "path": "functions/stripe-get-subscription",
             "entrypoint": "index.js",
-            "execute": ["users"],
+            "execute": [
+                "users"
+            ],
             "enabled": true,
             "logging": true,
             "events": [],
@@ -637,14 +533,7 @@
             "scopes": [
                 "documents.read"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "",
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "DATABASE_ID": "platform_db",
-                "ACCOUNTS_COLLECTION_ID": "accounts"
-            }
+            "specification": "s-1vcpu-512mb"
         },
         {
             "$id": "stripe-cancel-subscription",
@@ -652,7 +541,9 @@
             "runtime": "node-18.0",
             "path": "functions/stripe-cancel-subscription",
             "entrypoint": "index.js",
-            "execute": ["users"],
+            "execute": [
+                "users"
+            ],
             "enabled": true,
             "logging": true,
             "events": [],
@@ -662,14 +553,97 @@
             "scopes": [
                 "documents.read"
             ],
-            "variables": {
-                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
-                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
-                "APPWRITE_API_KEY": "",
-                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
-                "DATABASE_ID": "platform_db",
-                "ACCOUNTS_COLLECTION_ID": "accounts"
-            }
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "set-admin",
+            "name": "set-admin",
+            "runtime": "node-18.0",
+            "path": "functions/set-admin",
+            "entrypoint": "index.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "teams.read",
+                "teams.write"
+            ],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "validate-wp",
+            "name": "validate-wp",
+            "runtime": "node-18.0",
+            "path": "functions/validate-wp",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "sessions.write",
+                "users.read",
+                "users.write",
+                "teams.read",
+                "teams.write",
+                "databases.read",
+                "databases.write",
+                "tables.read",
+                "collections.read",
+                "tables.write",
+                "collections.write",
+                "columns.read",
+                "attributes.read",
+                "columns.write",
+                "attributes.write",
+                "indexes.read",
+                "indexes.write",
+                "rows.read",
+                "documents.read",
+                "rows.write",
+                "documents.write",
+                "files.read",
+                "files.write",
+                "buckets.read",
+                "buckets.write",
+                "functions.read",
+                "functions.write",
+                "execution.read",
+                "execution.write",
+                "targets.read",
+                "targets.write",
+                "providers.read",
+                "providers.write",
+                "messages.read",
+                "messages.write",
+                "topics.read",
+                "topics.write",
+                "subscribers.read",
+                "subscribers.write",
+                "locale.read",
+                "avatars.read",
+                "health.read",
+                "migrations.read",
+                "migrations.write",
+                "tokens.read",
+                "tokens.write",
+                "sites.read",
+                "sites.write",
+                "log.read",
+                "log.write"
+            ],
+            "specification": "s-1vcpu-512mb"
         }
     ],
     "sites": [
@@ -698,62 +672,6 @@
         }
     ],
     "tables": [
-
-        {
-            "$id": "accounts",
-            "$permissions": [
-                "read(\"users\")",
-                "update(\"users\")",
-                "create(\"label:admin\")",
-                "delete(\"label:admin\")"
-            ],
-            "databaseId": "platform_db",
-            "name": "Accounts",
-            "enabled": true,
-            "rowSecurity": true,
-            "columns": [
-                {
-                    "key": "user_id",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "stripe_customer_id",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "current_plan_id",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "user_id_index",
-                    "type": "unique",
-                    "status": "available",
-                    "columns": [
-                        "user_id"
-                    ],
-                    "orders": [
-                        "ASC"
-                    ]
-                }
-            ]
-        },
         {
             "$id": "sites",
             "$permissions": [
@@ -811,6 +729,24 @@
                     "size": 2000,
                     "default": null,
                     "encrypt": true
+                },
+                {
+                    "key": "api_key",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "action_log",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50000,
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
@@ -831,10 +767,9 @@
             "$id": "library",
             "$permissions": [
                 "create(\"users\")",
-                "create(\"label:admin\")",
-                "read(\"label:admin\")",
-                "update(\"label:admin\")",
-                "delete(\"label:admin\")"
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
             ],
             "databaseId": "platform_db",
             "name": "Library",
@@ -954,10 +889,10 @@
             "$id": "platform_settings",
             "$permissions": [
                 "read(\"any\")",
-                "create(\"label:admin\")",
-                "read(\"label:admin\")",
-                "update(\"label:admin\")",
-                "delete(\"label:admin\")"
+                "create(\"team:admin\")",
+                "read(\"team:admin\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
             ],
             "databaseId": "platform_db",
             "name": "Platform Settings",
@@ -998,12 +933,70 @@
             ]
         },
         {
+            "$id": "accounts",
+            "$permissions": [
+                "read(\"users\")",
+                "update(\"users\")",
+                "create(\"team:admin\")",
+                "read(\"team:admin\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Accounts",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "stripe_customer_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "current_plan_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id_index",
+                    "type": "unique",
+                    "status": "available",
+                    "columns": [
+                        "user_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
             "$id": "local_plans",
             "$permissions": [
-                "read(\"label:admin\")",
-                "create(\"label:admin\")",
-                "update(\"label:admin\")",
-                "delete(\"label:admin\")"
+                "read(\"users\")",
+                "create(\"team:admin\")",
+                "read(\"team:admin\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
             ],
             "databaseId": "platform_db",
             "name": "Local Plans",
@@ -1042,27 +1035,27 @@
                     "type": "integer",
                     "required": true,
                     "array": false,
+                    "default": null,
                     "min": 0,
-                    "max": 999999,
-                    "default": null
+                    "max": 999999
                 },
                 {
                     "key": "library_limit",
                     "type": "integer",
                     "required": true,
                     "array": false,
+                    "default": null,
                     "min": 0,
-                    "max": 999999,
-                    "default": null
+                    "max": 999999
                 },
                 {
                     "key": "storage_limit",
                     "type": "integer",
                     "required": true,
                     "array": false,
+                    "default": null,
                     "min": 0,
-                    "max": 999999,
-                    "default": null
+                    "max": 999999
                 },
                 {
                     "key": "status",
@@ -1094,26 +1087,12 @@
         {
             "$id": "admin",
             "$createdAt": "2026-02-09T23:44:31.874+00:00",
-            "$updatedAt": "2026-02-09T23:44:31.874+00:00",
+            "$updatedAt": "2026-02-21T10:46:19.642+00:00",
             "name": "Admin",
-            "total": 0,
-            "prefs": {}
-        },
-        {
-            "$id": "code045",
-            "$createdAt": "2026-02-09T23:45:16.882+00:00",
-            "$updatedAt": "2026-02-13T01:55:25.399+00:00",
-            "name": "Code045",
-            "total": 0,
-            "prefs": {}
-        },
-        {
-            "$id": "698ce5130030c953a99f",
-            "$createdAt": "2026-02-11T20:22:43.931+00:00",
-            "$updatedAt": "2026-02-11T20:22:43.931+00:00",
-            "name": "Team 1",
-            "total": 0,
-            "prefs": {}
+            "total": 2,
+            "prefs": {
+                "plan": "unlimited"
+            }
         }
     ],
     "topics": []

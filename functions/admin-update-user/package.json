@@ -1,0 +1,12 @@
+{
+  "name": "admin-update-user",
+  "version": "1.0.0",
+  "description": "Admin function to update Appwrite user via REST API",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "node-appwrite": "^22.0.0",
+    "dotenv": "^16.3.1",
+    "stripe": "^14.0.0"
+  }
+}

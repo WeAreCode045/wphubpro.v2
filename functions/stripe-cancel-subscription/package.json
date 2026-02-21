@@ -1,0 +1,13 @@
+{
+  "name": "stripe-cancel-subscription",
+  "version": "1.0.0",
+  "description": "Cancel Stripe subscription at period end",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-appwrite": "^14.1.0",
+    "stripe": "^17.5.0"
+  }
+}
