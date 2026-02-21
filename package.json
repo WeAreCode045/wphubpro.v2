@@ -15,6 +15,7 @@
     "autoprefixer": "^10.4.14",
     "dotenv": "^17.3.1",
     "lucide-react": "^0.475.0",
+    "netlify-cli": "^23.15.1",
     "node-appwrite": "^22.0.0",
     "node-fetch": "^2.6.7",
     "preline": "^4.0.1",
