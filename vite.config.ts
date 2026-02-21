@@ -8,7 +8,8 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
-        ssl: true
+        ssl: true,
+        allowedHosts: ['devserver-preview--wphubpro.netlify.app', '.ngrok-free.app:3000']
       },
       plugins: [react()],
       define: {
