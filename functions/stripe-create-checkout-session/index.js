@@ -110,7 +110,15 @@ module.exports = async ({ req, res, log, error }) => {
 
         log('Found Stripe customer: ' + stripeCustomerId);
 
-        // 2. Fetch price and product to get metadata label
+        // 2. Check for any existing non-canceled subscription for this customer
+        const subscriptionsList = await stripe.subscriptions.list({
+            customer: stripeCustomerId,
+            limit: 10
+        });
+
+        const activeSubscription = (subscriptionsList.data || []).find(s => s.status && s.status !== 'canceled' && s.status !== 'incomplete_expired');
+
+        // 3. Fetch price and product to get metadata label
         const price = await stripe.prices.retrieve(priceId);
         const product = await stripe.products.retrieve(price.product);
         const productLabel = product.metadata?.label || null;
@@ -122,7 +130,55 @@ module.exports = async ({ req, res, log, error }) => {
             return res.json({ error: 'Product configuration error. Please contact support.' }, 400);
         }
 
-        // 3. Create a Stripe Checkout Session
+        // 4. If an existing non-canceled subscription exists, update it in-place
+        //    instead of creating a new subscription. This prevents duplicate
+        //    subscriptions for the same customer when swapping plans.
+        if (activeSubscription) {
+            log('User has active subscription: ' + activeSubscription.id + '. Attempting in-place update...');
+
+            const existingItem = activeSubscription.items && activeSubscription.items.data && activeSubscription.items.data[0];
+            if (!existingItem) {
+                log('No existing subscription item found, falling back to portal session');
+                const portalSession = await stripe.billingPortal.sessions.create({
+                    customer: stripeCustomerId,
+                    return_url: successUrl
+                });
+                return res.json({ sessionId: portalSession.id, url: portalSession.url });
+            }
+
+            // If the selected price is already the current price, return current subscription
+            if (existingItem.price && existingItem.price.id === priceId) {
+                log('Selected price is same as current price, returning existing subscription info');
+                return res.json({ subscriptionId: activeSubscription.id, status: activeSubscription.status, message: 'Already on selected plan' });
+            }
+
+            // Perform the subscription update to swap the price in-place.
+            // Use proration behavior to handle mid-cycle changes.
+            try {
+                const updated = await stripe.subscriptions.update(activeSubscription.id, {
+                    proration_behavior: 'create_prorations',
+                    items: [{
+                        id: existingItem.id,
+                        price: priceId,
+                        quantity: 1
+                    }],
+                    metadata: Object.assign({}, activeSubscription.metadata || {}, { product_label: productLabel, appwrite_user_id: user.$id })
+                });
+
+                log('Subscription updated in-place: ' + updated.id);
+                return res.json({ subscriptionId: updated.id, status: updated.status, url: null });
+            } catch (updateErr) {
+                // If update fails for any reason, fallback to Billing Portal so user can manage
+                error('Failed to update subscription in-place: ' + (updateErr.message || updateErr));
+                const portalSession = await stripe.billingPortal.sessions.create({
+                    customer: stripeCustomerId,
+                    return_url: successUrl
+                });
+                return res.json({ sessionId: portalSession.id, url: portalSession.url, warning: 'Fell back to billing portal' });
+            }
+        }
+
+        // 5. No existing subscription found — create a new Stripe Checkout Session for new subscribers
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             payment_method_collection: 'if_required',

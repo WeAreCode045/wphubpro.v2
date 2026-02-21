@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { useSubscription } from '../hooks/useSubscription';
+import { useSubscription, useUsage } from '../hooks/useSubscription';
 import { Loader2, AlertCircle, CreditCard, XCircle, ArrowRight } from 'lucide-react';
 import { useManageSubscription, useStripePlans, useCreateCheckoutSession, useCancelSubscription } from '../hooks/useStripe';
 import InvoiceList from '../components/subscription/InvoiceList';
 import PlanCard from '../components/subscription/PlanCard';
-import Modal from '../components/ui/Modal';
 
 type BillingInterval = 'monthly' | 'yearly';
 
@@ -15,6 +14,7 @@ const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
   const { data: subscription } = useSubscription();
+  const { data: usage } = useUsage();
   const { data: plans, isLoading: isLoadingPlans, isError: isErrorPlans } = useStripePlans();
   const createCheckoutSession = useCreateCheckoutSession();
 
@@ -103,6 +103,7 @@ const SubscriptionPage: React.FC = () => {
                     onSubscribe={handleSubscribe} 
                     isLoading={createCheckoutSession.isPending}
                     isCurrent={isCurrent}
+                    currentUsage={usage}
                   />
                 );
               })}

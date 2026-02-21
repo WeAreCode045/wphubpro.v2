@@ -19,6 +19,7 @@ import {
   Folder,
   Database,
   RefreshCw,
+  Package,
 } from "lucide-react";
 import Card, { CardHeader, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
