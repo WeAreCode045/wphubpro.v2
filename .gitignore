@@ -31,3 +31,4 @@ dist-ssr
 /functions/*/*.log
 /functions/*/.env
 /functions/*/index.js
+package-lock.json
