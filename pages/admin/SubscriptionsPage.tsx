@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { functions, databases, DATABASE_ID } from "../../services/appwrite";
 import { Query } from "appwrite";
+import { useNavigate } from "react-router-dom";
 import {
   RefreshCw,
   Search,
@@ -26,6 +27,7 @@ const SubscriptionsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const waitForExecutionResponse = async (
     executionId: string,
@@ -112,6 +114,8 @@ const SubscriptionsPage: React.FC = () => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
+      sub.user_name?.toLowerCase().includes(query) ||
+      sub.user_email?.toLowerCase().includes(query) ||
       sub.user_id?.toLowerCase().includes(query) ||
       sub.plan_label?.toLowerCase().includes(query) ||
       sub.stripe_subscription_id?.toLowerCase().includes(query) ||
@@ -218,7 +222,7 @@ const SubscriptionsPage: React.FC = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute l, email-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by user ID, plan, or subscription ID..."
                 className="pl-9"
@@ -251,24 +255,19 @@ const SubscriptionsPage: React.FC = () => {
             <div className="overflow-x-auto">
               <Table>
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-4 px-4 font-semibold text-sm">
-                      User ID
+                  <tr Customer
                     </th>
                     <th className="text-left py-4 px-4 font-semibold text-sm">
                       Plan
                     </th>
                     <th className="text-left py-4 px-4 font-semibold text-sm">
-                      Stripe ID
+                      Start Date
                     </th>
                     <th className="text-left py-4 px-4 font-semibold text-sm">
-                      Stripe Customer
+                      Next Billing
                     </th>
                     <th className="text-left py-4 px-4 font-semibold text-sm">
                       Status
-                    </th>
-                    <th className="text-left py-4 px-4 font-semibold text-sm">
-                      Updated
                     </th>
                   </tr>
                 </thead>
@@ -276,11 +275,15 @@ const SubscriptionsPage: React.FC = () => {
                   {filteredSubscriptions.map((sub: any) => (
                     <tr
                       key={sub.$id}
-                      className="border-b border-border hover:bg-muted/50 transition-colors"
+                      onClick={() => navigate(`/admin/subscriptions/${sub.stripe_subscription_id}`)}
+                      className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
                     >
-                      <td className="py-4 px-4 text-sm font-mono">
-                        <div className="max-w-[200px] truncate">
-                          {sub.user_id || "—"}
+                      <td className="py-4 px-4 text-sm">
+                        <div className="font-medium">
+                          {sub.user_name || "—"}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {sub.user_email || sub.user_id}
                         </div>
                       </td>
                       <td className="py-4 px-4 text-sm">
@@ -293,21 +296,18 @@ const SubscriptionsPage: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="py-4 px-4 text-sm font-mono">
-                        <div className="max-w-[150px] truncate">
-                          {sub.stripe_subscription_id || "—"}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-sm font-mono">
-                        <div className="max-w-[150px] truncate">
-                          {sub.stripe_customer_id || "—"}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-sm">
-                        {sub.status ? getStatusBadge(sub.status) : "—"}
+                      <td className="py-4 px-4 text-sm text-muted-foreground">
+                        {sub.billing_start_date
+                          ? new Date(parseInt(sub.billing_start_date) * 1000).toLocaleDateString()
+                          : "—"}
                       </td>
                       <td className="py-4 px-4 text-sm text-muted-foreground">
-                        {sub.$updatedAt
+                        {sub.billing_start_date && !sub.billing_never
+                          ? new Date(parseInt(sub.billing_start_date) * 1000).toLocaleDateString()
+                          : sub.billing_never ? "Never" : "—"}
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        {sub.status ? getStatusBadge(sub.status)sub.$updatedAt
                           ? new Date(sub.$updatedAt).toLocaleString()
                           : "—"}
                       </td>

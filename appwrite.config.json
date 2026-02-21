@@ -562,6 +562,24 @@
             "specification": "s-1vcpu-512mb"
         },
         {
+            "$id": "stripe-get-subscription-details",
+            "name": "stripe-get-subscription-details",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-get-subscription-details",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
             "$id": "stripe-cancel-subscription",
             "name": "stripe-cancel-subscription",
             "runtime": "node-18.0",
