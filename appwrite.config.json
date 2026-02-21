@@ -616,6 +616,31 @@
                 "SUCCESS_URL": "http://localhost:3000/subscription?success=true",
                 "CANCEL_URL": "http://localhost:3000/subscription?canceled=true"
             }
+        },
+        {
+            "$id": "stripe-get-subscription",
+            "name": "stripe-get-subscription",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-get-subscription",
+            "entrypoint": "index.js",
+            "execute": ["users"],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "YOUR_SERVER_API_KEY_WITH_DOCUMENTS_READ",
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "DATABASE_ID": "platform_db",
+                "ACCOUNTS_COLLECTION_ID": "accounts"
+            }
         }
     ],
     "sites": [
@@ -644,99 +669,7 @@
         }
     ],
     "tables": [
-        {
-            "$id": "subscriptions",
-            "$permissions": [
-                "create(\"users\")",
-                "read(\"users\")",
-                "create(\"label:Admin\")",
-                "read(\"label:Admin\")",
-                "update(\"label:Admin\")",
-                "delete(\"label:Admin\")"
-            ],
-            "databaseId": "platform_db",
-            "name": "Subscriptions",
-            "enabled": true,
-            "rowSecurity": false,
-            "columns": [
-                {
-                    "key": "user_id",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "stripe_customer_id",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "plan_id",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "status",
-                    "type": "string",
-                    "required": true,
-                    "array": false,
-                    "size": 50,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
-                    "key": "sites_limit",
-                    "type": "integer",
-                    "required": true,
-                    "array": false,
-                    "default": null,
-                    "min": -9223372036854775808,
-                    "max": 9223372036854775807
-                },
-                {
-                    "key": "storage_limit",
-                    "type": "integer",
-                    "required": true,
-                    "array": false,
-                    "default": null,
-                    "min": -9223372036854775808,
-                    "max": 9223372036854775807
-                },
-                {
-                    "key": "library_limit",
-                    "type": "integer",
-                    "required": true,
-                    "array": false,
-                    "default": null,
-                    "min": -9223372036854775808,
-                    "max": 9223372036854775807
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "user_id_index",
-                    "type": "key",
-                    "status": "available",
-                    "columns": [
-                        "user_id"
-                    ],
-                    "orders": [
-                        "ASC"
-                    ]
-                }
-            ]
-        },
+
         {
             "$id": "accounts",
             "$permissions": [
