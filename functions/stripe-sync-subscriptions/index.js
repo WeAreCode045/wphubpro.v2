@@ -43,11 +43,37 @@ module.exports = async ({ req, res, log, error }) => {
     
     for (const subscription of subscriptions.data) {
       try {
-        const userId = subscription.metadata?.appwrite_user_id;
-        const productLabel = subscription.metadata?.product_label;
+        let userId = subscription.metadata?.appwrite_user_id;
+        let productLabel = subscription.metadata?.product_label;
+
+        // If no user ID in metadata, try to find user by email from customer object
+        if (!userId) {
+          try {
+            const customer = await stripe.customers.retrieve(subscription.customer);
+            if (customer.email) {
+              const email = customer.email;
+              log('Looking up user by email: ' + email);
+              // Note: users.list arguments changed in newer SDKs, checking usage
+              // Assuming sdk.Query is available
+              const userList = await users.list([sdk.Query.equal('email', email), sdk.Query.limit(1)]);
+              if (userList.total > 0) {
+                userId = userList.users[0].$id;
+                log('Found matching user ' + userId + ' for email ' + email);
+                
+                // Update Stripe subscription metadata with found user ID for future syncs
+                await stripe.subscriptions.update(subscription.id, {
+                  metadata: { ...subscription.metadata, appwrite_user_id: userId }
+                });
+                log('Updated Stripe subscription ' + subscription.id + ' metadata with user ID');
+              }
+            }
+          } catch (lookupErr) {
+            log('Error looking up user by email for customer ' + subscription.customer + ': ' + lookupErr.message);
+          }
+        }
         
         if (!userId) {
-          log('Skipping subscription ' + subscription.id + ' - no appwrite_user_id in metadata');
+          log('Skipping subscription ' + subscription.id + ' - no appwrite_user_id in metadata and could not match by email');
           continue;
         }
         
@@ -67,11 +93,15 @@ module.exports = async ({ req, res, log, error }) => {
           log('Could not fetch user ' + userId + ': ' + e.message);
         }
         
+        // Combine metadata: Product metadata (limits) + Subscription metadata + Label
+        const docMetadata = Object.assign({}, product?.metadata || {}, subscription.metadata || {}, { product_label: productLabel || product?.metadata?.label });
+
         const subscriptionData = {
           user_id: userId,
           user_name: userName,
           user_email: userEmail,
           plan_id: product?.id || null,
+          plan_price: priceId || null,
           plan_label: productLabel || product?.metadata?.label || null,
           stripe_customer_id: subscription.customer,
           stripe_subscription_id: subscription.id,
@@ -79,6 +109,7 @@ module.exports = async ({ req, res, log, error }) => {
           billing_start_date: subscription.current_period_start ? subscription.current_period_start.toString() : null,
           billing_end_date: subscription.current_period_end ? subscription.current_period_end.toString() : null,
           billing_never: subscription.cancel_at_period_end || false,
+          metadata: JSON.stringify(docMetadata),
           updated_at: new Date().toISOString()
         };
         

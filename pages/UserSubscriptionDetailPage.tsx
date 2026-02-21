@@ -38,6 +38,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const manageSubscriptionMutation = useManageSubscription();
   const { data: usage } = useUsage();
+  const [cancelingUpdate, setCancelingUpdate] = useState(false);
 
   const waitForExecutionResponse = async (
     executionId: string,

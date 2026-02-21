@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.66.0",
+    "@types/canvas-confetti": "^1.9.0",
     "appwrite": "^17.0.0",
     "autoprefixer": "^10.4.14",
+    "canvas-confetti": "^1.9.4",
     "dotenv": "^17.3.1",
     "lucide-react": "^0.475.0",
     "node-appwrite": "^22.0.0",

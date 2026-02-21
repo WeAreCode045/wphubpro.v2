@@ -50,6 +50,44 @@ module.exports = async ({ req, res, log, error }) => {
       }
     }
 
+    // Check for pending updates via Schedule
+    let pendingUpdate = null;
+    if (subscription.schedule) {
+        const schedule = typeof subscription.schedule === 'object' ? subscription.schedule : await stripe.subscriptionSchedules.retrieve(subscription.schedule);
+        
+        // Look for future phases
+        // Simplistic approach: if phases.length > 1, the next one is the update.
+        if (schedule.phases && schedule.phases.length > 1) {
+            // Find the phase that matches current active period? No, subscription object IS the current phase instantiation.
+            // The schedule phases list ALL phases.
+            // We want the one starting AFTER the current period end.
+            const nextPhase = schedule.phases.find(p => p.start_date >= subscription.current_period_end);
+            
+            if (nextPhase) {
+                const nextPriceId = nextPhase.items[0]?.price;
+                // If next price is different from current
+                if (nextPriceId && nextPriceId !== priceId) {
+                    // Fetch next product details
+                    try {
+                        const nextPrice = typeof nextPriceId === 'string' ? await stripe.prices.retrieve(nextPriceId) : nextPriceId;
+                        const nextProduct = await stripe.products.retrieve(nextPrice.product);
+                        
+                        pendingUpdate = {
+                            date: nextPhase.start_date,
+                            plan_name: nextProduct.name,
+                            price_amount: nextPrice.unit_amount,
+                            currency: nextPrice.currency,
+                            interval: nextPrice.recurring?.interval,
+                            schedule_id: schedule.id
+                        };
+                    } catch (e) {
+                        log('Error fetching pending update details: ' + e.message);
+                    }
+                }
+            }
+        }
+    }
+
     // Build response
     const response = {
       subscription: {
@@ -94,6 +132,7 @@ module.exports = async ({ req, res, log, error }) => {
           storage_limit: product?.metadata?.storage_limit ? parseInt(product.metadata.storage_limit, 10) : null
         }
       },
+      pending_update: pendingUpdate,
       invoices: invoices.data.map(inv => ({
         id: inv.id,
         number: inv.number,

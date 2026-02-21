@@ -58,23 +58,60 @@ module.exports = async ({ req, res, log, error }) => {
     const response = search ? await users.list(queries, search) : await users.list(queries);
     const rawUsers = response.users || response.documents || [];
 
-    // Fetch all active subscriptions from the database to map correct plan names
+    // Fetch subscriptions specifically for the users in this page
     const DATABASE_ID = req.variables?.DATABASE_ID || process.env.DATABASE_ID || 'platform_db';
     const SUBS_COLLECTION_ID = req.variables?.SUBS_COLLECTION_ID || process.env.SUBS_COLLECTION_ID || 'subscriptions';
 
     let userSubscriptions = {};
     try {
-      const subsResponse = await databases.listDocuments(DATABASE_ID, SUBS_COLLECTION_ID, [
-        sdk.Query.limit(100) // Assuming max 100 active users for simplicity in this batch
-      ]);
+      const userIds = rawUsers.map(u => u.$id || u.id).filter(id => id);
       
-      subsResponse.documents.forEach(doc => {
-        userSubscriptions[doc.user_id] = {
-          planLabel: doc.plan_label,
-          status: doc.status,
-          stripeId: doc.stripe_subscription_id
+      if (userIds.length > 0) {
+        // Appwrite supports Query.equal('user_id', [id1, id2...]) for an OR match
+        const subsResponse = await databases.listDocuments(DATABASE_ID, SUBS_COLLECTION_ID, [
+          sdk.Query.equal('user_id', userIds),
+          sdk.Query.limit(Math.min(100, userIds.length)) 
+        ]);
+        
+        const statusPriority = {
+          'active': 100,
+          'trialing': 90,
+          'past_due': 80,
+          'unpaid': 70,
+          'incomplete': 60,
+          'incomplete_expired': 50,
+          'paused': 40,
+          'canceled': 10,
+          'ended': 0
         };
-      });
+
+        subsResponse.documents.forEach(doc => {
+          // Extract plan label from plan_label OR metadata.product_label
+          let planLabel = doc.plan_label;
+          if (!planLabel && doc.metadata) {
+            try {
+              const meta = typeof doc.metadata === 'string' ? JSON.parse(doc.metadata) : doc.metadata;
+              planLabel = meta.product_label || meta.label || meta.plan_name || planLabel;
+            } catch (e) { /* ignore parse error */ }
+          }
+
+          const current = userSubscriptions[doc.user_id];
+          const docStatus = doc.status || 'ended';
+          const docStatusScore = statusPriority[docStatus] !== undefined ? statusPriority[docStatus] : 0;
+          const currentStatus = current ? (current.status || 'ended') : 'ended';
+          const currentStatusScore = current ? (statusPriority[currentStatus] !== undefined ? statusPriority[currentStatus] : -1) : -1;
+
+          // Update if no current subscription, OR new doc has higher priority status
+          if (!current || docStatusScore > currentStatusScore) {
+            userSubscriptions[doc.user_id] = {
+              planLabel: planLabel,
+              status: doc.status,
+              stripeId: doc.stripe_customer_id,
+              stripeSubscriptionId: doc.stripe_subscription_id
+            };
+          }
+        });
+      }
     } catch (e) {
       log('Could not fetch subscriptions for mapping: ' + e.message);
     }

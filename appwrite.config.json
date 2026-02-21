@@ -522,6 +522,24 @@
             "specification": "s-1vcpu-512mb"
         },
         {
+            "$id": "stripe-preview-proration",
+            "name": "stripe-preview-proration",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-preview-proration",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
             "$id": "stripe-create-checkout-session",
             "name": "stripe-create-checkout-session",
             "runtime": "node-18.0",
@@ -1354,9 +1372,9 @@
         {
             "$id": "admin",
             "$createdAt": "2026-02-09T23:44:31.874+00:00",
-            "$updatedAt": "2026-02-21T10:46:19.642+00:00",
-            "name": "Admin",
-            "total": 2,
+            "$updatedAt": "2026-02-21T13:50:07.546+00:00",
+            "name": "admin",
+            "total": 1,
             "prefs": {
                 "plan": "unlimited"
             }

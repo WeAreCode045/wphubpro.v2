@@ -76,7 +76,7 @@ module.exports = async ({ req, res, log, error }) => {
         const subscriptions = await stripe.subscriptions.list({
             customer: stripeCustomerId,
             status: 'all', // Fetch active, trialing, past_due, etc.
-            limit: 1 // A customer should typically only have one active subscription
+            limit: 10 // Fetch multiple to find the active one
         });
 
         if (subscriptions.data.length === 0) {
@@ -84,7 +84,31 @@ module.exports = async ({ req, res, log, error }) => {
             return res.json(null); // No subscriptions found
         }
         
-        const sub = subscriptions.data[0];
+        // Find the most relevant subscription (prioritize active/trialing)
+        const statusPriority = {
+            'active': 100,
+            'trialing': 90,
+            'past_due': 80,
+            'unpaid': 70,
+            'incomplete': 60,
+            'incomplete_expired': 50,
+            'paused': 40,
+            'canceled': 10,
+            'ended': 0
+        };
+        
+        let sub = null;
+        let bestScore = -1;
+
+        for (const s of subscriptions.data) {
+            const score = statusPriority[s.status] || 0;
+            if (score > bestScore) {
+                bestScore = score;
+                sub = s;
+            }
+        }
+        
+        if (!sub) sub = subscriptions.data[0];
         const priceItem = sub.items.data[0].price;
         
         log('Subscription found: ' + sub.id + ', status: ' + sub.status);
@@ -103,6 +127,13 @@ module.exports = async ({ req, res, log, error }) => {
             cancelAtPeriodEnd: sub.cancel_at_period_end,
             stripeSubscriptionId: sub.id,
             priceId: priceItem.id,
+            priceAmount: priceItem.unit_amount,
+            currency: priceItem.currency,
+            interval: priceItem.recurring?.interval,
+            intervalCount: priceItem.recurring?.interval_count || 1,
+            currency: priceItem.currency,
+            interval: priceItem.recurring?.interval,
+            intervalCount: priceItem.recurring?.interval_count,
             // Get limits from product metadata
             sitesLimit: parseInt(product.metadata.sites_limit || product.metadata.site_limit || '9999', 10), 
             libraryLimit: parseInt(product.metadata.library_limit || '9999', 10),

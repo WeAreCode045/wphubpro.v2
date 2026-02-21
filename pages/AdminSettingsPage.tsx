@@ -162,16 +162,42 @@ const AdminSettingsPage: React.FC = () => {
                         <Label>Platform Logo</Label>
                         <div className="flex items-center gap-4">
                           <div className="w-20 h-20 bg-secondary rounded-lg border border-dashed border-border flex items-center justify-center overflow-hidden">
-                            {settings.details.logoUrl ? (
-                              <img src={settings.details.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                            {settings.details.logoDataUrl || settings.details.logoUrl ? (
+                              <img src={settings.details.logoDataUrl || settings.details.logoUrl} alt="Logo" className="w-full h-full object-contain" />
                             ) : (
                               <Upload className="w-6 h-6 text-muted-foreground" />
                             )}
                           </div>
                           <div className="space-y-1">
-                            <Button variant="outline" size="sm">Choose File</Button>
+                            <input
+                              id="platformLogoInput"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                  const result = reader.result as string;
+                                  handleInputChange('details', 'logoDataUrl', result);
+                                  setSettings((prev: any) => ({ ...prev, details: { ...prev.details, logoDataUrl: result } }));
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                            <label htmlFor="platformLogoInput">
+                              <Button variant="outline" size="sm">Choose File</Button>
+                            </label>
                             <p className="text-[10px] text-muted-foreground">PNG, SVG or JPG. Max 2MB.</p>
                           </div>
+                        </div>
+                        <div className="mt-3">
+                          <Label>Logo Position</Label>
+                          <Select value={settings.details.logoPosition || 'left'} onChange={(e) => handleInputChange('details', 'logoPosition', e.target.value)}>
+                            <option value="left">Left of title</option>
+                            <option value="above">Above title</option>
+                          </Select>
                         </div>
                       </div>
                       <div className="space-y-2">

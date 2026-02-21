@@ -6,6 +6,7 @@ import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import UsageGauge from '../components/dashboard/UsageGauge';
 import Button from '../components/ui/Button';
 import { useSubscription, useUsage } from '../hooks/useSubscription';
+import { usePlatformSettings } from '../hooks/usePlatformSettings';
 import { useSites } from '../hooks/useSites';
 import { Link } from 'react-router-dom';
 
@@ -18,14 +19,16 @@ const DashboardPage: React.FC = () => {
 
   const isLoading = isLoadingSubscription || isLoadingSites || isLoadingUsage;
 
+  const { data: details } = usePlatformSettings('details');
+
   const WelcomeEmptyState = () => (
     <Card className="lg:col-span-2">
       <CardContent className="p-8 flex flex-col items-center justify-center text-center">
         <div className="p-4 bg-secondary rounded-full">
             <Globe className="w-10 h-10 text-primary" />
         </div>
-        <h3 className="mt-4 text-xl font-semibold">Welcome to The Platform</h3>
-        <p className="mt-1 text-muted-foreground">Get started by connecting your first WordPress site.</p>
+        <h3 className="mt-4 text-xl font-semibold">Welcome to {details?.name || 'The Platform'}</h3>
+        <p className="mt-1 text-muted-foreground">{details?.subtitle || 'Get started by connecting your first WordPress site.'}</p>
         <Button asChild className="mt-6">
           <Link to="/sites">
             <PlusCircle className="w-4 h-4 mr-2" />

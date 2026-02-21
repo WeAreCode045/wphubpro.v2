@@ -16,6 +16,10 @@ export interface Subscription {
   currentPeriodEnd?: number; // Stripe: Unix timestamp for billing date
   cancelAtPeriodEnd?: boolean; // Stripe: Whether subscription cancels at period end
   priceId?: string; // Stripe: The current price ID
+  priceAmount?: number; // Stripe: Unit amount in cents
+  currency?: string; // Stripe: Currency code
+  interval?: 'month' | 'year'; // Stripe: Billing interval
+  intervalCount?: number; // Stripe: Billing interval count
 }
 
 export interface Site {

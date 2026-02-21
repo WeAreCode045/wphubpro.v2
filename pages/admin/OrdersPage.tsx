@@ -230,6 +230,11 @@ const OrdersPage: React.FC = () => {
                           size="icon"
                           className="h-8 w-8"
                           title="Download Invoice"
+                          onClick={() => {
+                            const url = order.invoice?.invoice_pdf || order.invoice?.hosted_invoice_url;
+                            if (url) window.open(url, '_blank');
+                            else alert('No invoice PDF available for this transaction.');
+                          }}
                         >
                           <Download className="w-4 h-4" />
                         </Button>
@@ -238,6 +243,15 @@ const OrdersPage: React.FC = () => {
                           size="icon"
                           className="h-8 w-8"
                           title="View in Stripe"
+                          onClick={() => {
+                            // open Stripe dashboard link for the charge/payment intent
+                            const pi = order.raw;
+                            const dashboardUrl = pi && pi.charges && pi.charges.data && pi.charges.data[0] && pi.charges.data[0].id
+                              ? `https://dashboard.stripe.com/payments/${pi.charges.data[0].id}`
+                              : null;
+                            if (dashboardUrl) window.open(dashboardUrl, '_blank');
+                            else alert('Unable to open Stripe dashboard for this transaction.');
+                          }}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </Button>

@@ -14,6 +14,49 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePlatformSettings } from '../../hooks/usePlatformSettings';
+
+const PlatformBrand: React.FC = () => {
+  const { data: details } = usePlatformSettings('details');
+  const name = details?.name || 'The Platform';
+  const subtitle = details?.subtitle || '';
+  const logo = details?.logoUrl || details?.logoDataUrl || null;
+  const position = details?.logoPosition || 'left';
+
+  if (position === 'above') {
+    return (
+      <div className="flex flex-col items-center text-center">
+        {logo ? (
+          <img src={logo} alt="Logo" className="w-10 h-10 object-contain mb-1" />
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-primary">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
+        )}
+        <div>
+          <div className="text-lg font-bold text-foreground">{name}</div>
+          {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center space-x-2">
+      {logo ? (
+        <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-primary">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+      )}
+      <div className="flex flex-col leading-tight">
+        <span className="text-lg font-bold text-foreground">{name}</span>
+        {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+      </div>
+    </div>
+  );
+};
 
 const Sidebar: React.FC = () => {
   const { isAdmin } = useAuth();
@@ -60,24 +103,8 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border">
-      <div className="flex items-center justify-center h-20 border-b border-border">
-        <div className="flex items-center space-x-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-8 h-8 text-primary"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-          <span className="text-xl font-bold text-foreground">
-            The Platform
-          </span>
-        </div>
+      <div className="flex items-center justify-center h-20 border-b border-border px-4">
+        <PlatformBrand />
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">

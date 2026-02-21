@@ -397,10 +397,6 @@ const UserDetailPage: React.FC = () => {
               </div>
               {subscriptionDoc && (
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <div className="flex justify-between">
-                    <span>Plan ID</span>
-                    <span className="font-mono text-[10px]">{subscriptionDoc.plan_id}</span>
-                  </div>
                   {subscriptionDoc.billing_start_date && (
                     <div className="flex justify-between">
                       <span>Started</span>
@@ -411,6 +407,22 @@ const UserDetailPage: React.FC = () => {
                     <div className="flex justify-between">
                       <span>Next Renewal</span>
                       <span>{new Date(parseInt(subscriptionDoc.billing_end_date) * 1000).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Stripe Product ID</span>
+                    <span className="font-mono text-[10px] truncate max-w-[150px]">{subscriptionDoc.plan_id}</span>
+                  </div>
+                  {subscriptionDoc.plan_price && (
+                    <div className="flex justify-between">
+                      <span>Stripe Price ID</span>
+                      <span className="font-mono text-[10px] truncate max-w-[150px]">{subscriptionDoc.plan_price}</span>
+                    </div>
+                  )}
+                  {subscriptionDoc.stripe_subscription_id && (
+                    <div className="flex justify-between">
+                      <span>Subscription ID</span>
+                      <span className="font-mono text-[10px] truncate max-w-[150px]">{subscriptionDoc.stripe_subscription_id}</span>
                     </div>
                   )}
                 </div>

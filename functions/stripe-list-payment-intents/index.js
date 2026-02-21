@@ -29,7 +29,39 @@ export default async ({ req, res, log }) => {
       limit,
       ...(customer ? { customer } : {}),
     });
-    return res.json({ paymentIntents });
+
+    const orders = [];
+    for (const pi of paymentIntents.data) {
+      let invoiceInfo = null;
+      try {
+        const charge = pi.charges && pi.charges.data && pi.charges.data.length ? pi.charges.data[0] : null;
+        if (charge && charge.invoice) {
+          const invoice = await stripe.invoices.retrieve(charge.invoice);
+          invoiceInfo = {
+            id: invoice.id,
+            hosted_invoice_url: invoice.hosted_invoice_url,
+            invoice_pdf: invoice.invoice_pdf,
+            number: invoice.number,
+          };
+        }
+      } catch (e) {
+        // ignore invoice retrieval errors per-item
+      }
+
+      orders.push({
+        id: pi.id,
+        amount: pi.amount, // in cents
+        currency: pi.currency,
+        status: pi.status,
+        customer: pi.customer || null,
+        email: pi.receipt_email || (pi.charges?.data?.[0]?.billing_details?.email) || null,
+        date: pi.created,
+        invoice: invoiceInfo,
+        raw: pi,
+      });
+    }
+
+    return res.json({ orders });
   } catch (_e) {
     log('Stripe error:', _e);
     return res.json({ error: true, message: _e.message || 'Stripe error' }, 500);
