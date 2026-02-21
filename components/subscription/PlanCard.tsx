@@ -11,9 +11,10 @@ interface PlanCardProps {
     billingInterval: BillingInterval;
     onSubscribe: (priceId: string) => void;
     isLoading: boolean;
+    isCurrent?: boolean;
 }
 
-const PlanCard: React.FC<PlanCardProps> = ({ plan, billingInterval, onSubscribe, isLoading }) => {
+const PlanCard: React.FC<PlanCardProps> = ({ plan, billingInterval, onSubscribe, isLoading, isCurrent }) => {
     const price = billingInterval === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
     const priceId = billingInterval === 'monthly' ? plan.monthlyPriceId : plan.yearlyPriceId;
     const features = plan.metadata.filter(m => m.key.startsWith('feature_')).map(m => m.value);
@@ -67,9 +68,9 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, billingInterval, onSubscribe,
                  <Button 
                     className="w-full" 
                     onClick={() => priceId && onSubscribe(priceId)}
-                    disabled={isLoading || !priceId}
+                    disabled={isLoading || !priceId || isCurrent}
                 >
-                    {isLoading ? 'Redirecting...' : !priceId ? 'Unavailable' : 'Subscribe'}
+                    {isLoading ? 'Redirecting...' : !priceId ? 'Unavailable' : isCurrent ? 'Current Plan' : 'Subscribe'}
                 </Button>
             </div>
         </Card>

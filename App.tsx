@@ -54,8 +54,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/sites" element={<SitesPage />} />
         <Route path="/sites/:id" element={<SiteDetailPage />} />
         <Route path="/library" element={<LibraryPage />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/subscription/details" element={<UserSubscriptionDetailPage />} />
+        <Route path="/subscription" element={<UserSubscriptionDetailPage />} />
+        <Route path="/subscription/plans" element={<SubscriptionPage />} />
         <Route path="/dashboard/connect-success" element={<ConnectSuccess />} />
         <Route path="/connect-success" element={<ConnectSuccess />} />
         

@@ -102,6 +102,7 @@ module.exports = async ({ req, res, log, error }) => {
             currentPeriodEnd: sub.current_period_end,
             cancelAtPeriodEnd: sub.cancel_at_period_end,
             stripeSubscriptionId: sub.id,
+            priceId: priceItem.id,
             // Get limits from product metadata
             sitesLimit: parseInt(product.metadata.sites_limit || product.metadata.site_limit || '9999', 10), 
             libraryLimit: parseInt(product.metadata.library_limit || '9999', 10),

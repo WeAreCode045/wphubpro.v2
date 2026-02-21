@@ -1037,7 +1037,7 @@
         {
             "$id": "subscriptions",
             "$permissions": [
-                "read(\"team:admin\")",
+                "read(\"users\")",
                 "create(\"team:admin\")",
                 "read(\"team:admin\")",
                 "update(\"team:admin\")",

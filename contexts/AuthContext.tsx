@@ -29,20 +29,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         console.log('Current User ID:', currentUser.$id);
         
-        // Check if user is in the admin team
-        let adminStatus = false;
-        try {
-          const teamMemberships = await teams.listMemberships('admin');
-          adminStatus = teamMemberships.memberships.some(m => m.userId === currentUser.$id);
-        } catch (err) {
-          console.warn('Could not fetch admin team memberships:', err);
-          adminStatus = false;
+        // Check if user is an admin via labels or team membership
+        let adminStatus = currentUser.labels?.includes('admin') || false;
+        
+        if (!adminStatus) {
+          try {
+            // teams.list() is a safe call that returns only the user's teams
+            const userTeams = await teams.list();
+            adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
+          } catch (err) {
+            // Silently fail for non-admin users or if teams service is unavailable
+            adminStatus = false;
+          }
         }
         
         setUser({ ...currentUser, isAdmin: adminStatus });
         setIsAdmin(adminStatus);
-      } catch {
+      } catch (err: any) {
         if (!mounted) return;
+        // Only log if it's not a 401 (which just means no session)
+        if (err?.code !== 401) {
+          console.error('Session check failed:', err);
+        }
         setUser(null);
         setIsAdmin(false);
       } finally {
@@ -65,13 +73,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const currentUser = await account.get();
       console.log('✅ Login successful - User:', currentUser.$id, 'Email:', currentUser.email);
       
-      // Check if user is in the admin team
-      let adminStatus = false;
-      try {
-        const teamMemberships = await teams.listMemberships('admin');
-        adminStatus = teamMemberships.memberships.some(m => m.userId === currentUser.$id);
-      } catch (err) {
-        console.warn('Could not fetch admin team memberships:', err);
+      // Check if user is an admin via labels or team membership
+      let adminStatus = currentUser.labels?.includes('admin') || false;
+      
+      if (!adminStatus) {
+        try {
+          const userTeams = await teams.list();
+          adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
+        } catch (err) {
+          adminStatus = false;
+        }
       }
       
       console.log('🔐 Admin Status:', adminStatus);
@@ -95,13 +106,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await account.createEmailPasswordSession(email, pass);
     
     const currentUser = await account.get();
-    let adminStatus = false;
-    try {
-      const teamMemberships = await teams.listMemberships('admin');
-      adminStatus = teamMemberships.memberships.some(m => m.userId === currentUser.$id);
-    } catch (err) {
-      console.warn('New users are not in admin team by default');
-    }
+    
+    // New users are not admins by default
+    let adminStatus = currentUser.labels?.includes('admin') || false;
     
     setUser({ ...currentUser, isAdmin: adminStatus });
     setIsAdmin(adminStatus);

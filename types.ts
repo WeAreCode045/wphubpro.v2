@@ -15,6 +15,7 @@ export interface Subscription {
   source?: 'stripe' | 'local' | 'free-tier'; // Where the subscription data originates
   currentPeriodEnd?: number; // Stripe: Unix timestamp for billing date
   cancelAtPeriodEnd?: boolean; // Stripe: Whether subscription cancels at period end
+  priceId?: string; // Stripe: The current price ID
 }
 
 export interface Site {

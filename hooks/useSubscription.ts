@@ -197,10 +197,13 @@ export const useUsage = () => {
     return useQuery({
         queryKey: ['usage', user?.$id, libraryItems, sites],
         queryFn: async () => {
+            // Count local library items as storage uploads
+            const localUploads = libraryItems?.filter(item => item.source === 'local') || [];
+
             return {
                 sitesUsed: sites?.length || 0,
                 libraryUsed: libraryItems?.length || 0,
-                storageUsed: 0, // In a real app, this would be calculated, e.g., from S3.
+                storageUsed: localUploads.length, 
             };
         },
         enabled: !!user && libraryItems !== undefined && sites !== undefined,
