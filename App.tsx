@@ -22,6 +22,7 @@ import UserManagerPage from './pages/admin/UserManagerPage';
 import OrdersPage from './pages/admin/OrdersPage';
 import PlanManagementPage from './pages/admin/PlanManagementPage';
 import SubscriptionsPage from './pages/admin/SubscriptionsPage';
+import SubscriptionDetailPage from './pages/admin/SubscriptionDetailPage';
 import { Loader2 } from 'lucide-react';
 import ConnectSuccess from './pages/ConnectSuccess';
 
@@ -64,6 +65,7 @@ const AppRoutes: React.FC = () => {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="plans" element={<PlanManagementPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />
+          <Route path="subscriptions/:subscriptionId" element={<SubscriptionDetailPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
 

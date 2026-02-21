@@ -1111,6 +1111,15 @@
                     "encrypt": false
                 },
                 {
+                    "key": "billing_end_date",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
                     "key": "billing_never",
                     "type": "boolean",
                     "required": false,

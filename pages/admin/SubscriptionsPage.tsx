@@ -302,9 +302,9 @@ const SubscriptionsPage: React.FC = () => {
                           : "—"}
                       </td>
                       <td className="py-4 px-4 text-sm text-muted-foreground">
-                        {sub.billing_start_date && !sub.billing_never
-                          ? new Date(parseInt(sub.billing_start_date) * 1000).toLocaleDateString()
-                          : sub.billing_never ? "Never" : "—"}
+                        {sub.billing_end_date && sub.status !== 'canceled'
+                          ? new Date(parseInt(sub.billing_end_date) * 1000).toLocaleDateString()
+                          : sub.status === 'canceled' ? "Canceled" : "—"}
                       </td>
                       <td className="py-4 px-4 text-sm">
                         {sub.status ? getStatusBadge(sub.status)sub.$updatedAt

@@ -110,6 +110,9 @@ module.exports = async ({ req, res, log, error }) => {
                     stripe_customer_id: subscription.customer,
                     stripe_subscription_id: subscription.id,
                     status: subscription.status,
+                    billing_start_date: subscription.current_period_start ? subscription.current_period_start.toString() : null,
+                    billing_end_date: subscription.current_period_end ? subscription.current_period_end.toString() : null,
+                    billing_never: subscription.cancel_at_period_end || false,
                     updated_at: new Date().toISOString()
                   };
                   
