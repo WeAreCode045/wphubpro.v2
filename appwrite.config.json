@@ -561,6 +561,61 @@
                 "users.write"
             ],
             "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-create-customer",
+            "name": "stripe-create-customer",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-create-customer",
+            "entrypoint": "index.js",
+            "execute": [],
+            "enabled": true,
+            "logging": true,
+            "events": [
+                "users.create"
+            ],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.write",
+                "users.read"
+            ],
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "standard_21f11192d0916976ab0f253159b900c02b5643537018d7ae56126416bde7a54573e8f3ca524b2b8da27530cc70c361f3b7d88690c10da2f7e39cdaaadcdeb86276f08d26a68d46302a9ddb0122c359287274ab18d7a7b262e9489fffbefc0b99a9128bf5948baa9c64adc16beabf31d0b2656b2585dd95101596189d0647b2cd",
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "DATABASE_ID": "platform_db",
+                "ACCOUNTS_COLLECTION_ID": "accounts"
+            }
+        },
+        {
+            "$id": "stripe-create-checkout-session",
+            "name": "stripe-create-checkout-session",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-create-checkout-session",
+            "entrypoint": "index.js",
+            "execute": ["users"],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "variables": {
+                "APPWRITE_ENDPOINT": "https://appwrite.code045.nl/v1",
+                "APPWRITE_PROJECT_ID": "698a55ce00010497b136",
+                "APPWRITE_API_KEY": "YOUR_SERVER_API_KEY_WITH_DOCUMENTS_READ",
+                "STRIPE_SECRET_KEY": "sk_test_51Sz4LgK8qavpXYuh1msYBMfiyXfBcA6hErxP0IxuHFUZZW2Rb163utafuaXWzz4Kbu39Dt1Bs2KY6xUXNzRiM6AC00Wcr71stm",
+                "DATABASE_ID": "platform_db",
+                "ACCOUNTS_COLLECTION_ID": "accounts",
+                "SUCCESS_URL": "http://localhost:3000/subscription?success=true",
+                "CANCEL_URL": "http://localhost:3000/subscription?canceled=true"
+            }
         }
     ],
     "sites": [
@@ -672,6 +727,52 @@
                 {
                     "key": "user_id_index",
                     "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "user_id"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "accounts",
+            "$permissions": [
+                "read(\"users\")",
+                "update(\"users\")",
+                "create(\"label:Admin\")",
+                "delete(\"label:Admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Accounts",
+            "enabled": true,
+            "rowSecurity": true,
+            "columns": [
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "stripe_customer_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id_index",
+                    "type": "unique",
                     "status": "available",
                     "columns": [
                         "user_id"
@@ -842,7 +943,7 @@
                     "encrypt": false
                 },
                 {
-                    "key": "wp_slug",
+                    "key": "wpSlug",
                     "type": "string",
                     "required": false,
                     "array": false,

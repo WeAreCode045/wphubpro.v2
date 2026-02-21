@@ -5,6 +5,20 @@ import { functions } from '../services/appwrite';
 import { StripeInvoice } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
+const STRIPE_PORTAL_LINK_FUNCTION_ID = 'stripe-portal-link';
+const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
+const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';
+
+interface StripePlan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  priceId: string;
+  features: string[];
+}
+
 const LIST_INVOICES_FUNCTION_ID = 'stripe-list-invoices';
 
 export const useManageSubscription = () => {
@@ -39,5 +53,50 @@ export const useInvoices = () => {
             return JSON.parse(result.responseBody).invoices;
         },
         enabled: !!user,
+    });
+};
+
+export const useStripePlans = () => {
+  const { user } = useAuth();
+  return useQuery<StripePlan[], Error>({
+    queryKey: ['stripePlans'],
+    queryFn: async () => {
+      const execution = await functions.createExecution(
+        STRIPE_LIST_PRODUCTS_FUNCTION_ID,
+        '', // No body needed
+        false // Not async
+      );
+      if (execution.responseStatusCode >= 400) {
+        throw new Error(JSON.parse(execution.responseBody).error || 'Failed to fetch plans.');
+      }
+      return JSON.parse(execution.responseBody);
+    },
+    enabled: !!user, // Only fetch if the user is logged in
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+};
+
+export const useCreateCheckoutSession = () => {
+    const { toast } = useToast();
+    return useMutation<{ sessionId: string, url: string }, Error, { priceId: string }>({
+        mutationFn: async ({ priceId }) => {
+            const execution = await functions.createExecution(
+                STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID,
+                JSON.stringify({ priceId }),
+                false // Not async
+            );
+
+            if (execution.responseStatusCode >= 400) {
+                 throw new Error(JSON.parse(execution.responseBody).error || 'Failed to create checkout session.');
+            }
+            return JSON.parse(execution.responseBody);
+        },
+        onError: (error) => {
+            toast({
+                title: "Error",
+                description: `Could not initiate subscription: ${error.message}`,
+                variant: "destructive",
+            });
+        },
     });
 };
