@@ -87,7 +87,12 @@ module.exports = async ({ req, res, log, error }) => {
         currency: price?.currency || null,
         interval: price?.recurring?.interval || null,
         interval_count: price?.recurring?.interval_count || null,
-        metadata: product?.metadata || {}
+        metadata: product?.metadata || {},
+        limits: {
+          sites_limit: product?.metadata?.sites_limit ? parseInt(product.metadata.sites_limit, 10) : null,
+          library_limit: product?.metadata?.library_limit ? parseInt(product.metadata.library_limit, 10) : null,
+          storage_limit: product?.metadata?.storage_limit ? parseInt(product.metadata.storage_limit, 10) : null
+        }
       },
       invoices: invoices.data.map(inv => ({
         id: inv.id,

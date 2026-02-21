@@ -568,6 +568,7 @@
             "path": "functions/stripe-get-subscription-details",
             "entrypoint": "index.js",
             "execute": [
+                "users",
                 "team:admin"
             ],
             "enabled": true,

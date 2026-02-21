@@ -255,7 +255,9 @@ const SubscriptionsPage: React.FC = () => {
             <div className="overflow-x-auto">
               <Table>
                 <thead>
-                  <tr Customer
+                  <tr className="border-b border-border">
+                    <th className="text-left py-4 px-4 font-semibold text-sm">
+                      Customer
                     </th>
                     <th className="text-left py-4 px-4 font-semibold text-sm">
                       Plan
@@ -307,9 +309,7 @@ const SubscriptionsPage: React.FC = () => {
                           : sub.status === 'canceled' ? "Canceled" : "—"}
                       </td>
                       <td className="py-4 px-4 text-sm">
-                        {sub.status ? getStatusBadge(sub.status)sub.$updatedAt
-                          ? new Date(sub.$updatedAt).toLocaleString()
-                          : "—"}
+                        {sub.status ? getStatusBadge(sub.status) : "—"}
                       </td>
                     </tr>
                   ))}

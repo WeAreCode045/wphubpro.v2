@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useSubscription } from '../hooks/useSubscription';
-import { Loader2, AlertCircle, CreditCard, XCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CreditCard, XCircle, ArrowRight } from 'lucide-react';
 import { useManageSubscription, useStripePlans, useCreateCheckoutSession, useCancelSubscription } from '../hooks/useStripe';
 import InvoiceList from '../components/subscription/InvoiceList';
 import PlanCard from '../components/subscription/PlanCard';
@@ -11,6 +12,7 @@ import Modal from '../components/ui/Modal';
 type BillingInterval = 'monthly' | 'yearly';
 
 const SubscriptionPage: React.FC = () => {
+  const navigate = useNavigate();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showUpgradeSection, setShowUpgradeSection] = useState(false);
@@ -164,6 +166,14 @@ const SubscriptionPage: React.FC = () => {
                   <div className="space-y-3 mt-6">
                     {subscription.source === 'stripe' && (
                       <>
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => navigate('/subscription/details')}
+                        >
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          View Subscription Details
+                        </Button>
                         <Button 
                           className="w-full" 
                           variant="outline"

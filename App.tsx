@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import SitesPage from './pages/SitesPage';
 import LibraryPage from './pages/LibraryPage';
 import SubscriptionPage from './pages/SubscriptionPage';
+import UserSubscriptionDetailPage from './pages/UserSubscriptionDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SiteDetailPage from './pages/SiteDetailPage';
 import QueryProvider from './QueryProvider';
@@ -54,6 +55,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/sites/:id" element={<SiteDetailPage />} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/subscription/details" element={<UserSubscriptionDetailPage />} />
         <Route path="/dashboard/connect-success" element={<ConnectSuccess />} />
         <Route path="/connect-success" element={<ConnectSuccess />} />
         
