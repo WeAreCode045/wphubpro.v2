@@ -5,7 +5,6 @@ import { functions } from '../services/appwrite';
 import { StripeInvoice } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
-const STRIPE_PORTAL_LINK_FUNCTION_ID = 'stripe-portal-link';
 const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
 const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';
 
