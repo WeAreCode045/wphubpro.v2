@@ -8,6 +8,7 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('@/preline/plugin')
+    // Preline UI is now imported via CSS in index.css
+    // require('preline/plugin')
   ],
 }
