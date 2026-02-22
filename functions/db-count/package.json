@@ -1,0 +1,12 @@
+{
+  "name": "db-count",
+  "version": "1.0.0",
+  "description": "Return collection totals using Appwrite Databases",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-appwrite": "^14.1.0"
+  }
+}

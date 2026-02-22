@@ -121,10 +121,12 @@
             "logging": true,
             "events": [],
             "schedule": "",
-            "timeout": 15,
+            "timeout": 300,
             "commands": "npm install",
             "scopes": [
-                "users.read"
+                "users.read",
+                "documents.read",
+                "documents.write"
             ],
             "specification": "s-0.5vcpu-512mb"
         },
@@ -580,6 +582,26 @@
             "specification": "s-1vcpu-512mb"
         },
         {
+            "$id": "db-count",
+            "name": "db-count",
+            "runtime": "node-18.0",
+            "path": "functions/db-count",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
             "$id": "stripe-get-subscription-details",
             "name": "stripe-get-subscription-details",
             "runtime": "node-18.0",
@@ -596,6 +618,66 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "admin-login-as",
+            "name": "admin-login-as",
+            "runtime": "node-18.0",
+            "path": "functions/admin-login-as",
+            "entrypoint": "index.js",
+            "execute": [
+                "users",
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-cancel-schedule-update",
+            "name": "stripe-cancel-schedule-update",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-cancel-schedule-update",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "set-admin",
+            "name": "set-admin",
+            "runtime": "node-18.0",
+            "path": "functions/set-admin",
+            "entrypoint": "index.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "teams.read",
+                "teams.write"
+            ],
             "specification": "s-0.5vcpu-512mb"
         },
         {

@@ -448,10 +448,10 @@ const PlanManagementPage: React.FC = () => {
               }`}
             >
               <div className="flex flex-col lg:flex-row">
-                <div className="flex-1 p-6">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="flex-1 p-4">
+                  <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-foreground">
+                      <h2 className="text-lg font-semibold text-foreground">
                         {plan.name}
                       </h2>
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded-full border ${
@@ -466,12 +466,12 @@ const PlanManagementPage: React.FC = () => {
                       {plan.id || plan.$id}
                     </div>
                   </div>
-                  <p className="text-muted-foreground text-sm mb-6 max-w-md">
+                  <p className="text-muted-foreground text-xs mb-4 max-w-md">
                     {plan.description}
                   </p>
 
                   {plan.type === 'local' ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground uppercase">
                           User Label

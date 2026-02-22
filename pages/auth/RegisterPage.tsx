@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
+import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Label from '../../components/ui/Label';
@@ -38,7 +39,7 @@ const RegisterPage: React.FC = () => {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Create an Account</CardTitle>
-          <CardDescription>Get started with The Platform today.</CardDescription>
+          <CardDescription>Get started with {usePlatformSettings('details').data?.name || 'the platform'} today.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

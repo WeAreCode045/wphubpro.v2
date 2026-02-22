@@ -1,0 +1,13 @@
+{
+  "name": "stripe-cancel-schedule-update",
+  "version": "1.0.0",
+  "description": "Cancel scheduled subscription update in Stripe",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-appwrite": "^14.1.0",
+    "stripe": "^17.5.0"
+  }
+}

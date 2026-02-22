@@ -98,12 +98,12 @@ const UserDetailPage: React.FC = () => {
 
       // Fetch sites and library items for this specific user
       const [sites, library, localUploads] = await Promise.all([
-        databases.listDocuments(DATABASE_ID, "sites", [Query.equal("user_id", userId), Query.limit(0)]),
-        databases.listDocuments(DATABASE_ID, "library", [Query.equal("user_id", userId), Query.limit(0)]),
+        databases.listDocuments(DATABASE_ID, "sites", [Query.equal("user_id", userId), Query.limit(1)]),
+        databases.listDocuments(DATABASE_ID, "library", [Query.equal("user_id", userId), Query.limit(1)]),
         databases.listDocuments(DATABASE_ID, "library", [
           Query.equal("user_id", userId),
           Query.equal("source", "local"),
-          Query.limit(0)
+          Query.limit(1)
         ])
       ]);
 

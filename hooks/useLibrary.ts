@@ -106,27 +106,26 @@ export const useUploadLocalItem = () => {
                 throw new Error("User not authenticated.");
             }
 
-            // FIX: Re-implemented file upload using Appwrite Storage, which is the standard
-            // way to handle files from the web SDK. This resolves the original type error on line 105
-            // by replacing the incorrect `createExecution` call.
-            // NOTE: This requires the 'zip-parser' function to be updated to accept a `fileId`
-            // and retrieve the file from Appwrite Storage instead of from `req.files`.
+            // Read file as base64 and send to zip-parser function which will upload contents to S3
+            const readAsBase64 = (f: File) => new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result as string;
+                    resolve(result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(f);
+            });
 
-            // Step 1: Upload file to Appwrite Storage
-            const fileResponse = await storage.createFile(
-                LIBRARY_UPLOADS_BUCKET_ID,
-                ID.unique(),
-                file
-            );
+            const base64 = await readAsBase64(file);
 
-            // Step 2: Call the function with the file ID and necessary metadata
             const execution = await functions.createExecution(
                 ZIP_PARSER_FUNCTION_ID,
                 JSON.stringify({ 
                     type, 
-                    fileId: fileResponse.$id, 
-                    bucketId: LIBRARY_UPLOADS_BUCKET_ID,
-                    fileName: file.name
+                    fileBase64: base64,
+                    fileName: file.name,
+                    userId: user.$id
                 }),
                 false // isAsync
             );

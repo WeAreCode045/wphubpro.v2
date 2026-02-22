@@ -8,6 +8,7 @@ import { useDeleteSite } from '../hooks/useSites';
 import { useSites } from '../hooks/useSites';
 import { Globe, PlusCircle, Loader2, AlertCircle } from 'lucide-react';
 import Modal from '../components/ui/Modal';
+import { usePlatformSettings } from '../hooks/usePlatformSettings';
 import AddSiteForm from '../components/sites/AddSiteForm';
 
 const DeleteButton: React.FC<{ siteId: string }> = ({ siteId }) => {
@@ -52,7 +53,7 @@ const SitesPage: React.FC = () => {
     <>
       <Modal
         title="Add New Site"
-        description="Enter your WordPress site details to connect it to The Platform."
+        description={`Enter your WordPress site details to connect it to ${usePlatformSettings('details').data?.name || 'the platform'}.`}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >

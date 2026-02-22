@@ -11,6 +11,7 @@ import {
   Loader2,
   AlertCircle,
   ArrowRight,
+  LogIn,
 } from "lucide-react";
 import Card, { CardHeader, CardContent } from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
@@ -176,10 +177,10 @@ const UserManagerPage: React.FC = () => {
               <tbody>
                 {filteredUsers.map((user: any) => (
                   <tr
-                    key={user.id}
-                    onClick={() => navigate(`/admin/users/${user.id}`)}
-                    className="border-b border-border hover:bg-muted/30 transition-colors group cursor-pointer"
-                  >
+                      key={user.id}
+                      onClick={() => navigate(`/admin/users/${user.id}`)}
+                      className="border-b border-border hover:bg-muted/30 transition-colors group cursor-pointer"
+                    >
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <img 
@@ -234,11 +235,58 @@ const UserManagerPage: React.FC = () => {
                       {user.joined}
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <div className="flex justify-end">
+                      <div className="flex justify-end items-center gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Login as user"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              const functionId = 'admin-login-as';
+                              const exec = await functions.createExecution(functionId, JSON.stringify({ userId: user.id }), false);
+                              let finalExec = exec;
+                              let body = exec.responseBody;
+                              if (!body || typeof body !== 'string' || body.trim() === '') {
+                                const waited = await waitForExecutionResponse(exec.$id, functionId);
+                                if (waited) { finalExec = waited; body = waited.responseBody; }
+                              }
+                              if (!body) {
+                                alert('No response from server. Ensure the admin-login-as function is available.');
+                                return;
+                              }
+                              const parsed = JSON.parse(body);
+                              if (finalExec.responseStatusCode >= 400 || !parsed.success) {
+                                alert(parsed.message || 'Failed to create impersonation session.');
+                                return;
+                              }
+                              // If function returns a url to open, open it
+                              if (parsed.sessionUrl) {
+                                window.open(parsed.sessionUrl, '_blank');
+                                return;
+                              }
+                              if (parsed.token) {
+                                // If token returned, navigate to platform with token param or copy to clipboard
+                                const url = `/admin/impersonate?token=${encodeURIComponent(parsed.token)}`;
+                                window.open(url, '_blank');
+                                return;
+                              }
+                              alert('Impersonation created. Please check admin function response.');
+                            } catch (err: any) {
+                              alert(err.message || 'Failed to call impersonation function.');
+                            }
+                          }}
+                        >
+                          <LogIn className="w-4 h-4" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="View details"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/users/${user.id}`); }}
                         >
                           <ArrowRight className="w-4 h-4" />
                         </Button>
