@@ -403,8 +403,8 @@ const UserSubscriptionDetailPage: React.FC = () => {
                     Downgrade
                   </Button>
                 </div>
-                
-                {subscription.status === 'active' && (
+                {/* Stripe-managed actions are only available for Stripe subscriptions. */}
+                {subscription.source !== 'local' && subscription.status === 'active' && (
                   <Button 
                     className="w-full text-xs py-1 h-8" 
                     onClick={() => manageSubscriptionMutation.mutate()}
@@ -421,7 +421,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
                   </Button>
                 )}
 
-                {subscription.status === 'active' && !subscription.cancel_at && (
+                {subscription.source !== 'local' && subscription.status === 'active' && !subscription.cancel_at && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -435,6 +435,18 @@ const UserSubscriptionDetailPage: React.FC = () => {
                       <><XCircle className="w-3.5 h-3.5 mr-1.5" /> Cancel Subscription</>
                     )}
                   </Button>
+                )}
+
+                {subscription.source === 'local' && (
+                  <div className="bg-accent/5 border-accent/10 p-3 rounded-md text-sm">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Local plan assigned by administrator</p>
+                        <p className="text-xs text-muted-foreground mt-1">This plan was assigned by your administrator and is managed outside of Stripe. To change or cancel this plan, contact your account administrator.</p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -502,99 +514,117 @@ const UserSubscriptionDetailPage: React.FC = () => {
 
                 {/* Billing & Payment Tab */}
                 <Tabs.Content value="billing" className="p-4 mt-0">
-                  <div className="space-y-4">
-                    {/* Billing Cycle */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-3.5 h-3.5 text-primary" />
-                        <h3 className="text-sm font-semibold">Billing Cycle</h3>
-                      </div>
-                      <div className="space-y-1.5 bg-muted/30 p-3 rounded-lg">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-muted-foreground">Current Period</span>
-                          <span className="font-medium">
-                            {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
-                          </span>
+                  {subscription.source === 'local' ? (
+                    <div className="space-y-4">
+                      <div className="bg-accent/5 border-accent/10 p-4 rounded-md text-sm">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Local subscription</p>
+                            <p className="text-xs text-muted-foreground mt-1">This subscription was assigned and is managed by your administrator. Billing and invoices are handled outside of Stripe in this case.</p>
+                          </div>
                         </div>
-                        {subscription.trial_end && (
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Trial Ends</span>
-                            <span className="font-medium">{formatDate(subscription.trial_end)}</span>
-                          </div>
-                        )}
-                        {subscription.cancel_at && (
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Cancels On</span>
-                            <span className="font-medium text-orange-500">{formatDate(subscription.cancel_at)}</span>
-                          </div>
-                        )}
                       </div>
                     </div>
-
-                    {/* Payment Method */}
-                    {payment_method && (
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Billing Cycle */}
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <CreditCard className="w-3.5 h-3.5 text-primary" />
-                          <h3 className="text-sm font-semibold">Payment Method</h3>
+                          <Calendar className="w-3.5 h-3.5 text-primary" />
+                          <h3 className="text-sm font-semibold">Billing Cycle</h3>
                         </div>
-                        <div className="bg-muted/30 p-3 rounded-lg space-y-1.5">
+                        <div className="space-y-1.5 bg-muted/30 p-3 rounded-lg">
                           <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Type</span>
-                            <span className="font-medium capitalize">{payment_method.type}</span>
+                            <span className="text-muted-foreground">Current Period</span>
+                            <span className="font-medium">
+                              {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
+                            </span>
                           </div>
-                          {payment_method.card && (
-                            <>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-muted-foreground">Card</span>
-                                <span className="font-medium">
-                                  {payment_method.card.brand.toUpperCase()} •••• {payment_method.card.last4}
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-muted-foreground">Expires</span>
-                                <span className="font-medium">
-                                  {payment_method.card.exp_month}/{payment_method.card.exp_year}
-                                </span>
-                              </div>
-                            </>
+                          {subscription.trial_end && (
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Trial Ends</span>
+                              <span className="font-medium">{formatDate(subscription.trial_end)}</span>
+                            </div>
+                          )}
+                          {subscription.cancel_at && (
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Cancels On</span>
+                              <span className="font-medium text-orange-500">{formatDate(subscription.cancel_at)}</span>
+                            </div>
                           )}
                         </div>
                       </div>
-                    )}
 
-                    {/* Upcoming Invoice */}
-                    {upcoming_invoice && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText className="w-3.5 h-3.5 text-primary" />
-                          <h3 className="text-sm font-semibold">Next Payment</h3>
-                        </div>
-                        <div className="bg-muted/30 p-3 rounded-lg space-y-1.5">
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">Amount Due</span>
-                            <span className="font-semibold text-foreground text-sm">
-                              {formatCurrency(upcoming_invoice.amount_due, upcoming_invoice.currency)}
-                            </span>
+                      {/* Payment Method */}
+                      {payment_method && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <CreditCard className="w-3.5 h-3.5 text-primary" />
+                            <h3 className="text-sm font-semibold">Payment Method</h3>
                           </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Due Date</span>
-                            <span className="font-medium">
-                              {upcoming_invoice.next_payment_attempt
-                                ? formatDate(upcoming_invoice.next_payment_attempt)
-                                : formatDate(upcoming_invoice.period_end)}
-                            </span>
+                          <div className="bg-muted/30 p-3 rounded-lg space-y-1.5">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Type</span>
+                              <span className="font-medium capitalize">{payment_method.type}</span>
+                            </div>
+                            {payment_method.card && (
+                              <>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-muted-foreground">Card</span>
+                                  <span className="font-medium">
+                                    {payment_method.card.brand.toUpperCase()} •••• {payment_method.card.last4}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-muted-foreground">Expires</span>
+                                  <span className="font-medium">
+                                    {payment_method.card.exp_month}/{payment_method.card.exp_year}
+                                  </span>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+
+                      {/* Upcoming Invoice */}
+                      {upcoming_invoice && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="w-3.5 h-3.5 text-primary" />
+                            <h3 className="text-sm font-semibold">Next Payment</h3>
+                          </div>
+                          <div className="bg-muted/30 p-3 rounded-lg space-y-1.5">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-muted-foreground">Amount Due</span>
+                              <span className="font-semibold text-foreground text-sm">
+                                {formatCurrency(upcoming_invoice.amount_due, upcoming_invoice.currency)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Due Date</span>
+                              <span className="font-medium">
+                                {upcoming_invoice.next_payment_attempt
+                                  ? formatDate(upcoming_invoice.next_payment_attempt)
+                                  : formatDate(upcoming_invoice.period_end)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </Tabs.Content>
 
                 {/* Invoice History Tab */}
                 <Tabs.Content value="invoices" className="p-4 mt-0">
                   <div className="space-y-2">
-                    {invoices.length === 0 ? (
+                    {subscription.source === 'local' ? (
+                      <div className="text-center py-6 text-xs text-muted-foreground">
+                        This subscription is managed locally by your administrator. Invoice history and payments are handled outside of Stripe for this subscription.
+                      </div>
+                    ) : invoices.length === 0 ? (
                       <p className="text-center text-xs text-muted-foreground py-6">No invoices found</p>
                     ) : (
                       invoices.map((invoice: any) => (
