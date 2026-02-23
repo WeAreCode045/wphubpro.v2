@@ -1,30 +1,21 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { functions, databases, DATABASE_ID } from "../services/appwrite";
 import { useAuth } from "../contexts/AuthContext";
 import { Query } from "appwrite";
 import {
-  Download,
-  ExternalLink,
-  CreditCard,
-  Calendar,
-  User,
-  Package,
-  FileText,
   Loader2,
   AlertCircle,
-  XCircle,
-  TrendingUp,
-  TrendingDown,
 } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../components/ui/Card";
+import Card, { CardContent } from "../components/ui/Card";
 import Button from "../components/ui/Button";
-import Tabs from "../components/ui/Tabs";
-import UsageGauge from "../components/dashboard/UsageGauge";
-
 import { useManageSubscription } from "../hooks/useStripe";
 import { useUsage } from "../hooks/useSubscription";
+import SubscriptionPlanDetailsCard from "../components/subscription/SubscriptionPlanDetailsCard";
+import SubscriptionCustomerDetailsCard from "../components/subscription/SubscriptionCustomerDetailsCard";
+import SubscriptionBillingTabs from "../components/subscription/SubscriptionBillingTabs";
+import type { SubscriptionDetails } from "../components/subscription/subscription-detail-types";
 
 const UserSubscriptionDetailPage: React.FC = () => {
   const { user } = useAuth();
@@ -67,10 +58,10 @@ const UserSubscriptionDetailPage: React.FC = () => {
       );
 
       if (response.documents.length === 0) {
-        throw new Error("No subscription found");
+        return null;
       }
 
-      return response.documents[0];
+      return response.documents[0] || null;
     },
     enabled: !!user?.$id,
   });
@@ -80,7 +71,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
     isLoading: isLoadingDetails,
     isError,
     error,
-  } = useQuery({
+  } = useQuery<SubscriptionDetails>({
     queryKey: ["subscription-details", subscriptionDoc?.$id],
     queryFn: async () => {
       if (!subscriptionDoc) throw new Error("No subscription found");
@@ -181,7 +172,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
 
       return parsed;
     },
-    enabled: !!subscriptionDoc,
+    enabled: !!subscriptionDoc && subscriptionDoc.source !== "free-tier",
     staleTime: 1000 * 60,
   });
 
@@ -219,6 +210,21 @@ const UserSubscriptionDetailPage: React.FC = () => {
     });
   };
 
+  const formatDateFromString = (value: string) => {
+    const timestamp = Number(value);
+    if (!Number.isNaN(timestamp)) {
+      return formatDate(timestamp);
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "—";
+    return parsed.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   const handleCancelSubscription = async () => {
     if (!confirm('Are you sure you want to cancel your subscription?')) return;
     
@@ -249,11 +255,60 @@ const UserSubscriptionDetailPage: React.FC = () => {
   };
 
   const isLoading = isLoadingSubscription || isLoadingDetails;
+  const isFreeTier = !subscriptionDoc || subscriptionDoc.source === "free-tier";
+
+  const localMetadata = useMemo(() => {
+    if (!subscriptionDoc?.metadata) return null;
+    if (typeof subscriptionDoc.metadata === "string") {
+      try {
+        return JSON.parse(subscriptionDoc.metadata) as Record<string, unknown>;
+      } catch {
+        return null;
+      }
+    }
+    if (typeof subscriptionDoc.metadata === "object") {
+      return subscriptionDoc.metadata as Record<string, unknown>;
+    }
+    return null;
+  }, [subscriptionDoc]);
+
+  const assignedByLabel =
+    (localMetadata?.assigned_by_user_name as string | undefined) ||
+    (localMetadata?.assigned_by_user_id as string | undefined) ||
+    "—";
+  const assignedAtValue =
+    (localMetadata?.assigned_at as string | undefined) ||
+    subscriptionDoc?.$createdAt ||
+    "";
+  const assignedAtLabel = assignedAtValue ? formatDateFromString(assignedAtValue) : "—";
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isFreeTier) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Subscription Details
+        </h1>
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="py-10 text-center space-y-3">
+            <p className="text-base font-semibold text-foreground">
+              You are currently on the Free-Tier plan.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Want to use the advantages of a Pro account? Check our plans.
+            </p>
+            <Button onClick={() => navigate("/subscription/plans")}>
+              View Plans
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -300,401 +355,43 @@ const UserSubscriptionDetailPage: React.FC = () => {
 
       {/* Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-        {/* Plan Details - Left Block (Big) */}
         <div className="lg:row-span-2 h-full">
-          <Card className="h-full">
-            <CardHeader className="py-3 px-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-primary" />
-                  <h2 className="text-lg font-semibold">Plan Details</h2>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 p-4">
-              <div>
-                <label className="text-xs text-muted-foreground">Plan Name</label>
-                <p className="font-medium text-base">{plan.product_name || "—"}</p>
-                {plan.product_description && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {plan.product_description}
-                  </p>
-                )}
-              </div>
-              
-              <div>
-                <label className="text-xs text-muted-foreground">Price</label>
-                <p className="font-medium text-base">
-                  {plan.unit_amount
-                    ? formatCurrency(plan.unit_amount, plan.currency || "usd")
-                    : "—"}
-                  {plan.interval && (
-                    <span className="text-xs text-muted-foreground ml-1.5">
-                      / {plan.interval_count > 1 ? `${plan.interval_count} ` : ""}
-                      {plan.interval}
-                      {plan.interval_count > 1 ? "s" : ""}
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              {/* Plan Limits - Circular Gauges */}
-              {plan.limits && (plan.limits.sites_limit || plan.limits.library_limit || plan.limits.storage_limit) && (
-                <div className="pt-4 border-t border-border">
-                  <label className="text-xs text-muted-foreground mb-4 block font-medium uppercase tracking-wider">Plan Usage & Limits</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {plan.limits.sites_limit && (
-                      <div className="scale-75 origin-top">
-                        <UsageGauge 
-                          label="Sites" 
-                          used={usage?.sitesUsed || 0} 
-                          limit={plan.limits.sites_limit} 
-                        />
-                      </div>
-                    )}
-                    {plan.limits.library_limit && (
-                      <div className="scale-75 origin-top">
-                        <UsageGauge 
-                          label="Library" 
-                          used={usage?.libraryUsed || 0} 
-                          limit={plan.limits.library_limit} 
-                        />
-                      </div>
-                    )}
-                    {plan.limits.storage_limit && (
-                      <div className="scale-75 origin-top">
-                        <UsageGauge 
-                          label="Uploads" 
-                          used={usage?.storageUsed || 0} 
-                          limit={plan.limits.storage_limit} 
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="pt-3 border-t border-border space-y-2">
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs py-1 h-8"
-                    onClick={() => navigate('/subscription/plans')}
-                  >
-                    <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
-                    Upgrade
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs py-1 h-8"
-                    onClick={() => navigate('/subscription/plans')}
-                  >
-                    <TrendingDown className="w-3.5 h-3.5 mr-1.5" />
-                    Downgrade
-                  </Button>
-                </div>
-                {/* Stripe-managed actions are only available for Stripe subscriptions. */}
-                {subscription.source !== 'local' && subscription.status === 'active' && (
-                  <Button 
-                    className="w-full text-xs py-1 h-8" 
-                    onClick={() => manageSubscriptionMutation.mutate()}
-                    disabled={manageSubscriptionMutation.isPending}
-                  >
-                    {manageSubscriptionMutation.isPending ? (
-                        <>
-                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                            Redirecting...
-                        </>
-                    ) : (
-                        'Manage Billing in Stripe'
-                    )}
-                  </Button>
-                )}
-
-                {subscription.source !== 'local' && subscription.status === 'active' && !subscription.cancel_at && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-destructive hover:bg-destructive/10 text-xs py-1 h-8"
-                    onClick={handleCancelSubscription}
-                    disabled={actionLoading === 'cancel'}
-                  >
-                    {actionLoading === 'cancel' ? (
-                      <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Canceling...</>
-                    ) : (
-                      <><XCircle className="w-3.5 h-3.5 mr-1.5" /> Cancel Subscription</>
-                    )}
-                  </Button>
-                )}
-
-                {subscription.source === 'local' && (
-                  <div className="bg-accent/5 border-accent/10 p-3 rounded-md text-sm">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Local plan assigned by administrator</p>
-                        <p className="text-xs text-muted-foreground mt-1">This plan was assigned by your administrator and is managed outside of Stripe. To change or cancel this plan, contact your account administrator.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <SubscriptionPlanDetailsCard
+            plan={plan}
+            subscription={subscription}
+            usage={usage}
+            onUpgrade={() => navigate("/subscription/plans")}
+            onDowngrade={() => navigate("/subscription/plans")}
+            onManageStripe={() => manageSubscriptionMutation.mutate()}
+            onCancel={handleCancelSubscription}
+            isManaging={manageSubscriptionMutation.isPending}
+            isCanceling={actionLoading === "cancel"}
+            formatCurrency={formatCurrency}
+            isLocal={subscription.source === "local"}
+            assignedByLabel={assignedByLabel}
+            assignedAtLabel={assignedAtLabel}
+          />
         </div>
 
-        {/* Customer Details - Top Right */}
         <div>
-          <Card>
-            <CardHeader className="py-3 px-4">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-primary" />
-                <h2 className="text-lg font-semibold">Customer Details</h2>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2 p-4">
-              <div>
-                <label className="text-xs text-muted-foreground">Name</label>
-                <p className="font-medium text-sm">{customer.name || user?.name || "—"}</p>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">Email</label>
-                <p className="font-medium text-sm">{customer.email || user?.email || "—"}</p>
-              </div>
-              {customer.phone && (
-                <div>
-                  <label className="text-xs text-muted-foreground">Phone</label>
-                  <p className="font-medium text-sm">{customer.phone}</p>
-                </div>
-              )}
-              {customer.address && (
-                <div>
-                  <label className="text-xs text-muted-foreground">Address</label>
-                  <p className="font-medium text-xs leading-relaxed">
-                    {customer.address.line1}
-                    {customer.address.line2 && `, ${customer.address.line2}`}
-                    <br />
-                    {customer.address.city}, {customer.address.state} {customer.address.postal_code}
-                    <br />
-                    {customer.address.country}
-                  </p>
-                </div>
-              )}
-              <div>
-                <label className="text-xs text-muted-foreground">Customer Since</label>
-                <p className="font-medium text-sm">
-                  {customer.created ? formatDate(customer.created) : "—"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <SubscriptionCustomerDetailsCard
+            customer={customer}
+            fallbackName={user?.name}
+            fallbackEmail={user?.email}
+            formatDate={formatDate}
+          />
         </div>
 
-        {/* Billing & Invoices - Bottom Right */}
         <div>
-          <Card>
-            <CardContent className="p-0">
-              <Tabs defaultValue="billing">
-                <div className="px-4 border-b border-border">
-                  <Tabs.List className="mb-0">
-                    <Tabs.Trigger value="billing">Billing</Tabs.Trigger>
-                    <Tabs.Trigger value="invoices">Invoices</Tabs.Trigger>
-                  </Tabs.List>
-                </div>
-
-                {/* Billing & Payment Tab */}
-                <Tabs.Content value="billing">
-                  <div className="p-4 mt-0">
-                  {subscription.source === 'local' ? (
-                    <div className="space-y-4">
-                      <div className="bg-accent/5 border-accent/10 p-4 rounded-md text-sm">
-                        <div className="flex items-start gap-3">
-                          <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
-                          <div>
-                            <p className="font-medium">Local subscription</p>
-                            <p className="text-xs text-muted-foreground mt-1">This subscription was assigned and is managed by your administrator. Billing and invoices are handled outside of Stripe in this case.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {/* Billing Cycle */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Calendar className="w-3.5 h-3.5 text-primary" />
-                          <h3 className="text-sm font-semibold">Billing Cycle</h3>
-                        </div>
-                        <div className="space-y-1.5 bg-muted/30 p-3 rounded-lg">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Current Period</span>
-                            <span className="font-medium">
-                              {formatDate(subscription.current_period_start)} - {formatDate(subscription.current_period_end)}
-                            </span>
-                          </div>
-                          {subscription.trial_end && (
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">Trial Ends</span>
-                              <span className="font-medium">{formatDate(subscription.trial_end)}</span>
-                            </div>
-                          )}
-                          {subscription.cancel_at && (
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">Cancels On</span>
-                              <span className="font-medium text-orange-500">{formatDate(subscription.cancel_at)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Payment Method */}
-                      {payment_method && (
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <CreditCard className="w-3.5 h-3.5 text-primary" />
-                            <h3 className="text-sm font-semibold">Payment Method</h3>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg space-y-1.5">
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">Type</span>
-                              <span className="font-medium capitalize">{payment_method.type}</span>
-                            </div>
-                            {payment_method.card && (
-                              <>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-muted-foreground">Card</span>
-                                  <span className="font-medium">
-                                    {payment_method.card.brand.toUpperCase()} •••• {payment_method.card.last4}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-muted-foreground">Expires</span>
-                                  <span className="font-medium">
-                                    {payment_method.card.exp_month}/{payment_method.card.exp_year}
-                                  </span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Upcoming Invoice */}
-                      {upcoming_invoice && (
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <FileText className="w-3.5 h-3.5 text-primary" />
-                            <h3 className="text-sm font-semibold">Next Payment</h3>
-                          </div>
-                          <div className="bg-muted/30 p-3 rounded-lg space-y-1.5">
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-muted-foreground">Amount Due</span>
-                              <span className="font-semibold text-foreground text-sm">
-                                {formatCurrency(upcoming_invoice.amount_due, upcoming_invoice.currency)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">Due Date</span>
-                              <span className="font-medium">
-                                {upcoming_invoice.next_payment_attempt
-                                  ? formatDate(upcoming_invoice.next_payment_attempt)
-                                  : formatDate(upcoming_invoice.period_end)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  </div>
-                </Tabs.Content>
-
-                {/* Invoice History Tab */}
-                <Tabs.Content value="invoices">
-                  <div className="p-4 mt-0">
-                  <div className="space-y-2">
-                    {subscription.source === 'local' ? (
-                      <div className="text-center py-6 text-xs text-muted-foreground">
-                        This subscription is managed locally by your administrator. Invoice history and payments are handled outside of Stripe for this subscription.
-                      </div>
-                    ) : invoices.length === 0 ? (
-                      <p className="text-center text-xs text-muted-foreground py-6">No invoices found</p>
-                    ) : (
-                      invoices.map((invoice: any) => (
-                        <div
-                          key={invoice.id}
-                          className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-xs">
-                                Invoice #{invoice.number || invoice.id.slice(-8)}
-                              </p>
-                              <span
-                                className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                  invoice.paid
-                                    ? "bg-green-500/10 text-green-500"
-                                    : invoice.status === "open"
-                                      ? "bg-blue-500/10 text-blue-500"
-                                      : "bg-red-500/10 text-red-500"
-                                }`}
-                              >
-                                {invoice.paid ? "Paid" : invoice.status}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
-                              <span>{formatDate(invoice.created)}</span>
-                              <span>•</span>
-                              <span className="font-medium text-foreground">
-                                {formatCurrency(invoice.amount_due, invoice.currency)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {!invoice.paid && invoice.status === 'open' && invoice.hosted_invoice_url && (
-                              <Button
-                                size="sm"
-                                className="h-7 px-2 text-[10px]"
-                                onClick={() => handlePayInvoice(invoice.id, invoice.hosted_invoice_url)}
-                              >
-                                Pay Now
-                              </Button>
-                            )}
-                            {invoice.hosted_invoice_url && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-2 text-[10px]"
-                                onClick={() => window.open(invoice.hosted_invoice_url, "_blank")}
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1" />
-                                View
-                              </Button>
-                            )}
-                            {invoice.invoice_pdf && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-2 text-[10px]"
-                                onClick={() => window.open(invoice.invoice_pdf, "_blank")}
-                              >
-                                <Download className="w-3 h-3 mr-1" />
-                                PDF
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                  </div>
-                </Tabs.Content>
-              </Tabs>
-            </CardContent>
-          </Card>
+          <SubscriptionBillingTabs
+            subscription={subscription}
+            paymentMethod={payment_method}
+            upcomingInvoice={upcoming_invoice}
+            invoices={invoices}
+            onPayInvoice={handlePayInvoice}
+            formatDate={formatDate}
+            formatCurrency={formatCurrency}
+          />
         </div>
       </div>
     </div>

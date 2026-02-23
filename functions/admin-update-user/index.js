@@ -166,6 +166,18 @@ module.exports = async ({ req, res, log, error }) => {
       log(`Created accounts document for user ${userId} with current_plan_id ${currentPlanId || 'null'}`);
     };
 
+    const upsertSubscriptionDoc = async (subscriptionPayload) => {
+      const list = await databases.listDocuments('platform_db', 'subscriptions', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
+      if (list && list.documents && list.documents.length > 0) {
+        const doc = list.documents[0];
+        await databases.updateDocument('platform_db', 'subscriptions', doc.$id, subscriptionPayload);
+        log(`Updated subscription document for user ${userId}`);
+      } else {
+        await databases.createDocument('platform_db', 'subscriptions', sdk.ID.unique(), subscriptionPayload);
+        log(`Created subscription document for user ${userId}`);
+      }
+    };
+
     // Handle local plan assignment or removal
     if (Object.prototype.hasOwnProperty.call(updates, 'localPlanId')) {
       try {
@@ -195,6 +207,52 @@ module.exports = async ({ req, res, log, error }) => {
             } catch (accountErr) {
               log(`Warning: Failed to update accounts table: ${accountErr.message}`);
             }
+
+            const assignedByUserId =
+              req.headers?.['x-appwrite-user-id'] ||
+              req.variables?.APPWRITE_USER_ID ||
+              req.variables?.APPWRITE_FUNCTION_USER_ID ||
+              null;
+            let assignedByUserName = null;
+            if (assignedByUserId) {
+              try {
+                const adminUser = await users.get(assignedByUserId);
+                assignedByUserName = adminUser?.name || null;
+              } catch (adminErr) {
+                log(`Warning: Could not resolve admin user ${assignedByUserId}: ${adminErr.message}`);
+              }
+            }
+
+            const nowIso = new Date().toISOString();
+            const metadata = {
+              sites_limit: plan.sites_limit ?? plan.sitesLimit ?? null,
+              library_limit: plan.library_limit ?? plan.libraryLimit ?? null,
+              storage_limit: plan.storage_limit ?? plan.storageLimit ?? null,
+              assigned_by_user_id: assignedByUserId,
+              assigned_by_user_name: assignedByUserName,
+              assigned_at: nowIso
+            };
+
+            const subscriptionPayload = {
+              user_id: userId,
+              user_name: updates.name || json.name || null,
+              user_email: updates.email || json.email || null,
+              plan_id: plan.label || plan.name || null,
+              plan_label: plan.label || null,
+              plan_price_mode: null,
+              plan_price: null,
+              billing_start_date: null,
+              billing_end_date: null,
+              billing_never: true,
+              stripe_subscription_id: null,
+              stripe_customer_id: updates.stripe_customer_id || currentUser.prefs?.stripe_customer_id || null,
+              metadata,
+              source: 'local',
+              status: 'active',
+              updated_at: nowIso
+            };
+
+            await upsertSubscriptionDoc(subscriptionPayload);
             
             log(`Applied local plan label "${plan.label}" to user ${userId}`);
           } else {
@@ -206,6 +264,7 @@ module.exports = async ({ req, res, log, error }) => {
           let stripeLabel = null;
           let stripePriceId = null;
           
+          let stripeSubscriptionId = null;
           try {
             // Try to fetch Stripe subscription and get its product label
             const accountDocs = await databases.listDocuments('platform_db', 'accounts', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
@@ -215,6 +274,7 @@ module.exports = async ({ req, res, log, error }) => {
               
               if (subscriptions.data.length > 0) {
                 const subscription = subscriptions.data[0];
+                stripeSubscriptionId = subscription.id;
                 if (subscription.status !== 'canceled' && subscription.items.data.length > 0) {
                   const priceId = subscription.items.data[0].price.id;
                   stripePriceId = priceId;
@@ -236,6 +296,28 @@ module.exports = async ({ req, res, log, error }) => {
           
           // Update accounts.current_plan_id
           await upsertAccountCurrentPlan(stripePriceId || null);
+
+          const removalMetadata = stripeLabel ? { product_label: stripeLabel } : {};
+          const removalPayload = {
+            user_id: userId,
+            user_name: updates.name || json.name || null,
+            user_email: updates.email || json.email || null,
+            plan_id: stripeLabel || null,
+            plan_label: stripeLabel || null,
+            plan_price_mode: null,
+            plan_price: null,
+            billing_start_date: null,
+            billing_end_date: null,
+            billing_never: true,
+            stripe_subscription_id: stripeSubscriptionId || null,
+            stripe_customer_id: updates.stripe_customer_id || currentUser.prefs?.stripe_customer_id || null,
+            metadata: removalMetadata,
+            source: stripeLabel ? 'stripe' : 'free-tier',
+            status: 'active',
+            updated_at: new Date().toISOString()
+          };
+
+          await upsertSubscriptionDoc(removalPayload);
           
           if (stripeLabel) {
             log(`Removed local plan and restored Stripe label "${stripeLabel}" for user ${userId}`);
@@ -269,16 +351,7 @@ module.exports = async ({ req, res, log, error }) => {
         updated_at: new Date().toISOString()
       };
 
-      // Try to find existing subscription for user
-      const list = await databases.listDocuments('platform_db', 'subscriptions', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
-      if (list && list.documents && list.documents.length > 0) {
-        const doc = list.documents[0];
-        await databases.updateDocument('platform_db', 'subscriptions', doc.$id, subscriptionPayload);
-        log(`Updated subscription document for user ${userId}`);
-      } else {
-        await databases.createDocument('platform_db', 'subscriptions', sdk.ID.unique(), subscriptionPayload);
-        log(`Created subscription document for user ${userId}`);
-      }
+      await upsertSubscriptionDoc(subscriptionPayload);
     }
 
     log(`Updated user ${userId}`);
