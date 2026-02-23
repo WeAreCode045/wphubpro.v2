@@ -17,12 +17,13 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
-import AdminSettingsPage from './pages/AdminSettingsPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import UserManagerPage from './pages/admin/UserManagerPage';
 import UserDetailPage from './pages/admin/UserDetailPage';
 import OrdersPage from './pages/admin/OrdersPage';
 import PlanManagementPage from './pages/admin/PlanManagementPage';
+import PlanDetailPage from './pages/admin/PlanDetailPage';
 import SubscriptionsPage from './pages/admin/SubscriptionsPage';
 import SubscriptionDetailPage from './pages/admin/SubscriptionDetailPage';
 import { Loader2 } from 'lucide-react';
@@ -64,6 +65,7 @@ const AppRoutes: React.FC = () => {
           <Route path="users/:userId" element={<UserDetailPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="plans" element={<PlanManagementPage />} />
+          <Route path="plans/:planId" element={<PlanDetailPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />
           <Route path="subscriptions/:subscriptionId" element={<SubscriptionDetailPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />

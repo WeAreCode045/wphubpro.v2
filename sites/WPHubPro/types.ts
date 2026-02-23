@@ -1,5 +1,15 @@
 
-import { Models } from 'appwrite';
+export namespace Models {
+  export type Preferences = Record<string, unknown>;
+
+  export interface User<Prefs = Preferences> {
+    $id: string;
+    name?: string;
+    email?: string;
+    prefs?: Prefs;
+    [key: string]: unknown;
+  }
+}
 
 export type User = Models.User<Models.Preferences> & {
   isAdmin?: boolean;

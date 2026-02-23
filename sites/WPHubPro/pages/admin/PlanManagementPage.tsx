@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { functions, databases, DATABASE_ID, ID } from "../../services/appwrite";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Settings2,
@@ -10,6 +11,7 @@ import {
   Loader2,
   AlertCircle,
   Users,
+  ArrowRight,
 } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -22,6 +24,7 @@ import { useToast } from "../../contexts/ToastContext";
 
 const PlanManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPlanToAssign, setSelectedPlanToAssign] = useState<any>(null);
@@ -559,7 +562,17 @@ const PlanManagementPage: React.FC = () => {
                   )}
                 </div>
                 <div className="bg-muted/50 p-6 flex lg:flex-col justify-center gap-2 border-t lg:border-t-0 lg:border-l border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate(`/admin/plans/${plan.$id || plan.id}${plan.type === 'local' ? '?type=local' : '?type=stripe'}`)}
+                  >
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Details
+                  </Button>
                   {plan.type === 'local' && (
+                    <>
                     <Button
                       variant="outline"
                       size="sm"
@@ -572,21 +585,17 @@ const PlanManagementPage: React.FC = () => {
                       <Users className="w-4 h-4 mr-2" />
                       Assign
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleOpenEdit(plan)}
+                    >
+                      <Settings2 className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    </>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      if (plan.type === 'local') {
-                        handleOpenEdit(plan);
-                      }
-                    }}
-                    disabled={plan.type !== 'local'}
-                  >
-                    <Settings2 className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
                   {plan.type === 'stripe' && (
                     <Button variant="outline" size="sm" className="w-full">
                       <ExternalLink className="w-4 h-4 mr-2" />
