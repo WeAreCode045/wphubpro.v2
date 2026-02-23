@@ -76,8 +76,10 @@ const UserSubscriptionDetailPage: React.FC = () => {
     queryFn: async () => {
       if (!subscriptionDoc) throw new Error("No subscription found");
 
-      // If it's a local plan, fetch from local_plans collection
-      if (subscriptionDoc.source === 'local') {
+      // If it's a local plan (either marked as 'local' source OR no stripe_subscription_id), fetch from local_plans collection
+      const isLocalPlan = subscriptionDoc.source === 'local' || !subscriptionDoc.stripe_subscription_id;
+      
+      if (isLocalPlan) {
         const planLabel = subscriptionDoc.plan_label || subscriptionDoc.plan_id;
         const planDocs = await databases.listDocuments(
           DATABASE_ID,
@@ -130,7 +132,6 @@ const UserSubscriptionDetailPage: React.FC = () => {
 
       // Stripe flow
       const subscriptionId = subscriptionDoc.stripe_subscription_id;
-      if (!subscriptionId) throw new Error("No Stripe subscription ID found");
 
       const functionId = "stripe-get-subscription-details";
       const result = await functions.createExecution(
