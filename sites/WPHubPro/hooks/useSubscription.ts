@@ -91,7 +91,7 @@ export const useSubscription = () => {
             }
 
             // Fallback: Check for labels (for backwards compatibility)
-            const subscriptionLabel = user.labels?.find(l => 
+            const subscriptionLabel = (user.labels as string[] | undefined)?.find(l => 
                 l.toLowerCase() !== 'admin'
             );
 

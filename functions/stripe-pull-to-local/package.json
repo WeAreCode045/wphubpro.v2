@@ -1,0 +1,9 @@
+{
+  "name": "stripe-pull-to-local",
+  "version": "1.0.0",
+  "description": "Pull Stripe product data to local_plans table",
+  "main": "index.js",
+  "dependencies": {
+    "node-appwrite": "^12.0.0"
+  }
+}

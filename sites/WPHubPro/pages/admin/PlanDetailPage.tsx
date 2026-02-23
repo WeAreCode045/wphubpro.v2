@@ -218,6 +218,34 @@ const PlanDetailPage: React.FC = () => {
     },
   });
 
+  // Pull Stripe plan to local mutation
+  const pullStripeToLocalMutation = useMutation({
+    mutationFn: async (stripeProductId: string) => {
+      const result = await functions.createExecution(
+        "pull-stripe-plan-to-local",
+        JSON.stringify({ stripeProductId }),
+        false
+      );
+      const body = result.responseBody;
+      if (!body) throw new Error("No response from server");
+      const parsed = JSON.parse(body);
+      if (!parsed.success) {
+        throw new Error(parsed.message || "Failed to pull plan to local");
+      }
+      return parsed;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "Success", 
+        description: `Plan successfully ${data.message.includes("updated") ? "updated" : "imported"} to local`
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin", "plan"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
   // Fetch all users for assignment
   const { data: allUsers = [] } = useQuery({
     queryKey: ["admin", "all-users-simple"],
@@ -274,10 +302,21 @@ const PlanDetailPage: React.FC = () => {
             </Button>
           )}
           {plan.type === "stripe" && (
-            <Button variant="outline" onClick={() => window.open(`https://dashboard.stripe.com/products/${plan.id}`, "_blank")}>
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Stripe Dashboard
-            </Button>
+            <>
+              <Button 
+                onClick={() => pullStripeToLocalMutation.mutate(plan.id)}
+                disabled={pullStripeToLocalMutation.isPending}
+              >
+                {pullStripeToLocalMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Pull to Local
+              </Button>
+              <Button variant="outline" onClick={() => window.open(`https://dashboard.stripe.com/products/${plan.id}`, "_blank")}>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Stripe Dashboard
+              </Button>
+            </>
           )}
         </div>
       </header>

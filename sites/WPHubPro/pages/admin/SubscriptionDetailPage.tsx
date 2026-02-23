@@ -68,8 +68,8 @@ const SubscriptionDetailPage: React.FC = () => {
     queryFn: async () => {
       if (!subscriptionDoc) throw new Error("No subscription document");
 
-      // If it's a local plan, fetch from local_plans collection
-      if (subscriptionDoc.source === 'local') {
+      // If it's a local plan (no stripe_subscription_id), fetch from local_plans collection
+      if (!subscriptionDoc.stripe_subscription_id) {
         const planLabel = subscriptionDoc.plan_label || subscriptionDoc.plan_id;
         const planDocs = await databases.listDocuments(
           DATABASE_ID,
@@ -289,7 +289,22 @@ const SubscriptionDetailPage: React.FC = () => {
     );
   }
 
-  if (!details) return null;
+  if (!details || !details.subscription || !details.customer || !details.plan) {
+    return (
+      <div className="space-y-6">
+        <Button variant="outline" onClick={() => navigate("/admin/subscriptions")}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Subscriptions
+        </Button>
+        <Card className="bg-destructive/5 border-destructive">
+          <CardContent className="py-8 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+            <p className="text-destructive">Subscription data incomplete</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const { subscription, customer, plan, invoices, upcoming_invoice, payment_method } = details;
 

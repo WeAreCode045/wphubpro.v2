@@ -768,6 +768,69 @@
                 "documents.read"
             ],
             "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "pull-stripe-plan-to-local",
+            "name": "pull-stripe-plan-to-local",
+            "runtime": "node-18.0",
+            "path": "functions/pull-stripe-plan-to-local",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "migrate-local-plan-to-stripe",
+            "name": "migrate-local-plan-to-stripe",
+            "runtime": "node-18.0",
+            "path": "functions/migrate-local-plan-to-stripe",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-pull-to-local",
+            "name": "stripe-pull-to-local",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-pull-to-local",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
         }
     ],
     "sites": [
@@ -785,7 +848,16 @@
             "enabled": true,
             "timeout": 30,
             "logging": true,
-            "ignore": null,
+            "ignore": [
+                "node_modules",
+                "dist",
+                ".env",
+                ".env.*",
+                "appwrite.config.json",
+                "pnpm-lock.yaml",
+                "yarn.lock",
+                "package-lock.json"
+            ],
             "path": "sites/WPHubPro",
             "vars": [
                 {

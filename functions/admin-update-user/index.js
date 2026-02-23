@@ -167,25 +167,25 @@ module.exports = async ({ req, res, log, error }) => {
     };
 
     const upsertSubscriptionDoc = async (subscriptionPayload) => {
-      const list = await databases.listDocuments('platform_db', 'subscriptions', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
-      if (list && list.documents && list.documents.length > 0) {
-        const doc = list.documents[0];
-        await databases.updateDocument('platform_db', 'subscriptions', doc.$id, subscriptionPayload);
-        log(`Updated subscription document for user ${userId}`);
-      } else {
-        await databases.createDocument('platform_db', 'subscriptions', sdk.ID.unique(), subscriptionPayload);
-        log(`Created subscription document for user ${userId}`);
+      try {
+        const list = await databases.listDocuments('platform_db', 'subscriptions', [sdk.Query.equal('user_id', userId), sdk.Query.limit(1)]);
+        if (list && list.documents && list.documents.length > 0) {
+          const doc = list.documents[0];
+          await databases.updateDocument('platform_db', 'subscriptions', doc.$id, subscriptionPayload);
+          log(`Updated subscription document for user ${userId}: ${doc.$id}`);
+        } else {
+          const newDoc = await databases.createDocument('platform_db', 'subscriptions', sdk.ID.unique(), subscriptionPayload);
+          log(`Created subscription document for user ${userId}: ${newDoc.$id}`);
+        }
+      } catch (err) {
+        error(`Failed to upsert subscription document: ${err.message}`);
+        throw err;
       }
     };
 
     // Handle local plan assignment or removal
     if (Object.prototype.hasOwnProperty.call(updates, 'localPlanId')) {
       try {
-        // Get current user labels (no need to preserve admin label - now managed via teams)
-        const currentUser = await users.get(userId);
-        const currentLabels = currentUser.labels || [];
-        log(`Current user ${userId} labels before plan assignment: ${JSON.stringify(currentLabels)}`);
-        
         if (updates.localPlanId) {
           // Assign local plan: fetch plan and set its label
           log(`Fetching plan with ID: ${updates.localPlanId}`);
@@ -193,13 +193,6 @@ module.exports = async ({ req, res, log, error }) => {
           log(`Plan fetched: ${JSON.stringify(plan)}`);
           
           if (plan && plan.label) {
-            // Replace any existing labels with the plan label
-            const updatedLabels = [plan.label];
-            log(`Updated labels to apply: ${JSON.stringify(updatedLabels)}`);
-            
-            // Update user labels directly
-            await users.updateLabels(userId, updatedLabels);
-            
             // Update accounts.current_plan_id with plan label
             const currentPlanLabel = plan.label;
             try {
@@ -246,23 +239,23 @@ module.exports = async ({ req, res, log, error }) => {
               billing_never: true,
               stripe_subscription_id: null,
               stripe_customer_id: updates.stripe_customer_id || currentUser.prefs?.stripe_customer_id || null,
-              metadata,
-              source: 'local',
+              metadata: JSON.stringify(metadata),
               status: 'active',
               updated_at: nowIso
             };
 
+            log(`Calling upsertSubscriptionDoc with payload: ${JSON.stringify(subscriptionPayload)}`);
             await upsertSubscriptionDoc(subscriptionPayload);
             
-            log(`Applied local plan label "${plan.label}" to user ${userId}`);
+            log(`Applied local plan "${plan.label}" to user ${userId}`);
           } else {
             log(`Warning: Plan does not have a label. Plan object: ${JSON.stringify(plan)}`);
             error(`Plan ${updates.localPlanId} does not have a label attribute`);
           }
         } else {
-          // Remove local plan: check if Stripe subscription exists and restore its label, otherwise remove all labels
-          let stripeLabel = null;
-          let stripePriceId = null;
+          // Remove local plan: check if Stripe subscription exists and restore current_plan_id from Stripe metadata
+          let stripePlanLabel = null;
+          let stripeProductId = null;
           
           let stripeSubscriptionId = null;
           try {
@@ -277,33 +270,27 @@ module.exports = async ({ req, res, log, error }) => {
                 stripeSubscriptionId = subscription.id;
                 if (subscription.status !== 'canceled' && subscription.items.data.length > 0) {
                   const priceId = subscription.items.data[0].price.id;
-                  stripePriceId = priceId;
                   const price = await stripe.prices.retrieve(priceId);
                   const product = await stripe.products.retrieve(price.product);
-                  stripeLabel = product.metadata?.label || null;
+                  stripePlanLabel = product.metadata?.label || null;
+                  stripeProductId = product.id;
                 }
               }
             }
           } catch (err) {
             log(`Note: Could not fetch Stripe subscription for user ${userId}: ${err.message}`);
           }
-          
-          // Set labels: restore Stripe label if exists, otherwise remove all labels
-          const updatedLabels = stripeLabel ? [stripeLabel] : [];
-          log(`Removed local plan. Updated labels: ${JSON.stringify(updatedLabels)}`);
-          
-          await users.updateLabels(userId, updatedLabels);
-          
-          // Update accounts.current_plan_id
-          await upsertAccountCurrentPlan(stripePriceId || null);
 
-          const removalMetadata = stripeLabel ? { product_label: stripeLabel } : {};
+          // Update accounts.current_plan_id
+          await upsertAccountCurrentPlan(stripePlanLabel || null);
+
+          const removalMetadata = stripePlanLabel ? { product_label: stripePlanLabel } : {};
           const removalPayload = {
             user_id: userId,
             user_name: updates.name || json.name || null,
             user_email: updates.email || json.email || null,
-            plan_id: stripeLabel || null,
-            plan_label: stripeLabel || null,
+            plan_id: stripeProductId || null,
+            plan_label: stripePlanLabel || null,
             plan_price_mode: null,
             plan_price: null,
             billing_start_date: null,
@@ -311,18 +298,17 @@ module.exports = async ({ req, res, log, error }) => {
             billing_never: true,
             stripe_subscription_id: stripeSubscriptionId || null,
             stripe_customer_id: updates.stripe_customer_id || currentUser.prefs?.stripe_customer_id || null,
-            metadata: removalMetadata,
-            source: stripeLabel ? 'stripe' : 'free-tier',
+            metadata: JSON.stringify(removalMetadata),
             status: 'active',
             updated_at: new Date().toISOString()
           };
 
           await upsertSubscriptionDoc(removalPayload);
           
-          if (stripeLabel) {
-            log(`Removed local plan and restored Stripe label "${stripeLabel}" for user ${userId}`);
+          if (stripePlanLabel) {
+            log(`Removed local plan and restored Stripe plan "${stripePlanLabel}" for user ${userId}`);
           } else {
-            log(`Removed local plan label from user ${userId}`);
+            log(`Removed local plan from user ${userId}`);
           }
         }
       } catch (err) {
@@ -339,14 +325,14 @@ module.exports = async ({ req, res, log, error }) => {
         user_email: updates.email || json.email || null,
         plan_id: updates.planId || null,
         plan_price_mode: updates.priceMode || (updates.customPrice ? 'custom' : 'plan'),
-        plan_price: updates.customPrice ? {
+        plan_price: updates.customPrice ? JSON.stringify({
           amount: updates.customPrice.amount || 0,
           currency: updates.customPrice.currency || 'usd',
           interval: updates.customPrice.interval || 'month'
-        } : null,
+        }) : null,
         billing_start_date: updates.billingStart === 'never' ? null : (updates.billingStart || null),
         billing_never: updates.billingStart === 'never' ? true : false,
-        metadata: updates.customLimits || {},
+        metadata: JSON.stringify(updates.customLimits || {}),
         status: updates.status ? (updates.status === 'Active' ? 'active' : 'inactive') : 'active',
         updated_at: new Date().toISOString()
       };

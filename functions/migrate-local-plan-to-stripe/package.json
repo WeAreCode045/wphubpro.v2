@@ -1,0 +1,10 @@
+{
+  "name": "migrate-local-plan-to-stripe",
+  "version": "1.0.0",
+  "description": "Migrate a local plan to Stripe by creating product and prices",
+  "main": "index.js",
+  "dependencies": {
+    "node-appwrite": "^13.0.0",
+    "stripe": "^14.0.0"
+  }
+}
