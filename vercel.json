@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd sites/WPHubPro && npm install && npm run build",
+  "outputDirectory": "sites/WPHubPro/dist",
+  "installCommand": "cd sites/WPHubPro && npm install",
+  "framework": null
+}
