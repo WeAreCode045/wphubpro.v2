@@ -24,7 +24,7 @@ module.exports = async ({ req, res, log, error }) => {
       error('Appwrite configuration missing');
       return res.json({
         success: false,
-        message: 'Appwrite configuration missing'
+        message: 'Appwrite config missing'
       }, 500);
     }
 
