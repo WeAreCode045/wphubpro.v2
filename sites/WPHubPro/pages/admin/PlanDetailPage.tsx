@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { functions, databases, DATABASE_ID, ID } from "../../services/appwrite";
+import { functions, databases, DATABASE_ID } from "../../services/appwrite";
 import { Query } from "appwrite";
 import {
   ArrowLeft,
@@ -14,7 +14,6 @@ import {
   AlertCircle,
   ExternalLink,
   ShieldCheck,
-  Calendar,
   ChevronRight,
   TrendingDown,
   UserPlus,
@@ -26,7 +25,7 @@ import Card, {
   CardContent,
 } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import Table from "../../components/ui/Table";
+import Table, { TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/Table";
 import Badge from "../../components/ui/Badge";
 import Modal from "../../components/ui/Modal";
 import Select from "../../components/ui/Select";
@@ -72,12 +71,10 @@ const PlanDetailPage: React.FC = () => {
       } else {
         const functionId = "stripe-list-products";
         const result = await functions.createExecution(functionId, "", false);
-        let finalResult = result;
         let body = result.responseBody;
         if (!body || typeof body !== "string" || body.trim() === "") {
           const execution = await waitForExecutionResponse(result.$id, functionId);
           if (execution) {
-            finalResult = execution;
             body = execution.responseBody;
           }
         }
@@ -113,7 +110,7 @@ const PlanDetailPage: React.FC = () => {
   });
 
   // Fetch stats (total canceled, etc)
-  const { data: stats, isLoading: isLoadingStats } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ["admin", "plan-stats", planId, plan?.label],
     queryFn: async () => {
       if (!plan) return null;
@@ -161,7 +158,7 @@ const PlanDetailPage: React.FC = () => {
 
   // Assign user mutation
   const assignPlanMutation = useMutation({
-    mutationFn: async ({ userId, planLabel }: { userId: string; planLabel: string }) => {
+    mutationFn: async ({ userId, planLabel: _planLabel }: { userId: string; planLabel: string }) => {
       const result = await functions.createExecution(
         "admin-update-user",
         JSON.stringify({ 
@@ -444,32 +441,32 @@ const PlanDetailPage: React.FC = () => {
                 </div>
               ) : (
                 <Table>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.Head>User</Table.Head>
-                      <Table.Head>Status</Table.Head>
-                      <Table.Head>Joined</Table.Head>
-                      <Table.Head className="text-right">Action</Table.Head>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {usersOnPlan.map((sub: any) => (
-                      <Table.Row key={sub.$id}>
-                        <Table.Cell>
+                      <TableRow key={sub.$id}>
+                        <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium text-sm">{sub.user_name || "Unknown"}</span>
                             <span className="text-xs text-muted-foreground">{sub.user_email}</span>
                           </div>
-                        </Table.Cell>
-                        <Table.Cell>
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={sub.status === "active" ? "success" : "secondary"}>
                             {sub.status}
                           </Badge>
-                        </Table.Cell>
-                        <Table.Cell className="text-xs">
+                        </TableCell>
+                        <TableCell className="text-xs">
                           {new Date(sub.$createdAt).toLocaleDateString()}
-                        </Table.Cell>
-                        <Table.Cell className="text-right">
+                        </TableCell>
+                        <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button 
                               variant="ghost" 
@@ -494,10 +491,10 @@ const PlanDetailPage: React.FC = () => {
                               </Button>
                             )}
                           </div>
-                        </Table.Cell>
-                      </Table.Row>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </Table.Body>
+                  </TableBody>
                 </Table>
               )}
             </CardContent>

@@ -91,9 +91,9 @@ export const useSubscription = () => {
             }
 
             // Fallback: Check for labels (for backwards compatibility)
-            const subscriptionLabel = user.labels?.find(l => 
-                l.toLowerCase() !== 'admin'
-            );
+            const subscriptionLabel = Array.isArray(user.labels) 
+                ? user.labels.find(l => l.toLowerCase() !== 'admin')
+                : undefined;
 
             if (subscriptionLabel) {
                 // Check if label matches a local plan
