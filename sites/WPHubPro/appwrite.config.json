@@ -770,6 +770,39 @@
             "specification": "s-1vcpu-512mb"
         }
     ],
+    "sites": [
+        {
+            "$id": "wphubpro",
+            "name": "WPHubPro",
+            "framework": "vite",
+            "adapter": "static",
+            "buildRuntime": "node-22",
+            "installCommand": "npm install",
+            "buildCommand": "npm run build",
+            "outputDirectory": "./dist",
+            "fallbackFile": "",
+            "specification": "s-1vcpu-1gb",
+            "enabled": true,
+            "timeout": 30,
+            "logging": true,
+            "ignore": null,
+            "path": "sites/WPHubPro",
+            "vars": [
+                {
+                    "key": "VITE_APPWRITE_ENDPOINT",
+                    "value": "https://appwrite.code045.nl/v1"
+                },
+                {
+                    "key": "VITE_APPWRITE_PROJECT_ID",
+                    "value": "698a55ce00010497b136"
+                },
+                {
+                    "key": "VITE_APPWRITE_PROJECT_NAME",
+                    "value": "WPHub"
+                }
+            ]
+        }
+    ],
     "tablesDB": [
         {
             "$id": "platform_db",
