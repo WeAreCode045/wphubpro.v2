@@ -53,7 +53,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "sessions.write",
                 "users.read",
@@ -122,7 +122,7 @@
             "events": [],
             "schedule": "",
             "timeout": 300,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "users.read",
                 "documents.read",
@@ -144,7 +144,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "users.read",
                 "documents.read",
@@ -166,7 +166,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "sessions.write",
                 "users.read",
@@ -235,7 +235,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "sessions.write",
                 "users.read",
@@ -322,7 +322,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [],
             "specification": "s-0.5vcpu-512mb"
         },
@@ -361,7 +361,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "databases.read",
                 "documents.read"
@@ -401,7 +401,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "users.read"
             ],
@@ -421,7 +421,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "sessions.write",
                 "users.read",
@@ -490,7 +490,7 @@
             ],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "documents.write",
                 "users.read"
@@ -531,7 +531,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "documents.read"
             ],
@@ -551,7 +551,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "documents.read"
             ],
@@ -571,7 +571,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "teams.read",
                 "teams.write"
@@ -592,7 +592,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "sessions.write",
                 "users.read",
@@ -661,7 +661,7 @@
             "events": [],
             "schedule": "",
             "timeout": 90,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "users.read",
                 "databases.read",
@@ -688,7 +688,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [],
             "specification": "s-0.5vcpu-512mb"
         },
@@ -706,7 +706,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [],
             "specification": "s-0.5vcpu-512mb"
         },
@@ -725,7 +725,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [],
             "specification": "s-0.5vcpu-512mb"
         },
@@ -743,7 +743,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "documents.read"
             ],
@@ -763,7 +763,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "documents.read"
             ],
@@ -783,7 +783,7 @@
             "events": [],
             "schedule": "",
             "timeout": 15,
-            "commands": "npm install",
+            "commands": "ppm install",
             "scopes": [
                 "documents.read",
                 "documents.write"
@@ -804,7 +804,7 @@
             "events": [],
             "schedule": "",
             "timeout": 30,
-            "commands": "npm install",
+            "commands": "pnpm install",
             "scopes": [
                 "documents.read",
                 "documents.write"
@@ -840,8 +840,8 @@
             "framework": "vite",
             "adapter": "static",
             "buildRuntime": "node-22",
-            "installCommand": "npm install",
-            "buildCommand": "npm run build",
+            "installCommand": "pnpm install",
+            "buildCommand": "pnpm run build",
             "outputDirectory": "./dist",
             "fallbackFile": "",
             "specification": "s-1vcpu-1gb",

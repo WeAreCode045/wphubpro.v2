@@ -1,0 +1,12 @@
+{
+  "name": "wphubpro",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "WordPress Hub Pro Platform",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "install": "pnpm i"
+  }
+}

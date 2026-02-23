@@ -6,6 +6,8 @@ settings:
 
 importers:
 
+  .: {}
+
   functions/admin-list-users:
     dependencies:
       node-appwrite:
