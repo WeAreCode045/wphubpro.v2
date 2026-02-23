@@ -30,7 +30,7 @@ const PlanManagementPage: React.FC = () => {
   const [selectedPlanToAssign, setSelectedPlanToAssign] = useState<any>(null);
   const [selectedPlanToEdit, setSelectedPlanToEdit] = useState<any>(null);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [isLocalPlan, setIsLocalPlan] = useState(false);
+  const [isCustomPlan, setIsCustomPlan] = useState(false);
   const [planName, setPlanName] = useState("");
   const [planDesc, setPlanDesc] = useState("");
   const [priceMonthly, setPriceMonthly] = useState("");
@@ -39,13 +39,13 @@ const PlanManagementPage: React.FC = () => {
   const [sitesLimit, setSitesLimit] = useState("");
   const [libraryLimit, setLibraryLimit] = useState("");
   const [storageLimit, setStorageLimit] = useState("");
-  const [localPlanLabel, setLocalPlanLabel] = useState("");
+  const [customPlanLabel, setCustomPlanLabel] = useState("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const resetForm = () => {
-    setIsLocalPlan(false);
+    setIsCustomPlan(false);
     setPlanName("");
     setPlanDesc("");
     setPriceMonthly("");
@@ -54,7 +54,7 @@ const PlanManagementPage: React.FC = () => {
     setSitesLimit("");
     setLibraryLimit("");
     setStorageLimit("");
-    setLocalPlanLabel("");
+    setCustomPlanLabel("");
   };
 
   const waitForExecutionResponse = async (
@@ -123,24 +123,24 @@ const PlanManagementPage: React.FC = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch local plans
+  // Fetch custom plans
   const {
-    data: localPlans = [],
-    isLoading: isLoadingLocal,
-    isError: isLocalError,
-    error: localError,
-    refetch: refetchLocal,
+    data: customPlans = [],
+    isLoading: isLoadingCustom,
+    isError: isCustomError,
+    error: customError,
+    refetch: refetchCustom,
   } = useQuery({
-    queryKey: ["localPlans"],
+    queryKey: ["customPlans"],
     queryFn: async () => {
       try {
         const response = await databases.listDocuments(
           DATABASE_ID,
-          'local_plans'
+          'plans'
         );
         return response.documents;
       } catch (err: any) {
-        console.error("Error fetching local plans:", err);
+        console.error("Error fetching custom plans:", err);
         return [];
       }
     },
@@ -171,10 +171,10 @@ const PlanManagementPage: React.FC = () => {
   const createPlanMutation = useMutation({
     mutationFn: async (planData: any) => {
       if (planData.isLocal) {
-        // Create local plan
+        // Create custom plan
         const doc = await databases.createDocument(
           DATABASE_ID,
-          'local_plans',
+          'plans',
           ID.unique(),
           {
             name: planData.name,
@@ -196,7 +196,7 @@ const PlanManagementPage: React.FC = () => {
       toast({
         title: "Plan Created",
         description: data.type === 'local' 
-          ? "Local plan created successfully" 
+          ? "Custom plan created successfully" 
           : "Stripe plan created successfully",
         variant: "success",
       });
@@ -232,7 +232,7 @@ const PlanManagementPage: React.FC = () => {
     onSuccess: () => {
       toast({
         title: "Plan Assigned",
-        description: "The local plan has been assigned to the user successfully.",
+        description: "The custom plan has been assigned to the user successfully.",
       });
       setIsAssignModalOpen(false);
       setSelectedUserId("");
@@ -253,7 +253,7 @@ const PlanManagementPage: React.FC = () => {
     mutationFn: async ({ planId, updates }: { planId: string; updates: any }) => {
       const updated = await databases.updateDocument(
         DATABASE_ID,
-        'local_plans',
+        'plans',
         planId,
         {
           name: updates.name,
@@ -269,12 +269,12 @@ const PlanManagementPage: React.FC = () => {
     onSuccess: () => {
       toast({
         title: "Plan Updated",
-        description: "The local plan has been updated successfully.",
+        description: "The custom plan has been updated successfully.",
       });
       setIsEditModalOpen(false);
       setSelectedPlanToEdit(null);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ["localPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["customPlans"] });
     },
     onError: (err: any) => {
       toast({
@@ -295,11 +295,11 @@ const PlanManagementPage: React.FC = () => {
       return;
     }
 
-    if (isLocalPlan) {
-      if (!localPlanLabel.trim() || !sitesLimit || !libraryLimit || !storageLimit) {
+    if (isCustomPlan) {
+      if (!customPlanLabel.trim() || !sitesLimit || !libraryLimit || !storageLimit) {
         toast({
           title: "Validation Error",
-          description: "All fields are required for local plans",
+          description: "All fields are required for custom plans",
           variant: "destructive",
         });
         return;
@@ -307,10 +307,10 @@ const PlanManagementPage: React.FC = () => {
     }
 
     createPlanMutation.mutate({
-      isLocal: isLocalPlan,
+      isLocal: isCustomPlan,
       name: planName,
       description: planDesc,
-      label: localPlanLabel,
+      label: customPlanLabel,
       sitesLimit,
       libraryLimit,
       storageLimit,
@@ -347,7 +347,7 @@ const PlanManagementPage: React.FC = () => {
     setSelectedPlanToEdit(plan);
     setPlanName(plan.name || "");
     setPlanDesc(plan.description || "");
-    setLocalPlanLabel(plan.label || "");
+    setCustomPlanLabel(plan.label || "");
     setSitesLimit(String(plan.sites_limit || ""));
     setLibraryLimit(String(plan.library_limit || ""));
     setStorageLimit(String(plan.storage_limit || ""));
@@ -355,7 +355,7 @@ const PlanManagementPage: React.FC = () => {
   };
 
   const handleEditPlan = () => {
-    if (!planName.trim() || !localPlanLabel.trim() || !sitesLimit || !libraryLimit || !storageLimit) {
+    if (!planName.trim() || !customPlanLabel.trim() || !sitesLimit || !libraryLimit || !storageLimit) {
       toast({
         title: "Validation Error",
         description: "All fields are required",
@@ -368,7 +368,7 @@ const PlanManagementPage: React.FC = () => {
       updates: {
         name: planName,
         description: planDesc,
-        label: localPlanLabel,
+        label: customPlanLabel,
         sitesLimit,
         libraryLimit,
         storageLimit,
@@ -376,12 +376,12 @@ const PlanManagementPage: React.FC = () => {
     });
   };
 
-  const isLoading = isLoadingStripe || isLoadingLocal;
-  const isError = isStripeError || isLocalError;
-  const error = stripeError || localError;
+  const isLoading = isLoadingStripe || isLoadingCustom;
+  const isError = isStripeError || isCustomError;
+  const error = stripeError || customError;
   const allPlans = [
     ...stripePlans.map((p: any) => ({ ...p, type: 'stripe' })),
-    ...localPlans.map((p: any) => ({ ...p, type: 'local' }))
+    ...customPlans.map((p: any) => ({ ...p, type: 'local' }))
   ];
 
   if (isLoading) {
@@ -394,7 +394,7 @@ const PlanManagementPage: React.FC = () => {
 
   const handleSync = async () => {
     await refetchStripe();
-    await refetchLocal();
+    await refetchCustom();
   };
 
   return (
@@ -462,7 +462,7 @@ const PlanManagementPage: React.FC = () => {
                           ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                           : 'bg-green-500/10 text-green-500 border-green-500/20'
                       }`}>
-                        {plan.type === 'local' ? 'LOCAL' : plan.status || 'STRIPE'}
+                        {plan.type === 'local' ? 'CUSTOM' : plan.status || 'STRIPE'}
                       </span>
                     </div>
                     <div className="text-xs font-mono text-muted-foreground bg-secondary px-2 py-1 rounded">
@@ -622,16 +622,16 @@ const PlanManagementPage: React.FC = () => {
           {/* Plan Type Toggle */}
           <div className="flex items-center gap-2 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
             <Checkbox
-              checked={isLocalPlan}
-              onChange={(e) => setIsLocalPlan(e.target.checked)}
+              checked={isCustomPlan}
+              onChange={(e) => setIsCustomPlan(e.target.checked)}
             />
             <div className="flex-1">
               <Label className="font-semibold text-sm flex items-center gap-2">
                 <Users className="w-4 h-4 text-blue-500" />
-                Local Plan (Admin Only)
+                Custom Plan (Admin Only)
               </Label>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Local plans are stored in database and can only be assigned by admins. They don't sync with Stripe.
+                Custom plans are stored in database and can only be assigned by admins. They don't sync with Stripe.
               </p>
             </div>
           </div>
@@ -657,7 +657,7 @@ const PlanManagementPage: React.FC = () => {
               />
             </div>
 
-            {isLocalPlan ? (
+            {isCustomPlan ? (
               <>
                 <div className="space-y-2 col-span-2">
                   <Label htmlFor="localLabel">
@@ -666,8 +666,8 @@ const PlanManagementPage: React.FC = () => {
                   <Input
                     id="localLabel"
                     placeholder="e.g. premium_partner"
-                    value={localPlanLabel}
-                    onChange={(e) => setLocalPlanLabel(e.target.value)}
+                    value={customPlanLabel}
+                    onChange={(e) => setCustomPlanLabel(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
                     This label will be applied to users assigned this plan
@@ -757,16 +757,16 @@ const PlanManagementPage: React.FC = () => {
           </div>
 
           <div className={`p-4 rounded-lg flex gap-3 border mt-4 ${
-            isLocalPlan
+            isCustomPlan
               ? 'bg-blue-500/5 border-blue-500/20'
               : 'bg-primary/5 border-primary/10'
           }`}>
             <Info className={`w-5 h-5 shrink-0 ${
-              isLocalPlan ? 'text-blue-500' : 'text-primary'
+              isCustomPlan ? 'text-blue-500' : 'text-primary'
             }`} />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {isLocalPlan
-                ? 'Local plans are stored in the database and can only be assigned to users manually by administrators. They do not create Stripe products or prices.'
+              {isCustomPlan
+                ? 'Custom plans are stored in the database and can only be assigned to users manually by administrators. They do not create Stripe products or prices.'
                 : 'Creating a plan here will automatically create the Product and Prices in your connected Stripe account via the Stripe API.'}
             </p>
           </div>
@@ -794,7 +794,7 @@ const PlanManagementPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  {isLocalPlan ? 'Create Local Plan' : 'Create & Sync'}
+                  {isCustomPlan ? 'Create Custom Plan' : 'Create & Sync'}
                 </>
               )}
             </Button>
@@ -924,8 +924,8 @@ const PlanManagementPage: React.FC = () => {
               <Input
                 id="editLocalLabel"
                 placeholder="e.g. premium_partner"
-                value={localPlanLabel}
-                onChange={(e) => setLocalPlanLabel(e.target.value)}
+                value={customPlanLabel}
+                onChange={(e) => setCustomPlanLabel(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 This label will be applied to users assigned this plan

@@ -110,7 +110,7 @@ const SubscriptionPlanDetailsCard: React.FC<Props> = ({
         {isLocal && (
           <div className="pt-4 border-t border-border space-y-2">
             <label className="text-xs text-muted-foreground block font-medium uppercase tracking-wider">
-              Local Plan Assignment
+              Custom Plan Assignment
             </label>
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center justify-between">
@@ -205,7 +205,7 @@ const SubscriptionPlanDetailsCard: React.FC<Props> = ({
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5" />
                 <div>
-                  <p className="font-medium">Local plan assigned by administrator</p>
+                  <p className="font-medium">Custom plan assigned by administrator</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     This plan was assigned by your administrator and is managed outside of Stripe. To change or cancel this plan, contact your account administrator.
                   </p>

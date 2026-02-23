@@ -411,7 +411,7 @@ const AdminSettingsPage: React.FC = () => {
                           <li>New users have no labels by default</li>
                           <li>Users without subscription labels see these free tier limits</li>
                           <li>Stripe subscriptions set the product metadata 'label' value as user label</li>
-                          <li>Local plans set their custom label on assigned users</li>
+                          <li>Custom plans set their custom label on assigned users</li>
                         </ul>
                       </div>
                     </div>

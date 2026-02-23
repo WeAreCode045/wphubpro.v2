@@ -76,19 +76,19 @@ const UserSubscriptionDetailPage: React.FC = () => {
     queryFn: async () => {
       if (!subscriptionDoc) throw new Error("No subscription found");
 
-      // If it's a local plan (either marked as 'local' source OR no stripe_subscription_id), fetch from local_plans collection
-      const isLocalPlan = subscriptionDoc.source === 'local' || !subscriptionDoc.stripe_subscription_id;
+      // If it's a custom plan (either marked as 'local' source OR no stripe_subscription_id), fetch from plans collection
+      const isCustomPlan = subscriptionDoc.source === 'local' || !subscriptionDoc.stripe_subscription_id;
       
-      if (isLocalPlan) {
+      if (isCustomPlan) {
         const planLabel = subscriptionDoc.plan_label || subscriptionDoc.plan_id;
         const planDocs = await databases.listDocuments(
           DATABASE_ID,
-          "local_plans",
+          "plans",
           [Query.equal("label", planLabel)]
         );
 
-        const localPlan = planDocs.documents[0] || {
-          name: subscriptionDoc.plan_id || "Local Plan",
+        const customPlan = planDocs.documents[0] || {
+          name: subscriptionDoc.plan_id || "Custom Plan",
           sites_limit: 1,
           library_limit: 5,
           storage_limit: 10,
@@ -112,16 +112,16 @@ const UserSubscriptionDetailPage: React.FC = () => {
             created: Math.floor(new Date(subscriptionDoc.$createdAt).getTime() / 1000),
           },
           plan: {
-            product_name: localPlan.name,
-            product_description: "Admin-assigned local plan",
-            unit_amount: parseFloat(localPlan.price || "0") * 100,
+            product_name: customPlan.name,
+            product_description: "Admin-assigned custom plan",
+            unit_amount: parseFloat(customPlan.price || "0") * 100,
             currency: "eur",
-            interval: localPlan.interval || "month",
+            interval: customPlan.interval || "month",
             interval_count: 1,
             limits: {
-              sites_limit: localPlan.sites_limit,
-              library_limit: localPlan.library_limit,
-              storage_limit: localPlan.storage_limit
+              sites_limit: customPlan.sites_limit,
+              library_limit: customPlan.library_limit,
+              storage_limit: customPlan.storage_limit
             }
           },
           invoices: [],

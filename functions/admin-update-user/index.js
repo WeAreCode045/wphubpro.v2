@@ -178,7 +178,7 @@ module.exports = async ({ req, res, log, error }) => {
       }
     };
 
-    // Handle local plan assignment or removal
+    // Handle custom plan assignment or removal
     if (Object.prototype.hasOwnProperty.call(updates, 'localPlanId')) {
       try {
         // Get current user labels (no need to preserve admin label - now managed via teams)
@@ -187,9 +187,9 @@ module.exports = async ({ req, res, log, error }) => {
         log(`Current user ${userId} labels before plan assignment: ${JSON.stringify(currentLabels)}`);
         
         if (updates.localPlanId) {
-          // Assign local plan: fetch plan and set its label
+          // Assign custom plan: fetch plan and set its label
           log(`Fetching plan with ID: ${updates.localPlanId}`);
-          const plan = await databases.getDocument('platform_db', 'local_plans', updates.localPlanId);
+          const plan = await databases.getDocument('platform_db', 'plans', updates.localPlanId);
           log(`Plan fetched: ${JSON.stringify(plan)}`);
           
           if (plan && plan.label) {
@@ -254,13 +254,13 @@ module.exports = async ({ req, res, log, error }) => {
 
             await upsertSubscriptionDoc(subscriptionPayload);
             
-            log(`Applied local plan label "${plan.label}" to user ${userId}`);
+            log(`Applied custom plan label "${plan.label}" to user ${userId}`);
           } else {
             log(`Warning: Plan does not have a label. Plan object: ${JSON.stringify(plan)}`);
             error(`Plan ${updates.localPlanId} does not have a label attribute`);
           }
         } else {
-          // Remove local plan: check if Stripe subscription exists and restore its label, otherwise remove all labels
+          // Remove custom plan: check if Stripe subscription exists and restore its label, otherwise remove all labels
           let stripeLabel = null;
           let stripePriceId = null;
           
@@ -290,7 +290,7 @@ module.exports = async ({ req, res, log, error }) => {
           
           // Set labels: restore Stripe label if exists, otherwise remove all labels
           const updatedLabels = stripeLabel ? [stripeLabel] : [];
-          log(`Removed local plan. Updated labels: ${JSON.stringify(updatedLabels)}`);
+          log(`Removed custom plan. Updated labels: ${JSON.stringify(updatedLabels)}`);
           
           await users.updateLabels(userId, updatedLabels);
           
@@ -320,13 +320,13 @@ module.exports = async ({ req, res, log, error }) => {
           await upsertSubscriptionDoc(removalPayload);
           
           if (stripeLabel) {
-            log(`Removed local plan and restored Stripe label "${stripeLabel}" for user ${userId}`);
+            log(`Removed custom plan and restored Stripe label "${stripeLabel}" for user ${userId}`);
           } else {
-            log(`Removed local plan label from user ${userId}`);
+            log(`Removed custom plan label from user ${userId}`);
           }
         }
       } catch (err) {
-        error(`Failed to apply/remove local plan: ${err.message}`);
+        error(`Failed to apply/remove custom plan: ${err.message}`);
         log(`Error details: ${JSON.stringify(err)}`);
       }
     }

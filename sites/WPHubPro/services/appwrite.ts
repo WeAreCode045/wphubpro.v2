@@ -6,7 +6,7 @@ import { Client, Account, Databases, Functions, Storage, Teams, Avatars, ID } fr
  * * Deze waarden worden ingeladen vanuit de Vite omgevingsvariabelen.
  * Zorg dat deze aanwezig zijn in je .env file in de root van het project.
  */
-const APPWRITE_ENDPOINT = 'https://appwrite.code045.nl/v1';
+const APPWRITE_ENDPOINT = 'https://appwrite.wphub.pro/v1';
 const APPWRITE_PROJECT_ID = '698a55ce00010497b136';
 
 if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID) {
@@ -41,6 +41,6 @@ export const COLLECTIONS = {
     SITES: 'sites',
     LIBRARY: 'library',
     SETTINGS: 'platform_settings',
-    LOCAL_PLANS: 'local_plans',
-ACCOUNTS: 'accounts'
+    PLANS: 'plans',
+    ACCOUNTS: 'accounts'
 };

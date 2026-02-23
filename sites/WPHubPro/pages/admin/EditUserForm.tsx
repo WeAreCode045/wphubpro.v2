@@ -17,22 +17,22 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
   const [name, setName] = useState(user.name || "");
   const [email, setEmail] = useState(user.email || "");
   const [isAdmin, setIsAdmin] = useState(user.isAdmin || false);
-  const [localPlanId, setLocalPlanId] = useState(user.prefs?.current_plan_id || "");
+  const [customPlanId, setCustomPlanId] = useState(user.prefs?.current_plan_id || "");
   const [status, setStatus] = useState(user.status || "Active");
   const [saving, setSaving] = useState(false);
 
-  // Fetch local plans
-  const { data: localPlans = [], isLoading: isLoadingPlans } = useQuery({
-    queryKey: ["localPlans"],
+  // Fetch custom plans
+  const { data: customPlans = [], isLoading: isLoadingPlans } = useQuery({
+    queryKey: ["customPlans"],
     queryFn: async () => {
       try {
         const response = await databases.listDocuments(
           DATABASE_ID,
-          'local_plans'
+          'plans'
         );
         return response.documents;
       } catch (err: any) {
-        console.error("Error fetching local plans:", err);
+        console.error("Error fetching custom plans:", err);
         return [];
       }
     },
@@ -46,7 +46,7 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
         email,
         isAdmin,
         status,
-        localPlanId: localPlanId || null,
+        localPlanId: customPlanId || null,
       };
       await onSave(updates);
     } finally {
@@ -84,12 +84,12 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
 
       <div className="space-y-2 pt-4">
         <div className="flex items-center justify-between">
-          <Label>Assign Local Plan (Optional)</Label>
-          {localPlanId && (
+          <Label>Assign Custom Plan (Optional)</Label>
+          {customPlanId && (
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => setLocalPlanId("")}
+              onClick={() => setCustomPlanId("")}
               type="button"
             >
               Remove Plan
@@ -100,11 +100,11 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
           <div className="text-sm text-muted-foreground">Loading plans...</div>
         ) : (
           <Select
-            value={localPlanId}
-            onChange={(e) => setLocalPlanId(e.target.value)}
+            value={customPlanId}
+            onChange={(e) => setCustomPlanId(e.target.value)}
           >
-            <option value="">No local plan assigned</option>
-            {localPlans.map((plan: any) => (
+            <option value="">No custom plan assigned</option>
+            {customPlans.map((plan: any) => (
               <option key={plan.$id} value={plan.$id}>
                 {plan.name} ({plan.label})
               </option>
@@ -112,7 +112,7 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
           </Select>
         )}
         <p className="text-xs text-muted-foreground">
-          Assigning a local plan will set the plan's label on the user. Removing a plan will restore their Stripe subscription if they have one, or revert to free tier.
+          Assigning a custom plan will set the plan's label on the user. Removing a plan will restore their Stripe subscription if they have one, or revert to free tier.
         </p>
       </div>
 

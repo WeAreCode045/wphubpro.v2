@@ -65,9 +65,9 @@ const PlanDetailPage: React.FC = () => {
   const { data: plan, isLoading: isLoadingPlan } = useQuery({
     queryKey: ["admin", "plan", planId, planType],
     queryFn: async () => {
-      if (planType === "local") {
-        const doc = await databases.getDocument(DATABASE_ID, "local_plans", planId!);
-        return { ...doc, type: "local" };
+      if (planType === "custom") {
+        const doc = await databases.getDocument(DATABASE_ID, "plans", planId!);
+        return { ...doc, type: "custom" };
       } else {
         const functionId = "stripe-list-products";
         const result = await functions.createExecution(functionId, "", false);
@@ -137,7 +137,7 @@ const PlanDetailPage: React.FC = () => {
         const activeCount = allTimeRes.documents.filter((d: any) => d.status === 'active').length;
         revenue = activeCount * (plan.monthlyPrice || 0);
       } else {
-        // Local plan revenue calculation if price is set
+        // Custom plan revenue calculation if price is set
         const activeCount = allTimeRes.documents.filter((d: any) => d.status === 'active').length;
         revenue = activeCount * parseFloat(plan.price || "0");
       }
@@ -256,7 +256,7 @@ const PlanDetailPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-foreground">{plan.name}</h1>
-              <Badge variant={plan.type === "local" ? "secondary" : "outline"} className="uppercase">
+              <Badge variant={plan.type === "custom" ? "secondary" : "outline"} className="uppercase">
                 {plan.type}
               </Badge>
             </div>
@@ -264,7 +264,7 @@ const PlanDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          {plan.type === "local" && (
+          {plan.type === "custom" && (
             <Button onClick={() => setIsAssignModalOpen(true)}>
               <UserPlus className="w-4 h-4 mr-2" />
               Assign User
@@ -475,7 +475,7 @@ const PlanDetailPage: React.FC = () => {
                             >
                               Profile
                             </Button>
-                            {plan.type === "local" && (
+                            {plan.type === "custom" && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 

@@ -1129,7 +1129,7 @@
             ]
         },
         {
-            "$id": "local_plans",
+            "$id": "plans",
             "$permissions": [
                 "read(\"users\")",
                 "create(\"team:admin\")",
@@ -1138,7 +1138,7 @@
                 "delete(\"team:admin\")"
             ],
             "databaseId": "platform_db",
-            "name": "Local Plans",
+            "name": "Plans",
             "enabled": true,
             "rowSecurity": false,
             "columns": [

@@ -36,20 +36,20 @@ export const useSubscription = () => {
                 console.error('Failed to fetch accounts data:', e);
             }
 
-            // If user has a current_plan_id, check if it's a local plan first
+            // If user has a current_plan_id, check if it's a custom plan first
             if (currentPlanId) {
                 try {
-                    const localPlanDocs = await databases.listDocuments(
+                    const customPlanDocs = await databases.listDocuments(
                         DATABASE_ID,
-                        'local_plans',
+                        'plans',
                         [Query.equal('label', currentPlanId)]
                     );
 
-                    if (localPlanDocs.documents.length > 0) {
-                        const plan = localPlanDocs.documents[0];
+                    if (customPlanDocs.documents.length > 0) {
+                        const plan = customPlanDocs.documents[0];
                         return {
                             userId: user.$id,
-                            planId: plan.name || 'LOCAL',
+                            planId: plan.name || 'CUSTOM',
                             status: 'active',
                             sitesLimit: plan.sites_limit || 1,
                             libraryLimit: plan.library_limit || 5,
@@ -58,10 +58,10 @@ export const useSubscription = () => {
                         } as Subscription;
                     }
                 } catch (e) {
-                    console.error('Failed to search for local plan:', e);
+                    console.error('Failed to search for custom plan:', e);
                 }
 
-                // If not a local plan and user has Stripe customer ID, assume it's a Stripe product label
+                // If not a custom plan and user has Stripe customer ID, assume it's a Stripe product label
                 if (stripeCustomerId) {
                     try {
                         const execution = await functions.createExecution(
@@ -96,19 +96,19 @@ export const useSubscription = () => {
                 : undefined;
 
             if (subscriptionLabel) {
-                // Check if label matches a local plan
+                // Check if label matches a custom plan
                 try {
-                    const localPlanDocs = await databases.listDocuments(
+                    const customPlanDocs = await databases.listDocuments(
                         DATABASE_ID,
-                        'local_plans',
+                        'plans',
                         [Query.equal('label', subscriptionLabel)]
                     );
 
-                    if (localPlanDocs.documents.length > 0) {
-                        const plan = localPlanDocs.documents[0];
+                    if (customPlanDocs.documents.length > 0) {
+                        const plan = customPlanDocs.documents[0];
                         return {
                             userId: user.$id,
-                            planId: plan.name || 'LOCAL',
+                            planId: plan.name || 'CUSTOM',
                             status: 'active',
                             sitesLimit: plan.sites_limit || 1,
                             libraryLimit: plan.library_limit || 5,
@@ -117,10 +117,10 @@ export const useSubscription = () => {
                         } as Subscription;
                     }
                 } catch (e) {
-                    console.error('Failed to search for local plan by label:', e);
+                    console.error('Failed to search for custom plan by label:', e);
                 }
 
-                // If not local plan, try fetching Stripe subscription
+                // If not custom plan, try fetching Stripe subscription
                 if (stripeCustomerId) {
                     try {
                         const execution = await functions.createExecution(

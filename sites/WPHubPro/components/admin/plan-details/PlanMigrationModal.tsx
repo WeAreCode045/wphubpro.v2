@@ -50,7 +50,7 @@ const PlanMigrationModal: React.FC<PlanMigrationModalProps> = ({
                   currently on this plan
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  These users will remain on the local plan. You may need to manually migrate them
+                  These users will remain on the custom plan. You may need to manually migrate them
                   to the corresponding Stripe plan after migration completes.
                 </p>
               </div>
@@ -81,7 +81,7 @@ const PlanMigrationModal: React.FC<PlanMigrationModalProps> = ({
           <ul className="space-y-1 text-xs text-muted-foreground list-disc list-inside">
             <li>A new Stripe product will be created</li>
             <li>Pricing for each billing period will be added to Stripe</li>
-            <li>The local plan will be linked to the Stripe product</li>
+            <li>The custom plan will be linked to the Stripe product</li>
             <li>New subscriptions can use the Stripe pricing</li>
           </ul>
         </div>
