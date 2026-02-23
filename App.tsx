@@ -26,8 +26,6 @@ import PlanManagementPage from './pages/admin/PlanManagementPage';
 import SubscriptionsPage from './pages/admin/SubscriptionsPage';
 import SubscriptionDetailPage from './pages/admin/SubscriptionDetailPage';
 import { Loader2 } from 'lucide-react';
-import ConnectSuccess from './pages/ConnectSuccess';
-
 const AppRoutes: React.FC = () => {
   const { user, isLoading } = useAuth();
 
@@ -57,8 +55,6 @@ const AppRoutes: React.FC = () => {
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/subscription" element={<UserSubscriptionDetailPage />} />
         <Route path="/subscription/plans" element={<SubscriptionPage />} />
-        <Route path="/dashboard/connect-success" element={<ConnectSuccess />} />
-        <Route path="/connect-success" element={<ConnectSuccess />} />
         
         {/* Admin Specific Routes */}
         <Route path="/admin" element={<AdminRoute><Outlet /></AdminRoute>}>

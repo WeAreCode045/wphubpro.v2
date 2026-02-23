@@ -14,15 +14,9 @@ import {
   FileText,
   Loader2,
   AlertCircle,
-  ArrowLeft,
-  CheckCircle,
   XCircle,
   TrendingUp,
   TrendingDown,
-  Clock,
-  Database,
-  Folder,
-  Globe,
 } from "lucide-react";
 import Card, { CardHeader, CardContent } from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -38,7 +32,6 @@ const UserSubscriptionDetailPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const manageSubscriptionMutation = useManageSubscription();
   const { data: usage } = useUsage();
-  const [cancelingUpdate, setCancelingUpdate] = useState(false);
 
   const waitForExecutionResponse = async (
     executionId: string,
@@ -513,7 +506,8 @@ const UserSubscriptionDetailPage: React.FC = () => {
                 </div>
 
                 {/* Billing & Payment Tab */}
-                <Tabs.Content value="billing" className="p-4 mt-0">
+                <Tabs.Content value="billing">
+                  <div className="p-4 mt-0">
                   {subscription.source === 'local' ? (
                     <div className="space-y-4">
                       <div className="bg-accent/5 border-accent/10 p-4 rounded-md text-sm">
@@ -615,10 +609,12 @@ const UserSubscriptionDetailPage: React.FC = () => {
                       )}
                     </div>
                   )}
+                  </div>
                 </Tabs.Content>
 
                 {/* Invoice History Tab */}
-                <Tabs.Content value="invoices" className="p-4 mt-0">
+                <Tabs.Content value="invoices">
+                  <div className="p-4 mt-0">
                   <div className="space-y-2">
                     {subscription.source === 'local' ? (
                       <div className="text-center py-6 text-xs text-muted-foreground">
@@ -693,6 +689,7 @@ const UserSubscriptionDetailPage: React.FC = () => {
                         </div>
                       ))
                     )}
+                  </div>
                   </div>
                 </Tabs.Content>
               </Tabs>

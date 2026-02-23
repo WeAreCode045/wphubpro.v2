@@ -3,6 +3,7 @@ import { useThemes, useManageTheme } from '../../hooks/useWordPress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import { Loader2, AlertCircle } from 'lucide-react';
+import type { WordPressTheme } from '../../types';
 
 interface ThemesTabProps {
   siteId: string;
@@ -12,7 +13,7 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
   const { data: themes, isLoading, isError, error } = useThemes(siteId);
   const manageTheme = useManageTheme(siteId);
 
-  const handleActivate = (theme: any) => {
+  const handleActivate = (theme: WordPressTheme) => {
     if (theme.status !== 'active') {
       manageTheme.mutate({
         themeSlug: theme.stylesheet,
@@ -22,7 +23,7 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
     }
   };
 
-  const handleAction = (_theme: any, _action: string) => {
+  const handleAction = (_theme: WordPressTheme, _action: 'update' | 'delete') => {
     // Implement theme action logic here (update/delete)
   };
 

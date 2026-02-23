@@ -4,7 +4,7 @@ import { useLibraryItems } from './useLibrary';
 import { useSites } from './useSites';
 import { useAuth } from '../contexts/AuthContext';
 import { functions, databases } from '../services/appwrite';
-import { Subscription } from '../types';
+import { Subscription, UsageMetrics } from '../types';
 import { DATABASE_ID, COLLECTIONS } from '../services/appwrite';
 import { Query } from 'appwrite';
 
@@ -194,7 +194,7 @@ export const useUsage = () => {
     const { data: libraryItems } = useLibraryItems();
     const { data: sites } = useSites();
 
-    return useQuery({
+    return useQuery<UsageMetrics, Error>({
         queryKey: ['usage', user?.$id, libraryItems, sites],
         queryFn: async () => {
             // Count local library items as storage uploads

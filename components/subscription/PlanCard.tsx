@@ -2,10 +2,8 @@ import React, { useMemo } from 'react';
 import Button from '../ui/Button';
 import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { Check, AlertCircle } from 'lucide-react';
-import type { StripePlan } from '../../hooks/useStripe';
+import type { BillingInterval, StripePlan, UsageMetrics } from '../../types';
 import UsageGauge from '../dashboard/UsageGauge';
-
-type BillingInterval = 'monthly' | 'yearly';
 
 interface PlanCardProps {
     plan: StripePlan;
@@ -13,11 +11,7 @@ interface PlanCardProps {
     onSubscribe: (priceId: string) => void;
     isLoading: boolean;
     isCurrent?: boolean;
-    currentUsage?: {
-        sitesUsed: number;
-        libraryUsed: number;
-        storageUsed: number;
-    };
+    currentUsage?: UsageMetrics;
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({ 

@@ -15,17 +15,11 @@ import Card, { CardHeader, CardContent } from "../../components/ui/Card";
 import Table from "../../components/ui/Table";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-
-interface SyncResult {
-  created: number;
-  updated: number;
-  errors: number;
-  total: number;
-}
+import type { SubscriptionSyncResult } from "../../types";
 
 const SubscriptionsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [syncResult, setSyncResult] = useState<SubscriptionSyncResult | null>(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -101,7 +95,7 @@ const SubscriptionsPage: React.FC = () => {
         throw new Error(parsed?.message || "Failed to sync subscriptions.");
       }
 
-      return parsed as SyncResult;
+      return parsed as SubscriptionSyncResult;
     },
     onSuccess: (data) => {
       setSyncResult(data);

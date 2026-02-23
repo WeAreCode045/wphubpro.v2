@@ -614,7 +614,7 @@ const PlanManagementPage: React.FC = () => {
           <div className="flex items-center gap-2 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
             <Checkbox
               checked={isLocalPlan}
-              onCheckedChange={(checked) => setIsLocalPlan(checked === true)}
+              onChange={(e) => setIsLocalPlan(e.target.checked)}
             />
             <div className="flex-1">
               <Label className="font-semibold text-sm flex items-center gap-2">

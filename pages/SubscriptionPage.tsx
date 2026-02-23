@@ -3,14 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useSubscription, useUsage } from '../hooks/useSubscription';
-import { Loader2, AlertCircle, CreditCard, XCircle, ArrowRight } from 'lucide-react';
-import { useManageSubscription, useStripePlans, useCreateCheckoutSession, useCancelSubscription } from '../hooks/useStripe';
-import InvoiceList from '../components/subscription/InvoiceList';
+import { Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { useStripePlans, useCreateCheckoutSession } from '../hooks/useStripe';
 import PlanCard from '../components/subscription/PlanCard';
 import SubscriptionSuccessPage from './SubscriptionSuccessPage';
 import PlanChangeConfirmationModal from '../components/subscription/PlanChangeConfirmationModal';
-
-type BillingInterval = 'monthly' | 'yearly';
+import type { BillingInterval, PlanChangeType } from '../types';
 
 const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +18,7 @@ const SubscriptionPage: React.FC = () => {
     isOpen: boolean;
     targetPriceId: string;
     targetPlanName: string;
-    type: 'upgrade' | 'downgrade';
+    type: PlanChangeType;
   }>({
     isOpen: false,
     targetPriceId: '',
@@ -42,28 +40,11 @@ const SubscriptionPage: React.FC = () => {
     const selectedPlan = plans?.find(p => p.monthlyPriceId === priceId || p.yearlyPriceId === priceId);
     if (!selectedPlan) return;
 
-    let type: 'upgrade' | 'downgrade' = 'upgrade';
+    let changeType: PlanChangeType = 'upgrade';
 
     // Determine upgrade vs downgrade based on price comparison
     if (subscription && subscription.priceId) {
-        // Find current plan details
-        const currentPlan = plans?.find(p => p.monthlyPriceId === subscription.priceId || p.yearlyPriceId === subscription.priceId);
-        
-        // Use price ID to lookup amount. 
-        // Note: plans array has monthlyPrice/yearlyPrice amounts.
-        // We assume we can map priceId -> amount.
-        const getPriceAmount = (pid: string) => {
-            const p = plans?.find(pl => pl.monthlyPriceId === pid || pl.yearlyPriceId === pid);
-            if (!p) return 0;
-            return p.monthlyPriceId === pid ? p.monthlyPrice : p.yearlyPrice;
-        };
-
-        const currentAmount = getPriceAmount(subscription.priceId);
-        const selectedAmount = getPriceAmount(priceId);
-
         // Normalize to monthly cost for fair comparison if intervals differ
-        // Or strictly compare absolute value? Usually monthly equivalent is best for "value" comparison.
-        // Let's use monthly equivalent.
         const getMonthlyEquivalent = (pid: string, isCurrentSub = false) => {
              // Try finding in plans list first
              const p = plans?.find(pl => pl.monthlyPriceId === pid || pl.yearlyPriceId === pid);
@@ -94,7 +75,7 @@ const SubscriptionPage: React.FC = () => {
         const selectedMonthly = getMonthlyEquivalent(priceId, false);
 
         if (currentMonthly > 0 && selectedMonthly < currentMonthly) {
-            type = 'downgrade';
+            changeType = 'downgrade';
         }
     }
 
@@ -102,19 +83,16 @@ const SubscriptionPage: React.FC = () => {
       isOpen: true,
       targetPriceId: priceId,
       targetPlanName: selectedPlan.name,
-      type
+      type: changeType
     });
   };
 
-  const handleConfirmChange = (priceId: string, type: 'upgrade' | 'downgrade') => {
-    createSession({ priceId, updateType: type }, {
+  const handleConfirmChange = (priceId: string) => {
+    createSession({ priceId }, {
       onSuccess: (data) => {
         setConfirmationModal(prev => ({ ...prev, isOpen: false }));
         if (data.url) {
           window.location.href = data.url;
-        } else if (data.subscriptionId) {
-          // In-place update successful
-          navigate(`/subscription?success=true&plan_id=${priceId}`);
         }
       },
     });
@@ -209,7 +187,7 @@ const SubscriptionPage: React.FC = () => {
         <PlanChangeConfirmationModal
           isOpen={confirmationModal.isOpen}
           onClose={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
-          onConfirm={() => handleConfirmChange(confirmationModal.targetPriceId, confirmationModal.type)}
+          onConfirm={() => handleConfirmChange(confirmationModal.targetPriceId)}
           targetPriceId={confirmationModal.targetPriceId}
           targetPlanName={confirmationModal.targetPlanName}
           type={confirmationModal.type}

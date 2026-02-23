@@ -26,7 +26,14 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx"
+  ],
   "exclude": [
-    "functions/update-site/test-run.js"
+    "depricated",
+    "**/*.config.cjs"
   ]
 }

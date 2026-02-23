@@ -5,7 +5,55 @@ export type User = Models.User<Models.Preferences> & {
   isAdmin?: boolean;
 };
 
+export type BillingInterval = 'monthly' | 'yearly';
+
+export type PlanChangeType = 'upgrade' | 'downgrade' | 'same';
+
+export interface StripePlanMetadata {
+  key: string;
+  value: string;
+}
+
+export interface StripePlan {
+  id: string;
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  monthlyPriceId: string | null;
+  yearlyPriceId: string | null;
+  currency: string;
+  metadata: StripePlanMetadata[];
+}
+
+export interface UsageMetrics {
+  sitesUsed: number;
+  libraryUsed: number;
+  storageUsed: number;
+}
+
+export interface ActionLogEntry {
+  action: string;
+  endpoint: string;
+  timestamp: number | string;
+  request?: unknown;
+  response?: unknown;
+}
+
+export interface StripeProrationPreview {
+  amountDue: number;
+  currency: string;
+}
+
+export interface SubscriptionSyncResult {
+  created: number;
+  updated: number;
+  errors: number;
+  total: number;
+}
+
 export interface Subscription {
+  stripeSubscriptionId: boolean;
   userId: string;
   planId: string;
   status: 'active' | 'trialing' | 'canceled' | 'past_due';
@@ -36,7 +84,7 @@ export interface Site {
   lastChecked: string;
   wpVersion: string;
   phpVersion: string;
-  action_log?: any[];
+  action_log?: ActionLogEntry[];
 }
 
 export enum LibraryItemType {

@@ -69,7 +69,7 @@ const EditUserForm: React.FC<Props> = ({ user, onSave, onCancel }) => {
           <Checkbox 
             id="is-admin" 
             checked={isAdmin} 
-            onCheckedChange={(checked) => setIsAdmin(checked === true)} 
+            onChange={(e) => setIsAdmin(e.target.checked)} 
           />
           <Label htmlFor="is-admin" className="cursor-pointer">Make admin (add to admin team)</Label>
         </div>

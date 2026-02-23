@@ -2,24 +2,12 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { redirectToBillingPortal } from '../services/stripe';
 import { useToast } from '../contexts/ToastContext';
 import { functions } from '../services/appwrite';
-import { StripeInvoice } from '../types';
+import { StripeInvoice, StripePlan } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
 const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
 const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';
 const STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID = 'stripe-cancel-subscription';
-
-export interface StripePlan {
-  id: string;
-  name: string;
-  description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  monthlyPriceId: string | null;
-  yearlyPriceId: string | null;
-  currency: string;
-  metadata: Array<{ key: string; value: string }>;
-}
 
 const LIST_INVOICES_FUNCTION_ID = 'stripe-list-invoices';
 
@@ -94,9 +82,7 @@ export const useCreateCheckoutSession = () => {
 
             console.log('Stripe checkout execution:', {
                 statusCode: execution.responseStatusCode,
-                body: execution.responseBody,
-                stderr: execution.stderr,
-                stdout: execution.stdout
+                body: execution.responseBody
             });
 
             if (execution.responseStatusCode >= 400) {
@@ -104,7 +90,7 @@ export const useCreateCheckoutSession = () => {
                 try {
                     const errorData = JSON.parse(execution.responseBody);
                     errorMessage = errorData.error || errorMessage;
-                } catch (e) {
+                } catch {
                     errorMessage = execution.responseBody || errorMessage;
                 }
                 throw new Error(errorMessage);
@@ -116,7 +102,7 @@ export const useCreateCheckoutSession = () => {
 
             try {
                 return JSON.parse(execution.responseBody);
-            } catch (e) {
+            } catch {
                 console.error('Failed to parse response:', execution.responseBody);
                 throw new Error(`Invalid response from server: ${execution.responseBody}`);
             }

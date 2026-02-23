@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // teams.list() is a safe call that returns only the user's teams
             const userTeams = await teams.list();
             adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
-          } catch (err) {
+          } catch {
             // Silently fail for non-admin users or if teams service is unavailable
             adminStatus = false;
           }
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           const userTeams = await teams.list();
           adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
-        } catch (err) {
+        } catch {
           adminStatus = false;
         }
       }

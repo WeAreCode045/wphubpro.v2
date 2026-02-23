@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // FIX: Import `storage` to handle file uploads correctly.
-import { databases, functions, ID, storage } from '../services/appwrite';
+import { databases, functions, ID } from '../services/appwrite';
 import { Query } from 'appwrite';
 import { searchWpPlugins } from '../services/wordpress';
 import { LibraryItem, LibraryItemSource, LibraryItemType } from '../types';
@@ -11,7 +11,6 @@ const DATABASE_ID = 'platform_db';
 const LIBRARY_COLLECTION_ID = 'library';
 const ZIP_PARSER_FUNCTION_ID = 'zip-parser';
 // FIX: Define a bucket ID for library uploads. This assumes an Appwrite Storage bucket with this ID exists.
-const LIBRARY_UPLOADS_BUCKET_ID = 'library';
 
 export const useLibraryItems = () => {
   const { user } = useAuth();
@@ -19,17 +18,12 @@ export const useLibraryItems = () => {
     queryKey: ['libraryItems', user?.$id],
     queryFn: async () => {
       if (!user?.$id) return [];
-      try {
-        const response = await databases.listDocuments(
-          DATABASE_ID,
-          LIBRARY_COLLECTION_ID,
-          [Query.equal('user_id', user.$id)]
-        );
-        return response.documents as unknown as LibraryItem[];
-      } catch (error) {
-        // Re-throw Appwrite errors so React Query can handle them
-        throw error;
-      }
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        LIBRARY_COLLECTION_ID,
+        [Query.equal('user_id', user.$id)]
+      );
+      return response.documents as unknown as LibraryItem[];
     },
     enabled: !!user,
   });

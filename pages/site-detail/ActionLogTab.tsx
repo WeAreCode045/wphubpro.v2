@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSite } from '../../hooks/useSites';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
+import type { ActionLogEntry } from '../../types';
 
 interface ActionLogTabProps {
   siteId: string;
@@ -14,7 +15,7 @@ export const ActionLogTab: React.FC<ActionLogTabProps> = ({ siteId }) => {
   if (isLoading) return <div>Loading action log...</div>;
   if (isError || !site) return <div>Error loading action log: {error?.message}</div>;
 
-  const log = Array.isArray(site?.action_log) ? [...site.action_log].reverse() : [];
+  const log: ActionLogEntry[] = Array.isArray(site?.action_log) ? [...site.action_log].reverse() : [];
 
   return (
     <div className="rounded-lg border border-border bg-card">

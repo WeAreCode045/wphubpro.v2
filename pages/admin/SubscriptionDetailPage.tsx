@@ -17,9 +17,6 @@ import {
   XCircle,
   TrendingUp,
   TrendingDown,
-  Database,
-  Folder,
-  Globe,
 } from "lucide-react";
 import Card, { CardHeader, CardContent } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -109,7 +106,7 @@ const SubscriptionDetailPage: React.FC = () => {
             product_id: 'local',
             product_name: localPlan.name,
             product_description: "Admin-assigned local plan",
-            price_id: localPlan.$id,
+            price_id: '$id' in localPlan ? localPlan.$id : 'local-plan',
             unit_amount: parseFloat(localPlan.price || "0") * 100,
             currency: "eur",
             interval: localPlan.interval || "month",
@@ -526,8 +523,8 @@ const SubscriptionDetailPage: React.FC = () => {
                 </div>
 
                 {/* Billing & Payment Tab */}
-                <Tabs.Content value="billing" className="p-4 mt-0">
-                  <div className="space-y-4">
+                <Tabs.Content value="billing">
+                  <div className="p-4 mt-0 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Billing Cycle */}
                       <div>
@@ -627,8 +624,8 @@ const SubscriptionDetailPage: React.FC = () => {
                 </Tabs.Content>
 
                 {/* Invoice History Tab */}
-                <Tabs.Content value="invoices" className="p-4 mt-0">
-                  <div className="space-y-2">
+                <Tabs.Content value="invoices">
+                  <div className="p-4 mt-0 space-y-2">
                     {invoices.length === 0 ? (
                       <p className="text-center text-xs text-muted-foreground py-6">No invoices found</p>
                     ) : (

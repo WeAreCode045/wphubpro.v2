@@ -4,15 +4,15 @@ import Button from '../ui/Button';
 import { useSubscription } from '../../hooks/useSubscription';
 import { functions } from '../../services/appwrite';
 import { Loader2, AlertCircle, TrendingUp, TrendingDown, Calendar, CreditCard } from 'lucide-react';
-import { useStripePlans } from '../../hooks/useStripe';
+import type { PlanChangeType, StripeProrationPreview } from '../../types';
 
 interface PlanChangeConfirmationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (priceId: string, type: 'upgrade' | 'downgrade') => void;
+    onConfirm: (priceId: string, type: PlanChangeType) => void;
     targetPriceId: string;
     targetPlanName: string;
-    type: 'upgrade' | 'downgrade' | 'same';
+    type: PlanChangeType;
 }
 
 const PlanChangeConfirmationModal: React.FC<PlanChangeConfirmationModalProps> = ({
@@ -24,7 +24,7 @@ const PlanChangeConfirmationModal: React.FC<PlanChangeConfirmationModalProps> = 
     type
 }) => {
     const { data: subscription } = useSubscription();
-    const [previewData, setPreviewData] = useState<any>(null);
+    const [previewData, setPreviewData] = useState<StripeProrationPreview | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -56,16 +56,19 @@ const PlanChangeConfirmationModal: React.FC<PlanChangeConfirmationModalProps> = 
 
             const data = JSON.parse(execution.responseBody);
             setPreviewData(data);
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const err = e as { message?: string };
             console.error('Preview error:', e);
-            setError(e.message || 'Could not calculate proration amount');
+            setError(err?.message || 'Could not calculate proration amount');
         } finally {
             setLoading(false);
         }
     };
 
     const handleConfirm = () => {
-        onConfirm(targetPriceId, type);
+        if (type !== 'same') {
+            onConfirm(targetPriceId, type);
+        }
     };
 
     const currencySymbol = (currency: string) => {
