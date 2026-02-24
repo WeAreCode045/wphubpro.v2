@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { account, teams } from '../services/appwrite';
+import { account, teams } from '../services/appwrite.ts';
 
 /**
  * Hook om de huidige ingelogde gebruiker op te halen inclusief rollen/team membership.

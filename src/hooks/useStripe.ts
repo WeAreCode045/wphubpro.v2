@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { redirectToBillingPortal } from '../services/stripe';
-import { useToast } from '../contexts/ToastContext';
-import { functions } from '../services/appwrite';
-import { StripeInvoice, StripePlan } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { redirectToBillingPortal } from '../services/stripe.ts';
+import { useToast } from '../contexts/ToastContext.tsx';
+import { functions } from '../services/appwrite.ts';
+import { StripeInvoice, StripePlan } from '../types.ts';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
 const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';

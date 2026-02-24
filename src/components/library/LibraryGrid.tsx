@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useLibraryItems } from "../../hooks/useLibrary";
+import { useLibraryItems } from "../../hooks/useLibrary.ts";
 import { Loader2, Package, Brush, PlusCircle } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../ui/Button.tsx";
 
 const LibraryGrid: React.FC = () => {
   const { data: items, isLoading, isError } = useLibraryItems();

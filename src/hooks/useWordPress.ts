@@ -34,10 +34,10 @@ export const useManageTheme = (siteId: string | undefined) => {
 };
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { functions } from '../services/appwrite';
-import { WordPressPlugin, WordPressTheme } from '../types';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
+import { functions } from '../services/appwrite.ts';
+import { WordPressPlugin, WordPressTheme } from '../types.ts';
+import { useToast } from '../contexts/ToastContext.tsx';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 const FUNCTION_ID = 'wp-proxy';
 

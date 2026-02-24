@@ -1,4 +1,4 @@
-import { functions } from './appwrite';
+import { functions } from './appwrite.ts';
 
 const STRIPE_PORTAL_FUNCTION_ID = 'stripe-portal-link'; // Assumed function ID
 

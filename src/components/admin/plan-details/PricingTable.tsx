@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import Card, { CardHeader, CardTitle, CardContent } from "../../ui/Card";
-import Button from "../../ui/Button";
-import Input from "../../ui/Input";
-import Select from "../../ui/Select";
-import Label from "../../ui/Label";
-import Badge from "../../ui/Badge";
+import Card, { CardHeader, CardTitle, CardContent } from "../../ui/Card.tsx";
+import Button from "../../ui/Button.tsx";
+import Input from "../../ui/Input.tsx";
+import Select from "../../ui/Select.tsx";
+import Label from "../../ui/Label.tsx";
+import Badge from "../../ui/Badge.tsx";
 import { DollarSign, Plus, Trash2, Loader2 } from "lucide-react";
 
 export interface PriceRow {

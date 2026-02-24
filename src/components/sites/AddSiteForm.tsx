@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useAddSite } from "../../hooks/useSites";
-import Button from "../ui/Button";
-import Input from "../ui/Input";
-import Label from "../ui/Label";
+import { useAddSite } from "../../hooks/useSites.ts";
+import Button from "../ui/Button.tsx";
+import Input from "../ui/Input.tsx";
+import Label from "../ui/Label.tsx";
 import { Loader2, AlertCircle } from "lucide-react";
 
 interface AddSiteFormProps {

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { functions } from '../services/appwrite';
+import { functions } from '../services/appwrite.ts';
 
 /**
  * Hook for admin dashboard statistics

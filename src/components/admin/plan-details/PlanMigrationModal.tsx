@@ -1,7 +1,7 @@
 import React from "react";
-import Modal from "../../ui/Modal";
-import Button from "../../ui/Button";
-import Alert from "../../ui/Alert";
+import Modal from "../../ui/Modal.tsx";
+import Button from "../../ui/Button.tsx";
+import Alert from "../../ui/Alert.tsx";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 
 export interface UserOnPlan {

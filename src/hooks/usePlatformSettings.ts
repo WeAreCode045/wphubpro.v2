@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { databases, functions, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
+import { databases, functions, DATABASE_ID, COLLECTIONS } from '../services/appwrite.ts';
 import { Query } from 'appwrite';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 /**
  * Hook to fetch platform settings by category.

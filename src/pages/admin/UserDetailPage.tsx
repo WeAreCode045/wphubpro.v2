@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { functions, databases, DATABASE_ID, avatars } from "../../services/appwrite";
+import { functions, databases, DATABASE_ID, avatars } from "../../services/appwrite.ts";
 import { Query } from "appwrite";
 import {
   ArrowLeft,
@@ -21,11 +21,11 @@ import {
   RefreshCw,
   Package,
 } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
-import UsageGauge from "../../components/dashboard/UsageGauge";
-import { useToast } from "../../contexts/ToastContext";
+import Card, { CardHeader, CardContent } from "../../components/ui/Card.tsx";
+import Button from "../../components/ui/Button.tsx";
+import Input from "../../components/ui/Input.tsx";
+import UsageGauge from "../../components/dashboard/UsageGauge.tsx";
+import { useToast } from "../../contexts/ToastContext.tsx";
 
 const UserDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();

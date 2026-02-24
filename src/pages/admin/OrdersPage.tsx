@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { functions } from "../../services/appwrite";
+import { functions } from "../../services/appwrite.ts";
 import {
   Search,
   Download,
@@ -13,11 +13,11 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../../components/ui/Card";
-import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
+import Card, { CardHeader, CardContent } from "../../components/ui/Card.tsx";
+import Table from "../../components/ui/Table.tsx";
+import Button from "../../components/ui/Button.tsx";
+import Input from "../../components/ui/Input.tsx";
+import Select from "../../components/ui/Select.tsx";
 
 const OrdersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");

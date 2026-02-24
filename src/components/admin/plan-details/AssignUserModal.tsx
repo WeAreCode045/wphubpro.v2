@@ -1,8 +1,8 @@
 import React from "react";
-import Modal from "../../ui/Modal";
-import Select from "../../ui/Select";
-import Label from "../../ui/Label";
-import Button from "../../ui/Button";
+import Modal from "../../ui/Modal.tsx";
+import Select from "../../ui/Select.tsx";
+import Label from "../../ui/Label.tsx";
+import Button from "../../ui/Button.tsx";
 import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 
 export interface AssignableUser {

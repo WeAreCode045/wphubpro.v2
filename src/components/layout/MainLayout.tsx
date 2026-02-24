@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-import Toaster from "../ui/Toaster";
+import Sidebar from "./Sidebar.tsx";
+import Header from "./Header.tsx";
+import Toaster from "../ui/Toaster.tsx";
 
 const MainLayout: React.FC = () => {
   return (

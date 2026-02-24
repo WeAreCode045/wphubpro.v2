@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
-import { useSubscription } from '../../hooks/useSubscription';
-import { functions } from '../../services/appwrite';
+import Modal from '../ui/Modal.tsx';
+import Button from '../ui/Button.tsx';
+import { useSubscription } from '../../hooks/useSubscription.ts';
+import { functions } from '../../services/appwrite.ts';
 import { Loader2, AlertCircle, TrendingUp, TrendingDown, Calendar, CreditCard } from 'lucide-react';
-import type { PlanChangeType, StripeProrationPreview } from '../../types';
+import type { PlanChangeType, StripeProrationPreview } from '../../types.ts';
 
 interface PlanChangeConfirmationModalProps {
     isOpen: boolean;

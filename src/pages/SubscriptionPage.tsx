@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { useSubscription, useUsage } from '../hooks/useSubscription';
+import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card.tsx';
+import Button from '../components/ui/Button.tsx';
+import { useSubscription, useUsage } from '../hooks/useSubscription.ts';
 import { Loader2, AlertCircle, ArrowRight } from 'lucide-react';
-import { useStripePlans, useCreateCheckoutSession } from '../hooks/useStripe';
-import PlanCard from '../components/subscription/PlanCard';
-import SubscriptionSuccessPage from './SubscriptionSuccessPage';
-import PlanChangeConfirmationModal from '../components/subscription/PlanChangeConfirmationModal';
-import type { BillingInterval, PlanChangeType } from '../types';
+import { useStripePlans, useCreateCheckoutSession } from '../hooks/useStripe.ts';
+import PlanCard from '../components/subscription/PlanCard.tsx';
+import SubscriptionSuccessPage from './SubscriptionSuccessPage.tsx';
+import PlanChangeConfirmationModal from '../components/subscription/PlanChangeConfirmationModal.tsx';
+import type { BillingInterval, PlanChangeType } from '../types.ts';
 
 const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();

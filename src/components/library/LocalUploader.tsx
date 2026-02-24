@@ -1,15 +1,15 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { useUploadLocalItem } from "../../hooks/useLibrary";
-import { useSubscription, useUsage } from "../../hooks/useSubscription";
-import { LibraryItemType } from "../../types";
-import Button from "../ui/Button";
+import { useUploadLocalItem } from "../../hooks/useLibrary.ts";
+import { useSubscription, useUsage } from "../../hooks/useSubscription.ts";
+import { LibraryItemType } from "../../types.ts";
+import Button from "../ui/Button.tsx";
 import Card, {
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "../ui/Card";
+} from "../ui/Card.tsx";
 import {
   UploadCloud,
   Loader2,

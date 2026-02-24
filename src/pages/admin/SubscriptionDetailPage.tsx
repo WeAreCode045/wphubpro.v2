@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { functions, databases, DATABASE_ID } from "../../services/appwrite";
+import { functions, databases, DATABASE_ID } from "../../services/appwrite.ts";
 import { Query } from "appwrite";
 import {
   ArrowLeft,
@@ -18,10 +18,10 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-import Tabs from "../../components/ui/Tabs";
-import UsageGauge from "../../components/dashboard/UsageGauge";
+import Card, { CardHeader, CardContent } from "../../components/ui/Card.tsx";
+import Button from "../../components/ui/Button.tsx";
+import Tabs from "../../components/ui/Tabs.tsx";
+import UsageGauge from "../../components/dashboard/UsageGauge.tsx";
 
 const SubscriptionDetailPage: React.FC = () => {
   const { subscriptionId } = useParams<{ subscriptionId: string }>();

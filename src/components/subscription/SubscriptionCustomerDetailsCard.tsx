@@ -1,7 +1,7 @@
 import React from "react";
 import { User } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../ui/Card";
-import type { SubscriptionCustomer } from "./subscription-detail-types";
+import Card, { CardHeader, CardContent } from "../ui/Card.tsx";
+import type { SubscriptionCustomer } from "./subscription-detail-types.ts";
 
 interface Props {
   customer: SubscriptionCustomer;

@@ -1,8 +1,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { DesignSystemProvider } from './components/ui/DesignSystem';
-import App from './App';
+import { DesignSystemProvider } from './components/ui/DesignSystem.tsx';
+import App from './App.tsx';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

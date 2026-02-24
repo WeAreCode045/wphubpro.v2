@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useSite } from '../../hooks/useSites';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import Button from '../../components/ui/Button';
-import type { ActionLogEntry } from '../../types';
+import { useSite } from '../../hooks/useSites.ts';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table.tsx';
+import Button from '../../components/ui/Button.tsx';
+import type { ActionLogEntry } from '../../types.ts';
 
 interface ActionLogTabProps {
   siteId: string;

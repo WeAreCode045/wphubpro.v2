@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 // FIX: Import `storage` to handle file uploads correctly.
-import { databases, functions, ID } from '../services/appwrite';
+import { databases, functions, ID } from '../services/appwrite.ts';
 import { Query } from 'appwrite';
-import { searchWpPlugins } from '../services/wordpress';
-import { LibraryItem, LibraryItemSource, LibraryItemType } from '../types';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
+import { searchWpPlugins } from '../services/wordpress.ts';
+import { LibraryItem, LibraryItemSource, LibraryItemType } from '../types.ts';
+import { useToast } from '../contexts/ToastContext.tsx';
+import { useAuth } from '../contexts/AuthContext.tsx';
 
 const DATABASE_ID = 'platform_db';
 const LIBRARY_COLLECTION_ID = 'library';

@@ -8,17 +8,17 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { databases, functions } from "../../services/appwrite";
+import { databases, functions } from "../../services/appwrite.ts";
 import { Query } from "appwrite";
-import StatCard from "../../components/dashboard/StatCard";
+import StatCard from "../../components/dashboard/StatCard.tsx";
 import Card, {
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "../../components/ui/Card";
-import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
+} from "../../components/ui/Card.tsx";
+import Table from "../../components/ui/Table.tsx";
+import Button from "../../components/ui/Button.tsx";
 
 const AdminDashboardPage: React.FC = () => {
   // Fetch real admin statistics

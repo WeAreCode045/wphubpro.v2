@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { functions, databases, DATABASE_ID } from "../../services/appwrite";
+import { functions, databases, DATABASE_ID } from "../../services/appwrite.ts";
 import { Query } from "appwrite";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,11 +11,11 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../../components/ui/Card";
-import Table from "../../components/ui/Table";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
-import type { SubscriptionSyncResult } from "../../types";
+import Card, { CardHeader, CardContent } from "../../components/ui/Card.tsx";
+import Table from "../../components/ui/Table.tsx";
+import Button from "../../components/ui/Button.tsx";
+import Input from "../../components/ui/Input.tsx";
+import type { SubscriptionSyncResult } from "../../types.ts";
 
 const SubscriptionsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");

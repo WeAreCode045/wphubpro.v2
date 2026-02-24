@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { functions, databases, DATABASE_ID } from "../../services/appwrite";
+import { functions, databases, DATABASE_ID } from "../../services/appwrite.ts";
 import { Query } from "appwrite";
 import {
   ArrowLeft,
@@ -23,14 +23,14 @@ import Card, {
   CardTitle,
   CardDescription,
   CardContent,
-} from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
-import Table, { TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/Table";
-import Badge from "../../components/ui/Badge";
-import Modal from "../../components/ui/Modal";
-import Select from "../../components/ui/Select";
-import Label from "../../components/ui/Label";
-import { useToast } from "../../contexts/ToastContext";
+} from "../../components/ui/Card.tsx";
+import Button from "../../components/ui/Button.tsx";
+import Table, { TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/Table.tsx";
+import Badge from "../../components/ui/Badge.tsx";
+import Modal from "../../components/ui/Modal.tsx";
+import Select from "../../components/ui/Select.tsx";
+import Label from "../../components/ui/Label.tsx";
+import { useToast } from "../../contexts/ToastContext.tsx";
 
 const PlanDetailPage: React.FC = () => {
   const { planId } = useParams<{ planId: string }>();
