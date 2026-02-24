@@ -13,8 +13,8 @@ import {
   Package,
   LayoutGrid,
 } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext.tsx";
-import { usePlatformSettings } from '../../hooks/usePlatformSettings.ts';
+import { useAuth } from "../../contexts/AuthContext";
+import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 
 const PlatformBrand: React.FC = () => {
   const { data: details } = usePlatformSettings('details');

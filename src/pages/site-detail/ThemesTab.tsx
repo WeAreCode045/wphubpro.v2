@@ -1,9 +1,9 @@
 import React from 'react';
-import { useThemes, useManageTheme } from '../../hooks/useWordPress.ts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table.tsx';
-import Button from '../../components/ui/Button.tsx';
+import { useThemes, useManageTheme } from '../../hooks/useWordPress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
+import Button from '../../components/ui/Button';
 import { Loader2, AlertCircle } from 'lucide-react';
-import type { WordPressTheme } from '../../types.ts';
+import type { WordPressTheme } from '../../types';
 
 interface ThemesTabProps {
   siteId: string;

@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { Globe, Library, Gem, DollarSign, PlusCircle, Loader2 } from 'lucide-react';
-import StatCard from '../components/dashboard/StatCard.tsx';
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card.tsx';
-import UsageGauge from '../components/dashboard/UsageGauge.tsx';
-import Button from '../components/ui/Button.tsx';
-import { useSubscription, useUsage } from '../hooks/useSubscription.ts';
-import { usePlatformSettings } from '../hooks/usePlatformSettings.ts';
-import { useSites } from '../hooks/useSites.ts';
+import StatCard from '../components/dashboard/StatCard';
+import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import UsageGauge from '../components/dashboard/UsageGauge';
+import Button from '../components/ui/Button';
+import { useSubscription, useUsage } from '../hooks/useSubscription';
+import { usePlatformSettings } from '../hooks/usePlatformSettings';
+import { useSites } from '../hooks/useSites';
 import { Link } from 'react-router-dom';
 
 

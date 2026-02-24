@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card.tsx';
-import Button from '../../components/ui/Button.tsx';
-import Input from '../../components/ui/Input.tsx';
-import Label from '../../components/ui/Label.tsx';
-import Select from '../../components/ui/Select.tsx';
+import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Label from '../../components/ui/Label';
+import Select from '../../components/ui/Select';
 import { 
   Globe, 
   Palette, 
@@ -16,8 +16,8 @@ import {
   Undo2,
   Gift
 } from 'lucide-react';
-import { usePlatformSettings, useUpdatePlatformSettings } from '../../hooks/usePlatformSettings.ts';
-import { useToast } from '../../contexts/ToastContext.tsx';
+import { usePlatformSettings, useUpdatePlatformSettings } from '../../hooks/usePlatformSettings';
+import { useToast } from '../../contexts/ToastContext';
 
 const DEFAULT_BRANDING = {
   primaryColor: '#6366f1',

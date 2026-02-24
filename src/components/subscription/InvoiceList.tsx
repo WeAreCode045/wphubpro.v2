@@ -1,5 +1,5 @@
 import React from "react";
-import { useInvoices } from "../../hooks/useStripe.ts";
+import { useInvoices } from "../../hooks/useStripe";
 import { Loader2, AlertCircle, Download } from "lucide-react";
 import {
   Table,
@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/Table.tsx";
-import Button from "../ui/Button.tsx";
+} from "../ui/Table";
+import Button from "../ui/Button";
 
 const InvoiceList: React.FC = () => {
   const { data: invoices, isLoading, isError, error } = useInvoices();

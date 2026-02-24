@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { usePlugins, useTogglePlugin } from '../../hooks/useWordPress.ts';
-import { useSite } from '../../hooks/useSites.ts';
-import { WordPressPlugin } from '../../types.ts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table.tsx';
-import Button from '../../components/ui/Button.tsx';
+import { usePlugins, useTogglePlugin } from '../../hooks/useWordPress';
+import { useSite } from '../../hooks/useSites';
+import { WordPressPlugin } from '../../types';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
+import Button from '../../components/ui/Button';
 import { Loader2, AlertCircle, Power, PowerOff } from 'lucide-react';
 
 interface PluginsTabProps {

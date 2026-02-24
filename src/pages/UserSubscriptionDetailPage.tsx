@@ -1,21 +1,21 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { functions, databases, DATABASE_ID } from "../services/appwrite.ts";
-import { useAuth } from "../contexts/AuthContext.tsx";
+import { functions, databases, DATABASE_ID } from "../services/appwrite";
+import { useAuth } from "../contexts/AuthContext";
 import { Query } from "appwrite";
 import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import Card, { CardContent } from "../components/ui/Card.tsx";
-import Button from "../components/ui/Button.tsx";
-import { useManageSubscription } from "../hooks/useStripe.ts";
-import { useUsage } from "../hooks/useSubscription.ts";
-import SubscriptionPlanDetailsCard from "../components/subscription/SubscriptionPlanDetailsCard.tsx";
-import SubscriptionCustomerDetailsCard from "../components/subscription/SubscriptionCustomerDetailsCard.tsx";
-import SubscriptionBillingTabs from "../components/subscription/SubscriptionBillingTabs.tsx";
-import type { SubscriptionDetails } from "../components/subscription/subscription-detail-types.ts";
+import Card, { CardContent } from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import { useManageSubscription } from "../hooks/useStripe";
+import { useUsage } from "../hooks/useSubscription";
+import SubscriptionPlanDetailsCard from "../components/subscription/SubscriptionPlanDetailsCard";
+import SubscriptionCustomerDetailsCard from "../components/subscription/SubscriptionCustomerDetailsCard";
+import SubscriptionBillingTabs from "../components/subscription/SubscriptionBillingTabs";
+import type { SubscriptionDetails } from "../components/subscription/subscription-detail-types";
 
 const UserSubscriptionDetailPage: React.FC = () => {
   const { user } = useAuth();

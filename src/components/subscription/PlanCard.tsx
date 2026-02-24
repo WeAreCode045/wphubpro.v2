@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import Button from '../ui/Button.tsx';
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card.tsx';
+import Button from '../ui/Button';
+import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { Check, AlertCircle } from 'lucide-react';
-import type { BillingInterval, StripePlan, UsageMetrics } from '../../types.ts';
-import UsageGauge from '../dashboard/UsageGauge.tsx';
+import type { BillingInterval, StripePlan, UsageMetrics } from '../../types';
+import UsageGauge from '../dashboard/UsageGauge';
 
 interface PlanCardProps {
     plan: StripePlan;

@@ -1,7 +1,7 @@
 import React from "react";
-import Card, { CardHeader, CardTitle, CardContent } from "../../ui/Card.tsx";
-import Label from "../../ui/Label.tsx";
-import Badge from "../../ui/Badge.tsx";
+import Card, { CardHeader, CardTitle, CardContent } from "../../ui/Card";
+import Label from "../../ui/Label";
+import Badge from "../../ui/Badge";
 import { Package, ShieldCheck } from "lucide-react";
 
 export type PlanType = "local" | "stripe";

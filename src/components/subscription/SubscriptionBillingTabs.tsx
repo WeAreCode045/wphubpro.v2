@@ -1,14 +1,14 @@
 import React from "react";
 import { Calendar, CreditCard, FileText, ExternalLink, Download, AlertCircle } from "lucide-react";
-import Card, { CardContent } from "../ui/Card.tsx";
-import Tabs from "../ui/Tabs.tsx";
-import Button from "../ui/Button.tsx";
+import Card, { CardContent } from "../ui/Card";
+import Tabs from "../ui/Tabs";
+import Button from "../ui/Button";
 import type {
   SubscriptionCore,
   SubscriptionPaymentMethod,
   UpcomingInvoice,
   StripeInvoice,
-} from "./subscription-detail-types.ts";
+} from "./subscription-detail-types";
 
 interface Props {
   subscription: SubscriptionCore;

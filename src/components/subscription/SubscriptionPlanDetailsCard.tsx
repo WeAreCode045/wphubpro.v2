@@ -1,10 +1,10 @@
 import React from "react";
 import { Package, TrendingDown, TrendingUp, AlertCircle, Loader2, XCircle } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../ui/Card.tsx";
-import Button from "../ui/Button.tsx";
-import UsageGauge from "../dashboard/UsageGauge.tsx";
-import type { SubscriptionCore, SubscriptionPlan, SubscriptionPlanLimits } from "./subscription-detail-types.ts";
-import type { UsageMetrics } from "../../types.ts";
+import Card, { CardHeader, CardContent } from "../ui/Card";
+import Button from "../ui/Button";
+import UsageGauge from "../dashboard/UsageGauge";
+import type { SubscriptionCore, SubscriptionPlan, SubscriptionPlanLimits } from "./subscription-detail-types";
+import type { UsageMetrics } from "../../types";
 
 interface Props {
   plan: SubscriptionPlan;

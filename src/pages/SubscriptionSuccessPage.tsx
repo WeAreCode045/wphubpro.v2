@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, Loader2, CreditCard, ShieldCheck } from 'lucide-react';
-import Button from '../components/ui/Button.tsx';
-import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card.tsx';
-import { useSubscription } from '../hooks/useSubscription.ts';
-import { useStripePlans } from '../hooks/useStripe.ts';
+import Button from '../components/ui/Button';
+import Card, { CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import { useSubscription } from '../hooks/useSubscription';
+import { useStripePlans } from '../hooks/useStripe';
 import confetti from 'canvas-confetti';
 
 const SubscriptionSuccessPage: React.FC = () => {

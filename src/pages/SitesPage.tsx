@@ -1,15 +1,15 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Card, { CardContent } from '../components/ui/Card.tsx';
-import Button from '../components/ui/Button.tsx';
+import Card, { CardContent } from '../components/ui/Card';
+import Button from '../components/ui/Button';
 import { ExternalLink, Trash2 } from 'lucide-react';
-import { useDeleteSite } from '../hooks/useSites.ts';
-import { useSites } from '../hooks/useSites.ts';
+import { useDeleteSite } from '../hooks/useSites';
+import { useSites } from '../hooks/useSites';
 import { Globe, PlusCircle, Loader2, AlertCircle } from 'lucide-react';
-import Modal from '../components/ui/Modal.tsx';
-import { usePlatformSettings } from '../hooks/usePlatformSettings.ts';
-import AddSiteForm from '../components/sites/AddSiteForm.tsx';
+import Modal from '../components/ui/Modal';
+import { usePlatformSettings } from '../hooks/usePlatformSettings';
+import AddSiteForm from '../components/sites/AddSiteForm';
 
 const DeleteButton: React.FC<{ siteId: string }> = ({ siteId }) => {
   const deleteSite = useDeleteSite();

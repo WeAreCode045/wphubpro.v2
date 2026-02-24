@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { functions } from "../../services/appwrite.ts";
+import { functions } from "../../services/appwrite";
 import {
   Search,
   UserPlus,
@@ -13,12 +13,12 @@ import {
   ArrowRight,
   LogIn,
 } from "lucide-react";
-import Card, { CardHeader, CardContent } from "../../components/ui/Card.tsx";
-import Table from "../../components/ui/Table.tsx";
-import Button from "../../components/ui/Button.tsx";
-import Input from "../../components/ui/Input.tsx";
+import Card, { CardHeader, CardContent } from "../../components/ui/Card";
+import Table from "../../components/ui/Table";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
 import { useNavigate } from "react-router-dom";
-import { avatars } from "../../services/appwrite.ts";
+import { avatars } from "../../services/appwrite";
 
 const UserManagerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");

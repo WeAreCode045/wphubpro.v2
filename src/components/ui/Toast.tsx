@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useToast, ToastProps } from "../../contexts/ToastContext.tsx";
+import { useToast, ToastProps } from "../../contexts/ToastContext";
 import { X, CheckCircle, AlertTriangle, Info } from "lucide-react";
 
 const Toast: React.FC<ToastProps> = ({

@@ -1,11 +1,11 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useLibraryItems } from './useLibrary.ts';
-import { useSites } from './useSites.ts';
-import { useAuth } from '../contexts/AuthContext.tsx';
-import { functions, databases } from '../services/appwrite.ts';
-import { Subscription, UsageMetrics } from '../types.ts';
-import { DATABASE_ID, COLLECTIONS } from '../services/appwrite.ts';
+import { useLibraryItems } from './useLibrary';
+import { useSites } from './useSites';
+import { useAuth } from '../contexts/AuthContext';
+import { functions, databases } from '../services/appwrite';
+import { Subscription, UsageMetrics } from '../types';
+import { DATABASE_ID, COLLECTIONS } from '../services/appwrite';
 import { Query } from 'appwrite';
 
 const GET_SUBSCRIPTION_FUNCTION_ID = 'stripe-get-subscription';

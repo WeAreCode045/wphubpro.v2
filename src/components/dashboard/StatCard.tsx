@@ -1,5 +1,5 @@
 import React from "react";
-import Card, { CardContent, CardHeader, CardTitle } from "../ui/Card.tsx";
+import Card, { CardContent, CardHeader, CardTitle } from "../ui/Card";
 
 interface StatCardProps {
   title: string;

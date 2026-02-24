@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import {
   useSearchWpPlugins,
   useAddOfficialPlugin,
-} from "../../hooks/useLibrary.ts";
-import { useLibraryItems } from "../../hooks/useLibrary.ts";
-import Button from "../ui/Button.tsx";
+} from "../../hooks/useLibrary";
+import { useLibraryItems } from "../../hooks/useLibrary";
+import Button from "../ui/Button";
 import { Search, Loader2, Plus, Check } from "lucide-react";
 
 // Debounce hook

@@ -1,5 +1,5 @@
 import React from "react";
-import Card from "../../ui/Card.tsx";
+import Card from "../../ui/Card";
 
 export interface PlanStatItem {
   id: string;

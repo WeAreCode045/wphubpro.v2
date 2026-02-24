@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { databases, functions } from '../services/appwrite.ts';
+import { databases, functions } from '../services/appwrite';
 import { Query } from 'appwrite';
-import { Site } from '../types.ts';
-import { useAuth } from '../contexts/AuthContext.tsx';
-import { useToast } from '../contexts/ToastContext.tsx';
+import { Site } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 const DATABASE_ID = 'platform_db';
 const SITES_COLLECTION_ID = 'sites';

@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
-import { usePlatformSettings } from '../hooks/usePlatformSettings.ts';
-import { hexToHsl } from '../lib/utils.ts';
+import { usePlatformSettings } from '../hooks/usePlatformSettings';
+import { hexToHsl } from '../lib/utils';
 
 interface ThemeContextType {
   theme: any; 

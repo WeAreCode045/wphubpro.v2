@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { functions, databases, DATABASE_ID, ID } from "../../services/appwrite.ts";
+import { functions, databases, DATABASE_ID, ID } from "../../services/appwrite";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -13,14 +13,14 @@ import {
   Users,
   ArrowRight,
 } from "lucide-react";
-import Card from "../../components/ui/Card.tsx";
-import Button from "../../components/ui/Button.tsx";
-import Input from "../../components/ui/Input.tsx";
-import Label from "../../components/ui/Label.tsx";
-import Modal from "../../components/ui/Modal.tsx";
-import Select from "../../components/ui/Select.tsx";
-import Checkbox from "../../components/ui/Checkbox.tsx";
-import { useToast } from "../../contexts/ToastContext.tsx";
+import Card from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Label from "../../components/ui/Label";
+import Modal from "../../components/ui/Modal";
+import Select from "../../components/ui/Select";
+import Checkbox from "../../components/ui/Checkbox";
+import { useToast } from "../../contexts/ToastContext";
 
 const PlanManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

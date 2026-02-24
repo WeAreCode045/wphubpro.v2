@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { account, teams, ID } from '../services/appwrite.ts';
-import { User } from '../types.ts';
+import { account, teams, ID } from '../services/appwrite';
+import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;

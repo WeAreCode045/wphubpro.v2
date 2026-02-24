@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { databases, DATABASE_ID } from "../../services/appwrite.ts";
-import Button from "../../components/ui/Button.tsx";
-import Input from "../../components/ui/Input.tsx";
-import Label from "../../components/ui/Label.tsx";
-import Select from "../../components/ui/Select.tsx";
-import Checkbox from "../../components/ui/Checkbox.tsx";
+import { databases, DATABASE_ID } from "../../services/appwrite";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Label from "../../components/ui/Label";
+import Select from "../../components/ui/Select";
+import Checkbox from "../../components/ui/Checkbox";
 
 interface Props {
   user: any;

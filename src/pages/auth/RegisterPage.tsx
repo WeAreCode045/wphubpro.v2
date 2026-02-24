@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext.tsx';
-import Button from '../../components/ui/Button.tsx';
-import { usePlatformSettings } from '../../hooks/usePlatformSettings.ts';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card.tsx';
-import Input from '../../components/ui/Input.tsx';
-import Label from '../../components/ui/Label.tsx';
+import { useAuth } from '../../contexts/AuthContext';
+import Button from '../../components/ui/Button';
+import { usePlatformSettings } from '../../hooks/usePlatformSettings';
+import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
+import Input from '../../components/ui/Input';
+import Label from '../../components/ui/Label';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {

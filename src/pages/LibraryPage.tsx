@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import Tabs from '../components/ui/Tabs.tsx';
-import OfficialSearch from '../components/library/OfficialSearch.tsx';
-import LocalUploader from '../components/library/LocalUploader.tsx';
-import LibraryGrid from '../components/library/LibraryGrid.tsx';
+import Tabs from '../components/ui/Tabs';
+import OfficialSearch from '../components/library/OfficialSearch';
+import LocalUploader from '../components/library/LocalUploader';
+import LibraryGrid from '../components/library/LibraryGrid';
 
 const LibraryPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);

@@ -1,14 +1,14 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useSite } from '../hooks/useSites.ts';
+import { useSite } from '../hooks/useSites';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { useUpdateSite } from '../hooks/useSites.ts';
-import Button from '../components/ui/Button.tsx';
-import Card, { CardContent } from '../components/ui/Card.tsx';
-import Tabs from '../components/ui/Tabs.tsx';
-import PluginsTab from './site-detail/PluginsTab.tsx';
-import ThemesTab from './site-detail/ThemesTab.tsx';
-import ActionLogTab from './site-detail/ActionLogTab.tsx';
+import { useUpdateSite } from '../hooks/useSites';
+import Button from '../components/ui/Button';
+import Card, { CardContent } from '../components/ui/Card';
+import Tabs from '../components/ui/Tabs';
+import PluginsTab from './site-detail/PluginsTab';
+import ThemesTab from './site-detail/ThemesTab';
+import ActionLogTab from './site-detail/ActionLogTab';
 
 const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

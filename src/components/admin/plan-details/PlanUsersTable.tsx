@@ -1,14 +1,14 @@
 import React from "react";
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from "../../ui/Card.tsx";
-import Button from "../../ui/Button.tsx";
-import Badge from "../../ui/Badge.tsx";
+import Card, { CardHeader, CardTitle, CardDescription, CardContent } from "../../ui/Card";
+import Button from "../../ui/Button";
+import Badge from "../../ui/Badge";
 import Table, {
   TableHeader,
   TableBody,
   TableRow,
   TableHead,
   TableCell,
-} from "../../ui/Table.tsx";
+} from "../../ui/Table";
 import { Loader2, Users } from "lucide-react";
 
 export interface PlanUserRow {
