@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd src && npm install && npm run build",
+  "buildCommand": "cd src && pnpm install && pnpm run build",
   "outputDirectory": "src/dist",
   "installCommand": "cd src && pnpm install",
   "framework": null
