@@ -786,7 +786,7 @@
             "timeout": 30,
             "logging": true,
             "ignore": null,
-            "path": "sites/WPHubPro",
+            "path": "src",
             "vars": [
                 {
                     "key": "VITE_APPWRITE_ENDPOINT",

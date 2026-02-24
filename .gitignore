@@ -30,5 +30,5 @@ scripts
 /functions/*/dist-ssr
 /functions/*/*.log
 /functions/*/.env
-sites/WPHubPro/App.tsx
-sites/WPHubPro/pnpm-lock.yaml
+src/App.tsx
+src/pnpm-lock.yaml
