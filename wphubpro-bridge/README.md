@@ -1,1 +1,0 @@
-# wp-plugin-boilerplate

@@ -1,9 +1,0 @@
-{
-  "name": "admin-list-users",
-  "version": "1.0.0",
-  "description": "List Appwrite users for admin UI",
-  "main": "index.js",
-  "dependencies": {
-    "node-appwrite": "^22.0.0"
-  }
-}

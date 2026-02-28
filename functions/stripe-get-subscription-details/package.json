@@ -1,9 +1,0 @@
-{
-  "name": "stripe-get-subscription-details",
-  "version": "1.0.0",
-  "description": "Get detailed subscription data from Stripe",
-  "main": "index.js",
-  "dependencies": {
-    "stripe": "^14.0.0"
-  }
-}
